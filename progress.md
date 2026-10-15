@@ -44,3 +44,26 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Added tests/snow-caps.mjs with exact non-snow image comparisons and segment containment checks. Passed 54 image comparisons across desktop, portrait and landscape/dark configurations, day/night transitions, fractional offsets, tile crossings and long distances. Passed 156 mountain contour checks, including narrow peaks and distant world tiles; no page errors.
 - Ran the existing skill Playwright client with start, jump and duck actions. Inspected its gameplay screenshot/state and the before/after desktop/mobile screenshots. Evidence: output/snow-caps/report.json and output/snow-caps/skill-client.
 - Follow-up: no remaining work for this correction. Local files updated; no deployment performed.
+
+## 2026-10-15: Standalone HTML refactoring — contract and plan
+
+- User requested a plan and implementation using Git, with a single playable
+  HTML file, offline/file support and only optional external menu music.
+- Read develop-web-game skill. Plan: REFACTORING.md. Work branch:
+  `refactor/single-html`; original implementation revision: `10f6b21`.
+- Added baseline-independent tests/game-contract.mjs. It starts its own isolated
+  HTTP fixture and tests a temporary directory containing only dino.html with
+  networking disabled, including blocked localStorage. Highscore calls are
+  injected and never reach the live service.
+- Baseline passed: inline script syntax; client/PHP score constants; desktop,
+  portrait, landscape, offline file and blocked-storage file lifecycles. Covered
+  keyboard start/jump/duck, settings/help pause, focus/context restoration,
+  reduced motion, protected death, local save after online failure, mode change,
+  restart clock preservation, new session reset and persistent mode records.
+- Playwright reused from D:/projects/pacman/node_modules/playwright/index.mjs;
+  set DINO_PLAYWRIGHT to that installed ESM entry when running tests here.
+- Baseline HTML saved at output/refactoring/dino.before.html for comparisons.
+- Added ignore rules for future runtime data/config, output and node_modules.
+  Previously tracked runtime files are untouched and excluded from new commits.
+- Next: consolidate resets/preferences, then extract browser/page components;
+  run contract and visual/deterministic comparisons against the starting HTML.
