@@ -507,6 +507,12 @@
         right: 8px;
         bottom: 8px;
         z-index: 2;
+        /* The transparent grid may overlap a tall result card on short screens. */
+        pointer-events: none;
+      }
+      #touch-controls button,
+      #touch-controls a {
+        pointer-events: auto;
       }
       #touch-jump,
       #touch-duck {
@@ -2623,7 +2629,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-15.2';
+        const BUILD = '2026-10-15.3';
         const FEATHER = Object.freeze({
           firstSpawnMs: 4000,
           respawnMs: 18000,

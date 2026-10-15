@@ -69,6 +69,7 @@ try {
     { name: 'desktop', viewport: { width: 1280, height: 720 } },
     { name: 'portrait', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 },
     { name: 'landscape', viewport: { width: 844, height: 390 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 },
+    { name: 'compact-landscape', viewport: { width: 663, height: 234 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3.375 },
     { name: 'file-offline', viewport: { width: 1280, height: 720 }, file: true },
     { name: 'file-blocked-storage', viewport: { width: 390, height: 844 }, file: true, blocked: true },
   ]) {
@@ -208,6 +209,11 @@ try {
     assert.equal(await page.evaluate(() => window.__dinoRunner.highscores.source), 'local');
     await page.locator('#scores-close').click();
     await page.waitForFunction(() => !window.__dinoRunner.paused);
+    assert.equal(await page.locator('#play-again').evaluate(button => {
+      const rect = button.getBoundingClientRect();
+      return !!document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+        ?.closest('#play-again');
+    }), true, 'The transparent touch-controls grid must not cover the restart button');
     const simulationTime = await page.evaluate(() => window.__dinoGame.simulationTime);
     await page.locator('#play-again').click();
     const restarted = await state(page);

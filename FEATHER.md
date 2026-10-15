@@ -113,7 +113,8 @@ first-difference JSON is written instead of printing the whole simulation trace.
 
 ## Verification status
 
-- Feature implementation and embedded help completed; build `2026-10-15.2`.
+- Feature implementation and embedded help completed in `2026-10-15.2`;
+  current build `2026-10-15.3` includes the physical-phone restart fix below.
 - Feature scenarios passed in Chromium 151.0.7922.34 and WebKit 26.5, each with
   desktop, touch/DPR smartphone portrait and landscape configurations.
 - Covers keyboard repeat/release, mouse/touch/gamepad, collection mid-jump,
@@ -125,7 +126,7 @@ first-difference JSON is written instead of printing the whole simulation trace.
   reload without the optional song. The WebKit harness differences are above.
 - Ran the actual develop-web-game action client. Inspected pickup, ready/spent,
   air-jump, help and normal gameplay screenshots in desktop/mobile layouts.
-- Final pre-feature comparison passed in both engines: 70/70 pixel-identical
+- Pre-feature comparison for build .2 passed in both engines: 70/70 pixel-identical
   scenes per engine (140 total; zero changed pixels), plus five identical
   12,000-frame simulation/effect traces per engine (120,000 frame advances per
   version across both engines). Caches, particle cap and array reuse passed.
@@ -135,5 +136,49 @@ first-difference JSON is written instead of printing the whole simulation trace.
   feature/help commit: `5455109`; branch: `feature/jump-feather`.
 - Artifacts: `output/feather/{chromium,webkit,contract-chromium,contract-webkit,
   skill-client,comparison}`. No real highscore requests or deployment.
-- Aggregated results: `output/feather/verification.json`. Physical Android/iPhone
-  hardware remains untested; engine/device emulation is the scope of this result.
+- Aggregated emulation results: `output/feather/verification.json`.
+
+## Physical Galaxy A53 verification (2026-10-15)
+
+- Samsung SM-A536B / Galaxy A53, Android 16, actual Chrome 155.0.8059.79.
+  No viewport/device emulation. Real OS portrait/landscape rotation with the
+  original settings restored in finally and read back after testing.
+- Inputs are trusted Chrome CDP touch events on the actual phone. The normal rAF
+  loop runs; pickup positions and unrelated obstacles are controlled fixtures.
+  No manual simulation frames or live highscore submissions.
+- Passed collection, ground-jump charge preservation, one air jump/no third
+  jump, duck press/release, settings pause/resume, orientation, help/back,
+  death/restart and charge reset. Screenshots inspected.
+- Offline service-worker reload and a subsequent feather air jump passed with
+  only the test origin's USB bridge disconnected. Phone network settings and
+  other sites/tabs were not changed. Direct Android file opening and physical
+  iPhone/Safari are not covered by this device run.
+- The short landscape viewport (663 x 234 CSS px, DPR 3.375) exposed a preexisting
+  hit-target bug: record feedback made the result card extend under the
+  transparent touch-control grid, whose empty area swallowed Play again taps.
+  Reproduced at that viewport: elementFromPoint returned touch-controls.
+- Build .3 makes the transparent grid ignore pointer events, while buttons and
+  links remain interactive. No visual/physics changes. Added a hit-test assertion
+  and compact landscape configuration to game-contract.mjs.
+- Build .3 passed the physical run and seven lifecycle scenarios per engine in
+  Chromium/WebKit (14 total), the skill action client, syntax and diff checks.
+  Earlier .2 Canvas/simulation comparisons are recorded above; .3 only changes
+  CSS hit testing and the build identifier.
+- Two four-second controlled samples measured about 60 FPS in both orientations.
+  These do not establish sustained-play or universal performance. Exact metrics:
+  `output/feather/device/report.json`; screenshots are beside the report.
+
+Unlock an authorized USB-debugging Android device and open Chrome. Start
+`node tests/android-preview.cjs` in another terminal, then run:
+
+```powershell
+adb forward tcp:9223 localabstract:chrome_devtools_remote
+adb reverse tcp:8877 tcp:8877
+node tests/android-feather.mjs
+adb reverse --remove tcp:8877
+adb forward --remove tcp:9223
+```
+
+Use DINO_PLAYWRIGHT as above if needed; DINO_ANDROID_SERIAL selects a device for
+the script. Match ADB bridges to that same device. The runner creates/closes its
+own tab and disconnects CDP, leaving other tabs open.

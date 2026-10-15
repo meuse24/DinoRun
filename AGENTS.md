@@ -23,6 +23,10 @@ There is no build step, package manifest, or configured linter. Use modern Node.
   charge/physics/lifecycle/help and phone portrait/landscape emulation using an
   isolated standalone file. Set `DINO_BROWSER=webkit` for the WebKit run;
   `game-contract.mjs` also accepts `DINO_BROWSER`.
+- `node tests/android-preview.cjs` and `node tests/android-feather.mjs`: run the
+  controlled physical-Android checks over USB/CDP. Requires Chrome open and the
+  ADB bridges documented in FEATHER.md. The runner restores rotation settings,
+  closes its own tab and never uses the live score API.
 - `php -l highscores-lib.php`: check PHP syntax; repeat for other changed PHP files.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
 - Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.

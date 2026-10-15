@@ -190,3 +190,33 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   AGENTS.md. No live highscore requests, mutable data changes or deployment.
 - All requested work completed. No remaining required implementation or testing
   tasks. Physical Android/iPhone hardware testing is outside the emulation run.
+
+## 2026-10-15: Physical Galaxy A53 test and short-screen hit-target fix
+
+- User connected a physical Samsung SM-A536B / Galaxy A53: Android 16, Chrome
+  155.0.8059.79. User opened Chrome; connected through ADB/CDP in a new test tab.
+  Used no viewport/device emulation and restored OS orientation settings after
+  each run (auto=1, rotation=0, read back). Other Chrome tabs remain open.
+- Added android-preview.cjs (loopback-only fixture, live scores disabled) and
+  android-feather.mjs (normal rAF, trusted CDP touches, actual OS orientation).
+  Physics uses real time; pickup locations/unrelated hazards are controlled.
+- Passed feather collection, normal/air/third-jump behavior, duck, pause/resume,
+  help/back and death/restart/reset in both real orientations. Inspected phone
+  screenshots. No page/console errors in the final run.
+- Offline reload and a subsequent air jump passed after disconnecting only the
+  test origin's USB reverse bridge; service worker supplied the game. No phone
+  Wi-Fi/mobile-data setting changes or real highscore requests.
+- Found a preexisting restart hit-target bug in the actual short landscape view:
+  record feedback extended the result card into an empty portion of the touch
+  grid (z-index 2). The transparent grid intercepted Play again. Reproduced in
+  a 663x234 touch viewport with a prior record and elementFromPoint diagnostics.
+- Fixed with pointer-events:none on the transparent grid and auto on its buttons
+  and links. No visual or physics changes. Updated BUILD to 2026-10-15.3.
+- Added compact-landscape and direct restart hit-testing to game-contract.mjs.
+  Final build passed seven lifecycle scenarios in each engine (14 total), the
+  actual-phone test, skill action client, syntax and diff checks. Prior .2 legacy
+  image/simulation comparisons were not repeated for this CSS-only fix.
+- Short four-second controlled device scenes measured about 60 FPS; this is not
+  a sustained-play guarantee. Exact metrics and screenshots are under
+  output/feather/device; physical direct-file opening/iPhone remain untested.
+- Hardware procedure and outcomes are documented in FEATHER.md and AGENTS.md.
