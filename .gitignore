@@ -1,0 +1,5 @@
+# Runtime state and local configuration must not enter future commits.
+/highscores-data/
+/highscores.config.php
+/node_modules/
+/output/
