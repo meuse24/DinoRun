@@ -17,7 +17,7 @@ const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output
   engine === 'chromium' ? 'render-cache' : `render-cache-${engine}`);
 fs.mkdirSync(output, { recursive: true });
 const versions = [fs.readFileSync(baselineFile, 'utf8'), fs.readFileSync(path.join(root, 'dino.html'), 'utf8')];
-const browser = await playwright[engine].launch({ headless: true });
+let browser;
 const configs = [
   { name: 'desktop', viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 },
   { name: 'portrait', viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true },
@@ -50,6 +50,9 @@ try {
     let originalTrace;
     const timings = [];
     for (let version = 0; version < 2; version++) {
+      // Isolate long benchmarks and large DPR snapshots: closing a context alone
+      // need not release the browser process's retained graphics resources.
+      browser = await playwright[engine].launch({ headless: true });
       const context = await browser.newContext({ ...options, serviceWorkers: 'block' });
       const page = await context.newPage();
       const errors = [];
@@ -122,13 +125,16 @@ try {
           ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
           ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.restore();
           r.draw(scene.alpha ?? 1);
-          return { image: document.getElementById('canvas').toDataURL(), state: JSON.stringify({
+          return { image: canvas.toDataURL(), canvas: { width: canvas.width, height: canvas.height,
+            contextLost: ctx.isContextLost?.() ?? false }, state: JSON.stringify({
             score: g.score, night: g.nightAlpha, trex: { x: t.x, y: t.y, jumping: t.jumping },
             obstacles: h.obstacles.map(o => [o.type.name, o.x, o.size]),
             particles: r.renderer.effects.particles,
           }) };
         }, scene);
         const filename = `${name}-${scene.name}-${version ? 'after' : 'before'}.png`;
+        assert(snapshot.image.startsWith('data:image/png;base64,'),
+          `${filename}: no Canvas PNG was produced: ${JSON.stringify(snapshot.canvas)}`);
         fs.writeFileSync(path.join(output, filename), Buffer.from(snapshot.image.split(',')[1], 'base64'));
         if (!version) snapshots.push(snapshot);
         else {
@@ -167,8 +173,9 @@ try {
         const r = window.__dinoRunner;
         const randomSource = seed => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
         const g = new r.game.constructor({ random: randomSource(9147), cosmeticRandom: randomSource(284),
-          highScore: 30, featherEnabled: false });
-        const fx = new r.renderer.effects.constructor(new r.renderer.effects.rng.constructor(randomSource(819)));
+          highScore: 30, featherEnabled: false, width: r.game.world?.width ?? 600 });
+        const fx = new r.renderer.effects.constructor(
+          new r.renderer.effects.rng.constructor(randomSource(819)), false, g.world);
         const lifecycle = {};
         g.on(event => {
           lifecycle[event.type] = (lifecycle[event.type] || 0) + 1;
@@ -264,10 +271,12 @@ try {
         maxParticles: checks.maxParticles, lifecycle: checks.lifecycle, cacheChecks: checks.cacheChecks });
       assert.deepEqual(errors, [], `${name}: browser errors`);
       await context.close();
+      await browser.close();
+      browser = null;
     }
     runtime.push({ viewport: name, framesCompared: 12000, timings });
   }
-} finally { await browser.close(); }
+} finally { await browser?.close(); }
 fs.writeFileSync(path.join(output, 'visual-comparison.json'), JSON.stringify(report, null, 2));
 fs.writeFileSync(path.join(output, 'runtime-comparison.json'), JSON.stringify(runtime, null, 2));
 console.log(JSON.stringify({ visualComparisons: report.length, maxChannelDifference: Math.max(...report.map(r => r.max)),

@@ -114,7 +114,8 @@ first-difference JSON is written instead of printing the whole simulation trace.
 ## Verification status
 
 - Feature implementation and embedded help completed in `2026-10-15.2`;
-  current build `2026-10-15.3` includes the physical-phone restart fix below.
+  build `2026-10-15.3` includes the physical-phone restart fix below. The later
+  architecture refactoring is documented separately in `ARCHITECTURE.md`.
 - Feature scenarios passed in Chromium 151.0.7922.34 and WebKit 26.5, each with
   desktop, touch/DPR smartphone portrait and landscape configurations.
 - Covers keyboard repeat/release, mouse/touch/gamepad, collection mid-jump,

@@ -2467,9 +2467,6 @@
           HEIGHT = 220,
           GROUND_Y = 190;
         const PORTRAIT_W = 420;
-        let viewWidth = matchMedia('(max-width:600px) and (orientation:portrait)').matches
-          ? PORTRAIT_W
-          : BASE_W;
         const TIME_EPSILON = 1e-7;
         // Death scene: hit-stop, knock-back and landing, dizzy stars and a rising ghost; the
         // game-over card follows. A new press may skip the rest after DEATH_SKIP_MS.
@@ -2492,7 +2489,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-15.5';
+        const BUILD = '2026-10-15.6';
         const FEATHER = Object.freeze({
           firstSpawnMs: 4000,
           respawnMs: 18000,
@@ -3788,15 +3785,15 @@
         }
 
         // Canvas sizing and collision/drawing helpers.
-        function setCanvasSize(ctx) {
+        function setCanvasSize(ctx, logicalWidth) {
           const rect = gameEl.getBoundingClientRect();
           // Hidden views have no layout size; preserve the backing store until visible.
           if (rect.width <= 0 || rect.height <= 0) return;
           pixelRatio = Math.min(
-            (window.devicePixelRatio || 1) * Math.max(rect.width / viewWidth, 0.5),
+            (window.devicePixelRatio || 1) * Math.max(rect.width / logicalWidth, 0.5),
             4,
           );
-          const width = Math.round(viewWidth * pixelRatio),
+          const width = Math.round(logicalWidth * pixelRatio),
             height = Math.round(HEIGHT * pixelRatio);
           if (canvas.width !== width || canvas.height !== height) {
             canvas.width = width;
@@ -4093,14 +4090,14 @@
         };
 
         class Obstacle {
-          constructor(type, speed, duplicate, rng = new RandomSource()) {
+          constructor(type, speed, duplicate, rng = new RandomSource(), world = { width: BASE_W }) {
             this.rng = rng;
             this.type = type;
             this.width = type.width;
             this.height = type.height;
             this.size = type.name === 'ptero' ? 1 : this.rng.int(1, CONFIG.maxObstacleLength);
             if (speed < type.multipleSpeed) this.size = 1;
-            this.x = viewWidth + 10;
+            this.x = world.width + 10;
             this.y = type.y;
             if (type.name === 'ptero') this.y = [111, 136, 156][this.rng.int(0, 2)];
             this.collisionBoxes = type.boxes;
@@ -4128,8 +4125,9 @@
         }
 
         class Horizon {
-          constructor(rng = new RandomSource(), reducedMotion = false) {
+          constructor(rng = new RandomSource(), world = { width: BASE_W }) {
             this.rng = rng;
+            this.world = world;
             this.obstacles = [];
             this.clouds = [];
             this.stars = [];
@@ -4138,7 +4136,7 @@
             this.seedClouds();
             for (let i = 0; i < 7; i++)
               this.stars.push({
-                x: this.rng.range(0, viewWidth),
+                x: this.rng.range(0, this.world.width),
                 y: this.rng.range(10, 65),
                 s: this.rng.int(1, 2),
                 sway: this.rng.range(0, 6.28),
@@ -4157,11 +4155,11 @@
           }
           seedClouds() {
             const initialCount = 4;
-            const spacing = viewWidth / initialCount;
+            const spacing = this.world.width / initialCount;
             for (let index = 0; index < initialCount; index++) {
               this.spawnCloud();
               const cloud = this.clouds[this.clouds.length - 1];
-              cloud.x = (index + 0.15) * spacing + (cloud.x - viewWidth) * 0.45;
+              cloud.x = (index + 0.15) * spacing + (cloud.x - this.world.width) * 0.45;
               // Keep the outer clouds above the mountains and clear of the start panel.
               if (index === 0 || index === initialCount - 1) {
                 cloud.y = 24 + (cloud.y - 24) * 0.25;
@@ -4170,14 +4168,14 @@
           }
           spawnCloud() {
             // Reuse the position and size samples for layer and opacity.
-            const x = viewWidth + this.rng.range(0, 100);
+            const x = this.world.width + this.rng.range(0, 100);
             const y = this.rng.range(24, GROUND_Y - 22);
             const w = this.rng.range(34, 50);
             this.clouds.push({
               x,
               y,
               w,
-              layer: Math.min(2, Math.floor(((x - viewWidth) / 100) * 3)),
+              layer: Math.min(2, Math.floor(((x - this.world.width) / 100) * 3)),
               opacity: 0.35 + ((w - 34) / 16) * 0.5,
             });
           }
@@ -4192,7 +4190,7 @@
               this.duplicate = 0;
             }
             this.lastType = type.name;
-            const obstacle = new Obstacle(type, speed, this.duplicate, this.rng);
+            const obstacle = new Obstacle(type, speed, this.duplicate, this.rng, this.world);
             obstacle.gap = Math.round(obstacle.gap * gapMultiplier);
             this.obstacles.push(obstacle);
           }
@@ -4205,7 +4203,7 @@
             }
             this.obstacles.length = remaining;
             const last = this.obstacles[this.obstacles.length - 1];
-            if (!spawnBlocked && (!last || last.x + last.width * last.size + last.gap < viewWidth))
+            if (!spawnBlocked && (!last || last.x + last.width * last.size + last.gap < this.world.width))
               this.addObstacle(spawnSpeed, score, gapMultiplier);
           }
           updateScenery(dt, speed) {
@@ -4217,7 +4215,7 @@
             if (!newestCloud) this.spawnCloud();
             else if (
               this.clouds.length < 6 &&
-              newestCloud.x < viewWidth - this.rng.range(100, 300) &&
+              newestCloud.x < this.world.width - this.rng.range(100, 300) &&
               this.rng.next() < 0.02
             )
               this.spawnCloud();
@@ -4247,8 +4245,9 @@
         }
 
         class Effects {
-          constructor(rng = new RandomSource(), reducedMotion = false) {
+          constructor(rng = new RandomSource(), reducedMotion = false, world = { width: BASE_W }) {
             this.rng = rng;
+            this.world = world;
             this.reducedMotion = {
               matches: reducedMotion,
             };
@@ -4343,13 +4342,14 @@
           }
           celebrate() {
             this.recordTime = 2200;
-            this.burst(viewWidth / 2, 55, 48, 'confetti');
+            this.burst(this.world.width / 2, 55, 48, 'confetti');
           }
         }
 
         class ChiliTurbo {
-          constructor(rng = new RandomSource(), reducedMotion = false) {
+          constructor(rng = new RandomSource(), world = { width: BASE_W }) {
             this.rng = rng;
+            this.world = world;
             this.events = [];
             this.reset();
           }
@@ -4419,7 +4419,7 @@
             } else if (!this.remaining) {
               this.spawnTimer -= dt;
               if (this.spawnTimer <= 0) {
-                const spawnX = viewWidth + 24;
+                const spawnX = this.world.width + 24;
                 const safe = obstacles.every(
                   (o) => Math.abs(o.x + (o.width * o.size) / 2 - spawnX) > 160,
                 );
@@ -4433,7 +4433,7 @@
               }
             }
             // Advance over one second; return during the protected final second.
-            const advance = viewWidth / 3;
+            const advance = this.world.width / 3;
             const targetX = TREX_START_X + (this.remaining > 1000 ? advance : 0);
             const step = (advance * dt) / 1000;
             trex.x += clamp(targetX - trex.x, -step, step);
@@ -4444,8 +4444,9 @@
         // One stored rescue jump. Deterministic timing leaves the obstacle/chili
         // random stream alone; pickups are bounded and never stack.
         class JumpFeather {
-          constructor(enabled = true) {
+          constructor(enabled = true, world = { width: BASE_W }) {
             this.enabled = enabled;
+            this.world = world;
             this.reset();
           }
           reset() {
@@ -4489,7 +4490,7 @@
             }
             this.spawnTimer -= dt;
             if (this.spawnTimer <= 0) {
-              const x = viewWidth + 24;
+              const x = this.world.width + 24;
               const safe = obstacles.every((o) =>
                 x + FEATHER.spawnGap < o.x || x - FEATHER.spawnGap > o.x + o.width * o.size,
               ) && (!chiliPickup || Math.abs(chiliPickup.x - x) > FEATHER.spawnGap);
@@ -4509,12 +4510,15 @@
             highScore = 0,
             mode = 'normal',
             featherEnabled = true,
+            width = BASE_W,
           } = {}) {
+            this.world = { width: BASE_W };
+            this.resize(width);
             this.rng = new RandomSource(random);
             this.trex = new Trex(this.rng, reducedMotion, cosmeticRandom);
-            this.horizon = new Horizon(this.rng);
-            this.turbo = new ChiliTurbo(this.rng);
-            this.feather = new JumpFeather(featherEnabled);
+            this.horizon = new Horizon(this.rng, this.world);
+            this.turbo = new ChiliTurbo(this.rng, this.world);
+            this.feather = new JumpFeather(featherEnabled, this.world);
             this.meter = new DistanceMeter();
             this.listeners = new Set();
             this.state = 'attract';
@@ -4538,6 +4542,11 @@
             this.nightAlpha = 0;
             this.previous = {};
             this.capturePrevious();
+          }
+          // Logical dimensions change spawning/rendering without resetting the round.
+          resize(width) {
+            if (!Number.isFinite(width) || width <= 0) throw new RangeError('Invalid world width');
+            this.world.width = width;
           }
           setMode(mode) {
             if (this.playing) return false;
@@ -4779,7 +4788,7 @@
                   this.config.gapMultiplier,
                   // Reserve space behind a feather too, so the next cactus
                   // cannot spawn on top of an already visible collectible.
-                  !!this.feather.pickup && this.feather.pickup.x > viewWidth + 10 - FEATHER.spawnGap,
+                  !!this.feather.pickup && this.feather.pickup.x > this.world.width + 10 - FEATHER.spawnGap,
                 );
                 if (this.feather.update(
                   dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup,
@@ -4833,8 +4842,9 @@
           constructor(ctx, game) {
             this.ctx = ctx;
             this.game = game;
+            this.world = game.world;
             this.darkQuery = matchMedia('(prefers-color-scheme: dark)');
-            this.effects = new Effects(new RandomSource(), game.trex.reducedMotion.matches);
+            this.effects = new Effects(new RandomSource(), game.trex.reducedMotion.matches, this.world);
             this.secondsFormat = new Intl.NumberFormat('en', {
               minimumFractionDigits: 1,
               maximumFractionDigits: 1,
@@ -4894,7 +4904,7 @@
             trex.idleTime = this.idleTime;
             trex.gameTime = this.lerp(game.previous.gameTime, game.gameTime);
             ctx.fillStyle = bg;
-            ctx.fillRect(0, 0, viewWidth, HEIGHT);
+            ctx.fillRect(0, 0, this.world.width, HEIGHT);
             const shake = this.deathShake(game);
             ctx.save();
             if (shake) ctx.translate(shake[0], shake[1]);
@@ -4933,7 +4943,7 @@
               t = go
                 ? (time - game.countdown) / COUNTDOWN_GO_MS
                 : (time % COUNTDOWN_STEP_MS) / COUNTDOWN_STEP_MS,
-              cx = viewWidth / 2,
+              cx = this.world.width / 2,
               cy = 92;
             const easeOutBack = (x) => 1 + 2.7 * (x - 1) ** 3 + 1.7 * (x - 1) ** 2;
             ctx.save();
@@ -5739,11 +5749,11 @@
               earthMark = nightAlpha > 0.5 ? '#6e5440' : '#855d3d';
             ctx.globalAlpha = 1;
             ctx.fillStyle = earth;
-            ctx.fillRect(0, GROUND_Y, viewWidth, HEIGHT - GROUND_Y);
+            ctx.fillRect(0, GROUND_Y, this.world.width, HEIGHT - GROUND_Y);
             ctx.fillStyle = earthEdge;
-            ctx.fillRect(0, GROUND_Y, viewWidth, 1.5);
+            ctx.fillRect(0, GROUND_Y, this.world.width, 1.5);
             let mark = 0;
-            for (let x = -horizon.groundOffset - 24; x < viewWidth + 24; x += 24, mark++) {
+            for (let x = -horizon.groundOffset - 24; x < this.world.width + 24; x += 24, mark++) {
               const pattern = (((horizon.groundIndex + mark - 1) % 4) + 4) % 4;
               ctx.fillStyle = earthMark;
               ctx.fillRect(x, GROUND_Y + 2 + (pattern % 3), 2 + pattern, 1);
@@ -5758,7 +5768,7 @@
               if ((cloud.layer ?? 2) !== layer) continue;
               const view = this.view(cloud);
               if (this.idleTime) {
-                const span = viewWidth + cloud.w * 2;
+                const span = this.world.width + cloud.w * 2;
                 const drift = (this.idleTime / 1000) * (5 + layer * 2);
                 view.x = ((((view.x + cloud.w - drift) % span) + span) % span) - cloud.w;
               }
@@ -5772,7 +5782,7 @@
             // Sun and soft halo, fading as Chromium's night cycle begins.
             const daylight = 1 - nightAlpha,
               sunY = 47 + (this.idleTime ? Math.sin(this.idleTime / 14000) * 6 : 0),
-              sunX = viewWidth - 78 + (this.idleTime ? Math.sin(this.idleTime / 22000) * 20 : 0);
+              sunX = this.world.width - 78 + (this.idleTime ? Math.sin(this.idleTime / 22000) * 20 : 0);
             ctx.globalAlpha = daylight * 0.18;
             ctx.fillStyle = '#ffe59a';
             ctx.beginPath();
@@ -5840,7 +5850,7 @@
             const slot = snow ? 0 : 1;
             let geometry = this.mountainLayers[slot];
             if (
-              !geometry || geometry.tile !== tile || geometry.width !== viewWidth ||
+              !geometry || geometry.tile !== tile || geometry.width !== this.world.width ||
               geometry.base !== base || geometry.peakTop !== peakTop ||
               geometry.peakBottom !== peakBottom || geometry.seed !== seed ||
               geometry.span !== span
@@ -5944,7 +5954,7 @@
                 ],
               });
               // Cover the whole tile's scroll interval, including the offscreen right edge.
-              if (end[0] > viewWidth + span * 2) break;
+              if (end[0] > this.world.width + span * 2) break;
             }
             const outline = new Path2D();
             outline.moveTo(...mountains[0].start);
@@ -6000,7 +6010,7 @@
               }
               faces.push(face);
             }
-            return { tile, width: viewWidth, base, peakTop, peakBottom, seed, span, origin, outline, faces };
+            return { tile, width: this.world.width, base, peakTop, peakBottom, seed, span, origin, outline, faces };
           }
 
           drawCloud(horizon, c, nightAlpha) {
@@ -6045,7 +6055,7 @@
             ctx.save();
             ctx.globalAlpha = a;
             ctx.fillStyle = fg;
-            const moonX = viewWidth - 80 - ((distance * 0.015) % (viewWidth + 80));
+            const moonX = this.world.width - 80 - ((distance * 0.015) % (this.world.width + 80));
             const phase = Math.floor(distance / CONFIG.invertDistance) % 7;
             ctx.beginPath();
             ctx.arc(moonX, 28, 10, 0, Math.PI * 2);
@@ -6058,8 +6068,8 @@
               ctx.globalCompositeOperation = 'source-over';
             }
             for (const s of horizon.stars) {
-              const x = (s.x - distance * 0.01) % (viewWidth + 20);
-              ctx.fillRect(x < 0 ? x + viewWidth + 20 : x, s.y, s.s, s.s);
+              const x = (s.x - distance * 0.01) % (this.world.width + 20);
+              ctx.fillRect(x < 0 ? x + this.world.width + 20 : x, s.y, s.s, s.s);
             }
             ctx.restore();
           }
@@ -6077,9 +6087,9 @@
             const value = hudNumber(score);
             const hi = hudNumber(high);
             if (meter.flash <= 0 || Math.floor(meter.flash / 200) % 2 === 0)
-              ctx.fillText('SC ' + value, viewWidth - 10, 10);
+              ctx.fillText('SC ' + value, this.world.width - 10, 10);
             ctx.textAlign = 'center';
-            ctx.fillText('HI ' + hi, viewWidth / 2, 10);
+            ctx.fillText('HI ' + hi, this.world.width / 2, 10);
             ctx.restore();
           }
 
@@ -6112,13 +6122,13 @@
             ctx.save();
             ctx.globalAlpha = Math.min(1, effects.recordTime / 300);
             ctx.fillStyle = '#173f69';
-            roundedRect(ctx, viewWidth / 2 - 85, 25, 170, 30, 15);
+            roundedRect(ctx, this.world.width / 2 - 85, 25, 170, 30, 15);
             ctx.fill();
             ctx.fillStyle = '#ffd257';
             ctx.font = '800 12px system-ui, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('NEW HIGH SCORE!', viewWidth / 2, 40);
+            ctx.fillText('NEW HIGH SCORE!', this.world.width / 2, 40);
             ctx.restore();
           }
 
@@ -7061,12 +7071,160 @@
           implausible: 'The online list did not accept this score.',
         };
 
-        // Dialog with the two lists and the four-letter name picker. Responses never open it.
-        class HighscoreView {
-          constructor(runner, store = new HighscoreStore(), api = new HighscoreApi()) {
-            this.runner = runner;
+        // Score workflow: owns round identity, qualification and persistence, never DOM.
+        // Callbacks let the coordinator decide dialog timing and the view render state.
+        class HighscoreController {
+          constructor({
+            store = new HighscoreStore(),
+            api = new HighscoreApi(),
+            onEntryReady = () => {},
+            onRecord = () => {},
+          } = {}) {
             this.store = store;
             this.api = api;
+            this.onEntryReady = onEntryReady;
+            this.onRecord = onRecord;
+            this.onChange = () => {};
+            this.online = { normal: { state: 'idle' }, relaxed: { state: 'idle' } };
+            this.roundLeft();
+          }
+          qualifiesForTop10(entries, score) {
+            return score > 0 &&
+              (entries.length < HIGHSCORE_LIST_SIZE || score > entries.at(-1).score);
+          }
+          roundEnded(game, input = 'keyboard', device = 'desktop') {
+            const round = game.score > 0
+              ? Object.freeze({
+                  id: newEntryId(),
+                  mode: game.mode,
+                  score: game.score,
+                  durationMs: Math.max(1, Math.ceil(game.gameTime)),
+                  achievedAt: utcNow(),
+                  device,
+                  input: Object.hasOwn(INPUTS, input) ? input : 'keyboard',
+                })
+              : null;
+            this.pendingRound = round;
+            this.round = null;
+            this.saved = null;
+            this.saving = false;
+            if (!round) return;
+            const online = this.online[round.mode];
+            const onlineEntries = online.state === 'ok'
+              ? online.entries
+              : this.store.cachedOnline(round.mode)?.entries;
+            if (
+              game.score > game.recordAtStart ||
+              this.qualifiesForTop10(this.store.local(round.mode), round.score) ||
+              (onlineEntries && this.qualifiesForTop10(onlineEntries, round.score))
+            ) {
+              this.round = round;
+              this.onEntryReady();
+              return;
+            }
+            // The online list may have changed since it was last viewed. Check it before
+            // ruling out a score that does not qualify on this device.
+            this.api.list(round.mode).then(
+              (data) => {
+                if (this.pendingRound !== round) return;
+                this.store.cacheOnline(round.mode, data.entries);
+                if (!this.qualifiesForTop10(data.entries, round.score)) return;
+                this.round = round;
+                this.onEntryReady();
+              },
+              () => {},
+            );
+          }
+          roundLeft() {
+            this.pendingRound = null;
+            this.round = null;
+            this.saved = null;
+            this.saving = false;
+            this.onChange();
+          }
+          async save(name) {
+            const round = this.round;
+            if (!round || this.saving || this.saved) return null;
+            if (!isHighscoreName(name) || BLOCKED_NAMES.has(name)) return { invalidName: true };
+            this.saving = true;
+            this.onChange();
+            const online = await this.submitOnline(round, name);
+            const current = this.round === round;
+            if (current) {
+              this.saving = false;
+              this.onChange();
+            }
+            if (online.error?.needsNewName) return current ? { invalidName: true } : null;
+            // A confirmed old result still persists, but never changes the new round's UI.
+            const localRank = this.store.addLocal(round.mode, roundEntry(round, name));
+            this.store.lastName = name;
+            this.onRecord(this.describe(online, localRank));
+            if (!current) return null;
+            this.saved = { name, localRank, online };
+            this.onChange();
+            return { round, ...this.saved };
+          }
+          async submitOnline(round, name) {
+            try {
+              const data = await this.api.submit(round, name);
+              this.store.cacheOnline(round.mode, data.entries);
+              this.online[round.mode] = {
+                state: 'ok',
+                entries: data.entries,
+                loadedAt: utcNow(),
+              };
+              return { data };
+            } catch (error) {
+              return { error };
+            }
+          }
+          get canResend() {
+            return !!this.round && !!this.saved?.online.error;
+          }
+          // Same immutable round ID makes a retry idempotent on the server.
+          async retry() {
+            if (!this.canResend || this.saving) return null;
+            const round = this.round, saved = this.saved;
+            this.saving = true;
+            this.onChange();
+            const online = await this.submitOnline(round, saved.name);
+            if (this.round !== round) return null;
+            this.saving = false;
+            saved.online = online;
+            this.onRecord(this.describe(online, saved.localRank));
+            this.onChange();
+            return { round, ...saved };
+          }
+          describe({ data, error }, localRank) {
+            return (
+              (data
+                ? 'online ' + data.status + (data.rank ? ' #' + data.rank : '')
+                : 'online ' + error.kind) +
+              ', local ' +
+              (localRank ? '#' + localRank : 'not ranked')
+            );
+          }
+          async loadOnline(mode, force = false) {
+            const state = this.online[mode];
+            if (state.state === 'loading' || (state.state === 'ok' && !force)) return;
+            this.online[mode] = { ...state, state: 'loading' };
+            this.onChange();
+            try {
+              const data = await this.api.list(mode);
+              this.store.cacheOnline(mode, data.entries);
+              this.online[mode] = { state: 'ok', entries: data.entries, loadedAt: utcNow() };
+            } catch (error) {
+              this.online[mode] = { state: 'error', error };
+            }
+            this.onChange();
+          }
+        }
+
+        // Presentation: score lists, name picker, dialog timing requests and focus.
+        class HighscoreView {
+          constructor(runner, controller) {
+            this.runner = runner;
+            this.controller = controller;
             this.dialog = document.getElementById('scores');
             this.title = document.getElementById('scores-title');
             this.listView = document.getElementById('scores-list-view');
@@ -7082,13 +7240,13 @@
             this.openButton = document.getElementById('scores-open');
             this.mode = 'normal';
             this.source = 'online';
-            this.round = null;
-            this.saved = null;
-            this.saving = false;
             this.highlight = null;
             this.notice = '';
-            this.online = { normal: { state: 'idle' }, relaxed: { state: 'idle' } };
-            this.letters = [...store.lastName];
+            this.letters = [...controller.store.lastName];
+            controller.onChange = () => {
+              this.setSaving(controller.saving);
+              this.render();
+            };
             this.buildPicker();
             this.bindEvents();
           }
@@ -7135,63 +7293,8 @@
             this.dialog.addEventListener('close', () => this.onClose());
             // A returning connection reloads a failed online list, only while it is shown.
             window.addEventListener('online', () => {
-              if (this.dialog.open && this.source === 'online') this.loadOnline(this.mode, true);
+              if (this.dialog.open && this.source === 'online') this.controller.loadOnline(this.mode, true);
             });
-          }
-          // A new entry wins a tied score only when there is still room in the top 10.
-          qualifiesForTop10(entries, score) {
-            return score > 0 &&
-              (entries.length < HIGHSCORE_LIST_SIZE || score > entries.at(-1).score);
-          }
-          // Runner: the crash fixes one immutable round result, including how it was played.
-          roundEnded(game, input = 'keyboard') {
-            const round = game.score > 0
-              ? Object.freeze({
-                  id: newEntryId(),
-                  mode: game.mode,
-                  score: game.score,
-                  durationMs: Math.max(1, Math.ceil(game.gameTime)),
-                  achievedAt: utcNow(),
-                  device: detectDevice(),
-                  input: Object.hasOwn(INPUTS, input) ? input : 'keyboard',
-                })
-              : null;
-            this.pendingRound = round;
-            this.round = null;
-            this.saved = null;
-            this.saving = false;
-            if (!round) return;
-            const online = this.online[round.mode];
-            const onlineEntries = online.state === 'ok'
-              ? online.entries
-              : this.store.cachedOnline(round.mode)?.entries;
-            if (
-              game.score > game.recordAtStart ||
-              this.qualifiesForTop10(this.store.local(round.mode), round.score) ||
-              (onlineEntries && this.qualifiesForTop10(onlineEntries, round.score))
-            ) {
-              this.round = round;
-              return;
-            }
-            // The online list may have changed since it was last viewed. Check it before
-            // ruling out a score that does not qualify on this device.
-            this.api.list(round.mode).then(
-              (data) => {
-                if (this.pendingRound !== round || !game.crashed) return;
-                this.store.cacheOnline(round.mode, data.entries);
-                if (!this.qualifiesForTop10(data.entries, round.score)) return;
-                this.round = round;
-                if (!game.inDeathScene) this.openEntry(document.getElementById('play-again'));
-              },
-              () => {},
-            );
-          }
-          // Runner: start, restart and quit leave the round; late answers no longer touch it.
-          roundLeft() {
-            this.pendingRound = null;
-            this.round = null;
-            this.saved = null;
-            this.saving = false;
           }
           open(opener = this.openButton) {
             this.opener = opener;
@@ -7203,19 +7306,19 @@
             document.getElementById('scores-close').focus();
           }
           openEntry(opener = this.openButton) {
-            if (!this.round || this.saved) return;
+            if (!this.controller.round || this.controller.saved) return;
             this.opener = opener;
             this.listView.hidden = true;
             this.entryView.hidden = false;
             this.title.textContent = 'Highscores';
             this.entryResult.textContent = formatText('{score} points · {mode}', {
-              score: this.round.score,
-              mode: MODE_NAMES[this.round.mode],
+              score: this.controller.round.score,
+              mode: MODE_NAMES[this.controller.round.mode],
             });
             this.entryMessage.textContent = '';
             this.renderLetters();
             // Reopening during a running save keeps the lock.
-            this.setSaving(this.saving);
+            this.setSaving(this.controller.saving);
             this.showModal();
             this.dialog.querySelector('#name-picker button').focus();
           }
@@ -7279,88 +7382,39 @@
             e.preventDefault();
           }
           setSaving(saving) {
-            this.saving = saving;
             this.saveButton.disabled = saving;
             this.saveButton.textContent = saving ? 'Saving…' : 'Save score';
             for (const button of this.dialog.querySelectorAll('#name-picker button'))
               button.disabled = saving;
           }
           async save() {
-            const round = this.round;
-            if (!round || this.saving || this.saved) return;
-            const name = this.letters.join('');
-            if (!isHighscoreName(name) || BLOCKED_NAMES.has(name)) {
+            const result = await this.controller.save(this.letters.join(''));
+            if (result?.invalidName) {
               this.entryMessage.textContent = 'Please choose another name.';
               return;
             }
-            this.setSaving(true);
-            const online = await this.submitOnline(round, name);
-            // Back or Play again during the request: keep the confirmed result, skip the UI.
-            const current = this.round === round;
-            if (current) this.setSaving(false);
-            if (online.error?.needsNewName) {
-              if (current) this.entryMessage.textContent = 'Please choose another name.';
-              return;
-            }
-            const entry = roundEntry(round, name);
-            const localRank = this.store.addLocal(round.mode, entry);
-            this.store.lastName = name;
-            this.runner.report.record('highscore', this.describe(online, localRank));
-            if (!current) return;
-            this.saved = { name, localRank, online };
+            if (!result) return;
             this.runner.draw(1);
-            this.highlight = round.id;
-            this.notice = this.resultText(online, localRank);
+            this.highlight = result.round.id;
+            this.notice = this.resultText(result.online, result.localRank);
             this.showList();
-            this.show(round.mode, online.data ? 'online' : 'local', false);
+            this.show(result.round.mode, result.online.data ? 'online' : 'local', false);
             if (this.dialog.open) document.getElementById('scores-close').focus();
           }
-          async submitOnline(round, name) {
-            try {
-              const data = await this.api.submit(round, name);
-              this.store.cacheOnline(round.mode, data.entries);
-              this.online[round.mode] = {
-                state: 'ok',
-                entries: data.entries,
-                loadedAt: utcNow(),
-              };
-              return { data };
-            } catch (error) {
-              return { error };
-            }
-          }
-          get canResend() {
-            return !!this.round && !!this.saved?.online.error;
-          }
-          // Resends only the current round (same ID, so never a second entry).
           async retry() {
-            if (!this.canResend) return;
-            if (this.saving) return;
-            const round = this.round;
-            this.saving = this.retryButton.disabled = true;
+            if (!this.controller.canResend || this.controller.saving) return;
+            const pending = this.controller.retry();
             this.status.textContent = 'Sending…';
-            const online = await this.submitOnline(round, this.saved.name);
-            this.saving = this.retryButton.disabled = false;
-            if (this.round !== round) return;
-            this.saved.online = online;
-            this.runner.report.record('highscore', this.describe(online, this.saved.localRank));
-            this.notice = this.resultText(online, this.saved.localRank);
-            this.show(round.mode, online.data ? 'online' : 'local', false);
-          }
-          describe({ data, error }, localRank) {
-            return (
-              (data
-                ? 'online ' + data.status + (data.rank ? ' #' + data.rank : '')
-                : 'online ' + error.kind) +
-              ', local ' +
-              (localRank ? '#' + localRank : 'not ranked')
-            );
+            const result = await pending;
+            if (!result) return;
+            this.notice = this.resultText(result.online, result.localRank);
+            this.show(result.round.mode, result.online.data ? 'online' : 'local', false);
           }
           resultText({ data, error }, localRank) {
             const local = localRank
               ? formatText('Saved on this device: rank {rank}.', { rank: localRank })
               : 'Not in the local top 10.';
-            const session = this.store.persistent ? '' : ' Only until this page is closed.';
+            const session = this.controller.store.persistent ? '' : ' Only until this page is closed.';
             if (data) {
               return (
                 (data.rank
@@ -7382,21 +7436,7 @@
             if (!this.listView.hidden) this.title.textContent = 'Highscores';
             for (const button of this.dialog.querySelectorAll('[data-source]'))
               button.setAttribute('aria-pressed', String(button.dataset.source === source));
-            if (source === 'online' && reload) this.loadOnline(mode);
-            this.render();
-          }
-          async loadOnline(mode, force = false) {
-            const state = this.online[mode];
-            if (state.state === 'loading' || (state.state === 'ok' && !force)) return;
-            this.online[mode] = { ...state, state: 'loading' };
-            this.render();
-            try {
-              const data = await this.api.list(mode);
-              this.store.cacheOnline(mode, data.entries);
-              this.online[mode] = { state: 'ok', entries: data.entries, loadedAt: utcNow() };
-            } catch (error) {
-              this.online[mode] = { state: 'error', error };
-            }
+            if (source === 'online' && reload) this.controller.loadOnline(mode);
             this.render();
           }
           // Icons for device and controls; older entries without labels stay empty.
@@ -7426,13 +7466,13 @@
             let entries = [],
               status = '';
             if (online) {
-              const state = this.online[this.mode];
+              const state = this.controller.online[this.mode];
               if (state.state === 'ok') entries = state.entries;
               else if (state.state === 'loading') {
                 status = 'Loading online scores…';
                 entries = state.entries || [];
               } else if (state.state === 'error') {
-                const cache = this.store.cachedOnline(this.mode);
+                const cache = this.controller.store.cachedOnline(this.mode);
                 status =
                   (HIGHSCORE_PROBLEMS[state.error.kind] || HIGHSCORE_PROBLEMS.server) +
                   (cache
@@ -7444,14 +7484,15 @@
                 entries = cache ? cache.entries : [];
               }
             } else {
-              entries = this.store.local(this.mode);
-              if (!this.store.persistent)
+              entries = this.controller.store.local(this.mode);
+              if (!this.controller.store.persistent)
                 status = 'Browser storage is blocked: local scores last until this page closes.';
             }
             if (!entries.length && !status && !this.notice)
               status = online ? 'No online scores yet.' : 'No scores on this device yet.';
             this.status.textContent = this.notice || status;
-            this.retryButton.hidden = !this.canResend;
+            this.retryButton.hidden = !this.controller.canResend;
+            this.retryButton.disabled = this.controller.saving;
             this.table.hidden = entries.length === 0;
             this.rows.replaceChildren(
               ...entries.map((entry, i) => {
@@ -7746,6 +7787,8 @@
               highScore: this.readHighScore(this.modeSelect.value),
               reducedMotion: this.browser.motionQuery.matches,
               featherEnabled: testHooks.featherEnabled !== false,
+              width: matchMedia('(max-width:600px) and (orientation:portrait)').matches
+                ? PORTRAIT_W : BASE_W,
             });
             this.renderer = new Renderer(context, this.game);
             this.game.on((event) => this.handleEvent(event));
@@ -7754,7 +7797,14 @@
             this.input = new InputController(this);
             this.gamepad = new GamepadController(this);
             this.report = new TestReport(this);
-            this.highscores = new HighscoreView(this);
+            this.highscoreController = new HighscoreController({
+              onEntryReady: () => {
+                if (this.game.crashed && !this.game.inDeathScene)
+                  this.highscores.openEntry(document.getElementById('play-again'));
+              },
+              onRecord: (detail) => this.report.record('highscore', detail),
+            });
+            this.highscores = new HighscoreView(this, this.highscoreController);
             this.sound.onState = (state) => this.report.record('audio', state);
             this.lastTime = null;
             this.paused = false;
@@ -7857,8 +7907,8 @@
           }
           resize() {
             this.renderer.compactHud = matchMedia('(max-width:600px) and (orientation:portrait)').matches;
-            viewWidth = this.renderer.compactHud ? PORTRAIT_W : BASE_W;
-            setCanvasSize(this.renderer.ctx);
+            this.game.resize(this.renderer.compactHud ? PORTRAIT_W : BASE_W);
+            setCanvasSize(this.renderer.ctx, this.game.world.width);
             this.report.size();
             if (this.paused && !pageEl.hidden) this.draw(1);
           }
@@ -7937,7 +7987,7 @@
               case 'start':
               case 'restart':
                 this.sound.stopDeath();
-                this.highscores.roundLeft();
+                this.highscoreController.roundLeft();
                 this.inputUse = {};
                 this.updateMusic();
                 this.sessionView.hintUntil = 0;
@@ -7978,7 +8028,7 @@
                 effects.burst(game.trex.x + 28, game.trex.y + 25, 20, 'impact');
                 pageEl.classList.remove('running');
                 this.saveHighScore();
-                this.highscores.roundEnded(game, this.mainInput());
+                this.highscoreController.roundEnded(game, this.mainInput(), detectDevice());
                 this.announce(
                   formatText('Game over. Score {score}. Tap or press Space to restart.', event),
                 );
@@ -7988,7 +8038,7 @@
                 break;
               case 'deathSceneEnd':
                 // Menu music waits for the end of the death scene.
-                if (this.highscores.round)
+                if (this.highscoreController.round)
                   this.highscores.openEntry(document.getElementById('play-again'));
                 this.updateMusic();
                 break;
@@ -8023,7 +8073,7 @@
           quit() {
             if (this.ended) return;
             this.ended = true;
-            this.highscores.roundLeft();
+            this.highscoreController.roundLeft();
             this.sound.enabled = false;
             this.sound.updateButton();
             this.sound.discard();
@@ -8048,7 +8098,7 @@
             this.browser.focused = document.hasFocus();
             this.prepareRound();
             this.game.newSession();
-            this.highscores.roundLeft();
+            this.highscoreController.roundLeft();
             this.input.reset();
             this.duckSources.clear();
             this.inputUse = {};

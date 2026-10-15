@@ -27,7 +27,7 @@ const advance = (page, frames, hazards = false) => page.evaluate(({ frames, haza
 }, { frames, hazards });
 const prepare = page => page.evaluate(() => {
   const r = window.__dinoRunner, g = r.game;
-  r.highscores.roundLeft();
+  r.highscoreController.roundLeft();
   g.newSession();
   g.beginRound(0);
   g.endJump();

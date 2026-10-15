@@ -17,6 +17,9 @@ There is no build step, package manifest, or configured linter. Use modern Node.
 - `node tests/game-contract.mjs`: run baseline-independent lifecycle, score-rule,
   standalone offline file and hosted offline installation checks. It starts its
   own fixture server and never contacts the live highscore service.
+- `node tests/architecture.mjs`: check the highscore workflow without a DOM,
+  deferred responses/retries, independent world widths, mobile rotation and
+  automatic name-dialog timing. Also accepts `DINO_BROWSER=webkit`.
 - `node tests/skill-client.mjs`: run the installed develop-web-game Playwright
   client against a deterministic fixture with online scores disabled.
 - `node tests/jump-feather.mjs`: check feather pickups, all input methods,
@@ -51,3 +54,14 @@ Use Git with short imperative commit subjects, such as `Fix mountain snow contou
 ## Configuration & Data
 
 Keep secrets and mutable score data out of contributions. Configure storage through `highscores.config.php` or `DINO_HIGHSCORES_CONFIG`; prefer a data directory outside the web root. Preserve locking and atomic file replacement.
+
+## Embedded Architecture
+
+- `Game.world` owns logical width; change it through `Game.resize(width)`. Pass
+  this world explicitly to simulation entities, renderer and effects. Browser
+  orientation detection belongs to the coordinator, not the simulation.
+- `HighscoreController` owns round identity, qualification, persistence, online
+  loading and retries. It has injected store/API dependencies and no DOM access.
+- `HighscoreView` owns dialog rendering, name input and focus. `Runner` decides
+  when eligibility may open the dialog, including after the death scene.
+- See `ARCHITECTURE.md` for the scoped design and validation procedure.

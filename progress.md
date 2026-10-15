@@ -220,3 +220,44 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   a sustained-play guarantee. Exact metrics and screenshots are under
   output/feather/device; physical direct-file opening/iPhone remain untested.
 - Hardware procedure and outcomes are documented in FEATHER.md and AGENTS.md.
+
+## 2026-10-15: Scoped architecture refactoring
+
+- User authorized extracting the highscore workflow and making world width explicit, followed by a Git commit. Plan and boundaries: ARCHITECTURE.md.
+- Baseline: f74c0b8, saved under output/architecture/baseline.html. Keep the single HTML, appearance, gameplay rules and automatic name-dialog timing.
+- Build 2026-10-15.6: HighscoreController owns immutable rounds, top-10
+  qualification, save/retry locks, online loading and store/API coordination.
+  HighscoreView now handles DOM/input/focus; Runner controls automatic entry
+  timing. Device detection stays in Runner. No backend changes.
+- A late retry cannot clear the lock of a newer round's save. Confirmed old
+  saves still persist locally without changing the new round's dialog.
+- Game owns world.width, explicitly shared with Horizon, ChiliTurbo,
+  JumpFeather, Renderer and Effects. Obstacle creation and Canvas sizing receive
+  dimensions explicitly. Game.resize validates width and does not reset a round.
+- Added tests/architecture.mjs: the actual controller runs in a Node VM without
+  window/document/navigator; injected stores/deferred APIs cover qualification,
+  ties, cancellation, blocked names, local fallback, duplicate save/retry locks,
+  same-ID retries, stale responses and online refresh. Browser tests cover two
+  independent worlds, resize/rotation and automatic dialogs for qualification
+  arriving before/after the death scene. All 11 scenarios pass in both engines.
+- Existing lifecycle/offline/file tests pass all seven scenarios per engine;
+  feather controls/physics/help pass desktop and mobile portrait/landscape in
+  Chromium 151.0.7922.34 and WebKit 26.5. No uncaught browser errors.
+- Ran the installed develop-web-game client; inspected gameplay, charged feather
+  and automatic name-dialog screenshots in both engines. HTML/CSS/icons/help
+  before the game script are unchanged from the verified Git baseline.
+- Chromium comparison passed 70 pixel-identical scenes and five matching
+  12,000-frame simulation/effect traces. Legacy fixtures now pass width/world
+  explicitly to separately created models; equality and visual tolerances stay
+  unchanged. Initial WebKit comparison produced one empty Canvas PNG; added
+  dimension/context-loss diagnostics. The long shared-process run reproduced
+  the empty export (1098x575, contextLost=false); fresh-browser probes exported
+  both versions correctly. Isolated each comparison version/configuration in a
+  fresh browser process, keeping all workloads/tolerances. Final Chromium and
+  WebKit reruns passed: 70 pixel-identical scenes and five equal 12,000-frame
+  traces per engine (140 scenes, 120,000 frame advances per version in total).
+- Docs: ARCHITECTURE.md and AGENTS.md. Artifacts: output/architecture and
+  output/feather. Android preview remains stopped; no physical-phone rerun or
+  live highscore requests. Inline syntax, Node syntax and diff checks pass.
+- Final verification completed on 2026-10-16; aggregate:
+  output/architecture/verification.json. No required tasks remain before commit.

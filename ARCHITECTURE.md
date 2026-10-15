@@ -1,0 +1,71 @@
+# Embedded game architecture
+
+The game remains one HTML file, with no build step or required runtime imports.
+The optional song and hosted installation assets keep their existing roles.
+
+## Refactoring plan (2026-10-15)
+
+1. Move score qualification, round lifetime, saving, retries and online loading
+   from `HighscoreView` to a DOM-independent `HighscoreController`. Keep dialog
+   timing, focus, labels and rendering in the view/coordinator.
+2. Replace the mutable global `viewWidth` with a world owned by each `Game`.
+   Pass that world explicitly to its entities and renderer/effects. Route browser
+   orientation changes through `Game.resize(width)` without resetting the round.
+3. Test deferred score responses and independent game sizes, then run the
+   existing Chromium/WebKit lifecycle, mobile and visual/deterministic checks.
+   Run the develop-web-game action client and inspect screenshots.
+4. Record results in `progress.md` and commit the reviewed change.
+
+## Boundaries
+
+- `Game` and its entities own fixed-step simulation and logical world dimensions.
+- `Renderer` reads the simulation; its effects and caches remain presentation.
+- `HighscoreController` coordinates `HighscoreStore` and `HighscoreApi`; view
+  changes and round eligibility are reported through callbacks.
+- `HighscoreView` owns DOM rendering, name-picker input, dialog and focus.
+- `Runner` connects these components and the browser/input/audio adapters.
+
+No framework, dependency container, general event bus or additional packaging is
+needed for these two boundaries.
+
+## Validation
+
+Use `DINO_PLAYWRIGHT` to select an installed Playwright ESM entry if needed.
+Run these commands with the default Chromium, then with `DINO_BROWSER=webkit`:
+
+```powershell
+node tests/architecture.mjs
+node tests/game-contract.mjs
+node tests/jump-feather.mjs
+node tests/render-cache.mjs output/architecture/baseline.html
+```
+
+Before editing, save the baseline HTML from Git (this refactoring uses
+`f74c0b8:dino.html`). The comparison script requires that saved file; the other
+tests do not. On this Windows installation, WebKit needs
+`PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1` to bypass its broken host validator;
+tests still launch the actual WebKit engine. See `FEATHER.md` for setup details.
+
+Run `node tests/skill-client.mjs` for the installed develop-web-game action loop.
+Set `DINO_TEST_OUTPUT=output/architecture` for lifecycle, comparison and client
+artifacts; the architecture tests add engine subdirectories. Feather tests write
+to `output/feather`. All tests isolate or disable live highscore requests.
+
+Workflow cases cover qualification/ties, cancellation, duplicate submission,
+local fallback, rejected names, retries using the same round ID, late responses
+during a new save, and online-list refresh. Integration cases verify that both
+early and late online qualification automatically open the name dialog only
+after the death animation. Rotation preserves score, timers and powerups.
+
+The visual comparison uses a fresh browser process for each version/configuration
+to isolate its long benchmarks and graphics resources. PNG exports are checked
+before decoding, including dimensions/context-loss diagnostics on failure. Image
+tolerances and deterministic trace comparisons are unchanged.
+
+Build `2026-10-15.6` passed final verification on 2026-10-16 in Chromium
+151.0.7922.34 and WebKit 26.5: 11 architecture scenarios and seven lifecycle
+scenarios per engine, feather tests in three layouts per engine, and the skill
+action client. All 140 comparison scenes are pixel-identical to `f74c0b8`;
+five 12,000-frame simulation/effect traces per engine match the baseline.
+Screenshots were inspected. No physical-device rerun was performed for this
+refactoring; the Android preview remains stopped.

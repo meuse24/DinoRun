@@ -200,12 +200,12 @@ try {
     // Force an API error through an injected fetch, never the real server.
     await page.evaluate(() => {
       const view = window.__dinoRunner.highscores;
-      view.api.url = 'https://scores.invalid/highscores.php';
+      view.controller.api.url = 'https://scores.invalid/highscores.php';
       view.letters = [...'TEST'];
       return view.save();
     });
     assert.equal(await page.evaluate(() => window.__contractRequests), 1);
-    assert.equal(await page.evaluate(() => window.__dinoRunner.highscores.store.local('normal')[0].score), 12);
+    assert.equal(await page.evaluate(() => window.__dinoRunner.highscoreController.store.local('normal')[0].score), 12);
     assert.equal(await page.evaluate(() => window.__dinoRunner.highscores.source), 'local');
     await page.locator('#scores-close').click();
     await page.waitForFunction(() => !window.__dinoRunner.paused);
