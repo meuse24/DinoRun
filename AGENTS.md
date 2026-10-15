@@ -19,11 +19,18 @@ There is no build step, package manifest, or configured linter. Use modern Node.
   own fixture server and never contacts the live highscore service.
 - `node tests/skill-client.mjs`: run the installed develop-web-game Playwright
   client against a deterministic fixture with online scores disabled.
+- `node tests/jump-feather.mjs`: check feather pickups, all input methods,
+  charge/physics/lifecycle/help and phone portrait/landscape emulation using an
+  isolated standalone file. Set `DINO_BROWSER=webkit` for the WebKit run;
+  `game-contract.mjs` also accepts `DINO_BROWSER`.
 - `php -l highscores-lib.php`: check PHP syntax; repeat for other changed PHP files.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
 - Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.
   Keep the game in one self-contained HTML, with no required sibling assets for
   `file://` play. The menu song is optional; hosted PWA assets remain separate.
+- See `FEATHER.md` for the tested engine versions, Windows WebKit harness
+  workarounds and repeatable compatibility commands. Report emulator results
+  separately from physical-device verification.
 
 ## Coding Style & Naming Conventions
 

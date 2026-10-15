@@ -11,7 +11,7 @@ import { pathToFileURL } from 'node:url';
 const root = path.resolve(import.meta.dirname, '..');
 const skillRoot = path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'skills/develop-web-game');
 const client = path.join(skillRoot, 'scripts/web_game_playwright_client.js');
-const output = path.join(root, 'output/refactoring/skill-client');
+const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/refactoring'), 'skill-client');
 fs.mkdirSync(output, { recursive: true });
 for (const name of fs.readdirSync(output).filter(name => /^errors-\d+\.json$/.test(name)))
   fs.unlinkSync(path.join(output, name));

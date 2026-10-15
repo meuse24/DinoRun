@@ -59,7 +59,8 @@ try {
         let seed = 937;
         const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
         Math.random = random;
-        window.__dinoTest = { random, now: () => 1000, highscoreApiUrl: null };
+        // Compare the established game without the intentionally new pickup.
+        window.__dinoTest = { random, now: () => 1000, highscoreApiUrl: null, featherEnabled: false };
         window.requestAnimationFrame = () => 0;
       });
       await page.goto(url, { waitUntil: 'load' });
@@ -165,7 +166,8 @@ try {
       const checks = await page.evaluate(version => {
         const r = window.__dinoRunner;
         const randomSource = seed => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
-        const g = new r.game.constructor({ random: randomSource(9147), cosmeticRandom: randomSource(284), highScore: 30 });
+        const g = new r.game.constructor({ random: randomSource(9147), cosmeticRandom: randomSource(284),
+          highScore: 30, featherEnabled: false });
         const fx = new r.renderer.effects.constructor(new r.renderer.effects.rng.constructor(randomSource(819)));
         const lifecycle = {};
         g.on(event => {
@@ -245,7 +247,13 @@ try {
       }, version);
       if (!version) originalTrace = checks.trace;
       else {
-        assert.equal(checks.trace, originalTrace, `${name}: deterministic simulation/effects changed`);
+        const expected = JSON.parse(originalTrace), actual = JSON.parse(checks.trace);
+        assert.equal(actual.length, expected.length, `${name}: simulation trace length changed`);
+        const firstDifference = expected.findIndex((sample, i) => sample !== actual[i]);
+        if (firstDifference !== -1) fs.writeFileSync(path.join(output, `${name}-trace-difference.json`),
+          JSON.stringify({ sample: firstDifference,
+            before: JSON.parse(expected[firstDifference]), after: JSON.parse(actual[firstDifference]) }, null, 2));
+        assert.equal(firstDifference, -1, `${name}: deterministic simulation/effects changed; inspect trace-difference.json`);
         assert(checks.maxParticles <= 100 && checks.reusedArrays, `${name}: particle cap or array reuse failed`);
         assert(checks.lifecycle.crash > 0 && checks.lifecycle.restart > 0 && checks.lifecycle.landings > 0,
           `${name}: missing lifecycle coverage`);

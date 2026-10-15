@@ -160,3 +160,33 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   differences. Physical Android/iPhone hardware remains untested.
 - General regressions in progress: 70 scenes and five 12,000-frame traces per
   engine against 10b7c4b, with new spawning disabled via a test-only hook.
+
+## 2026-10-15: Feather compatibility and regression verification
+
+- Final feature runs passed on Chromium 151.0.7922.34 and WebKit 26.5: desktop,
+  smartphone portrait and smartphone landscape per engine, with actual touch
+  controls plus keyboard/mouse and simulated gamepad rising-edge inputs.
+- Final general game-contract runs passed all six scenarios per engine (12
+  total), including the isolated single-file game, blocked storage, embedded
+  help/direct links, saved records, service-worker fallback with missing music
+  and the real rAF pause/resume loop. No uncaught page errors.
+- Ran the actual develop-web-game client after implementation and final visual
+  adjustment. Inspected normal gameplay, pickup/charge/air-jump and mobile help
+  screenshots in both engines. The charge badge stays clear of the dino's face;
+  the ready hint is hidden immediately on use. Syntax and diff checks passed.
+- The initial legacy comparison exposed a fixture setup issue: its separately
+  constructed simulation still enabled the new feather, so new gameplay rightly
+  diverged. Explicitly disabled feather in both legacy fixtures; feature tests
+  keep it enabled. On mismatch, the test now writes a compact first differing
+  state, with unchanged equality/visual tolerances.
+- Chromium legacy regression passed: all 70 scenes pixel-identical, all five
+  12,000-frame simulation/effect traces equal to Git baseline 10b7c4b.
+- Final WebKit legacy comparison passed as well: all 70 scenes pixel-identical
+  and all five 12,000-frame traces match. Across both engines: 140 identical
+  scenes and 120,000 simulation advances per version; cache/particle checks pass.
+- Verified the saved baseline is byte-identical to git show 10b7c4b:dino.html.
+  Aggregated final results: output/feather/verification.json. Reports, screenshots
+  and engine/harness details are documented in FEATHER.md and test commands in
+  AGENTS.md. No live highscore requests, mutable data changes or deployment.
+- All requested work completed. No remaining required implementation or testing
+  tasks. Physical Android/iPhone hardware testing is outside the emulation run.

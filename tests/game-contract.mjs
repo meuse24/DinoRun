@@ -10,9 +10,10 @@ import vm from 'node:vm';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
+const engine = process.env.DINO_BROWSER || 'chromium';
 const source = fs.readFileSync(process.argv[2] || path.join(root, 'dino.html'), 'utf8');
 const php = fs.readFileSync(path.join(root, 'highscores-lib.php'), 'utf8');
-const output = path.join(root, 'output/refactoring/contract');
+const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/refactoring'), `contract-${engine}`);
 fs.mkdirSync(output, { recursive: true });
 for (const [, script] of source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/g))
   new vm.Script(script);
@@ -35,7 +36,9 @@ const phpSpeeds = Object.fromEntries([...php.match(/const DINO_MAX_SPEED = \[(.+
 const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-contract-'));
 const file = path.join(isolated, 'dino.html');
 fs.writeFileSync(file, source);
+let networkDown = false;
 const server = http.createServer((request, response) => {
+  if (networkDown) { request.socket.destroy(); return; }
   if (request.url === '/dino.html') {
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(source);
@@ -50,7 +53,7 @@ const server = http.createServer((request, response) => {
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const url = `http://127.0.0.1:${server.address().port}/dino.html`;
-const { chromium } = await import(process.env.DINO_PLAYWRIGHT
+const playwright = await import(process.env.DINO_PLAYWRIGHT
   ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
 let browser;
 const report = [];
@@ -61,7 +64,7 @@ const advance = (page, ms) => page.evaluate(ms => {
 }, ms);
 
 try {
-  browser = await chromium.launch({ headless: true });
+  browser = await playwright[engine].launch({ headless: true });
   for (const config of [
     { name: 'desktop', viewport: { width: 1280, height: 720 } },
     { name: 'portrait', viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 3 },
@@ -71,7 +74,7 @@ try {
   ]) {
     const { name, file: useFile, blocked, ...options } = config;
     const context = await browser.newContext({ ...options, serviceWorkers: 'block' });
-    if (useFile) await context.setOffline(true);
+    if (useFile && engine !== 'webkit') await context.setOffline(true);
     const page = await context.newPage();
     const errors = [];
     const network = [];
@@ -107,6 +110,7 @@ try {
       }
     }, { blocked: !!blocked });
     await page.goto(useFile ? pathToFileURL(file).href : url, { waitUntil: 'load' });
+    if (useFile && engine === 'webkit') await context.setOffline(true);
     await page.waitForFunction(() => !!window.__dinoRunner);
     assert.equal((await state(page)).state, 'attract', name);
     assert.equal((await state(page)).paused, false, name);
@@ -227,14 +231,18 @@ try {
     await page.screenshot({ path: path.join(output, `${name}-reset.png`) });
     if (useFile) {
       // A shared direct Help link has no in-game history entry to go back to.
+      if (engine === 'webkit') await context.setOffline(false);
       await page.goto(pathToFileURL(file).href + '#info', { waitUntil: 'load' });
+      if (engine === 'webkit') await context.setOffline(true);
       await page.waitForFunction(() => !!window.__dinoRunner?.paused);
       await page.frameLocator('#info-view').locator('[data-help-back]').first().click();
       await page.waitForFunction(() => location.hash === '#game' && !window.__dinoRunner.paused);
       assert.equal((await state(page)).state, 'attract');
     }
     if (!blocked) {
+      if (useFile && engine === 'webkit') await context.setOffline(false);
       await page.reload({ waitUntil: 'load' });
+      if (useFile && engine === 'webkit') await context.setOffline(true);
       assert.equal((await state(page)).mode, 'relaxed');
       assert.equal(await page.evaluate(() => window.__dinoRunner.readHighScore('normal')), 12,
         'Per-mode records survive reload');
@@ -262,7 +270,10 @@ try {
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
   assert.equal(await page.locator('link[rel="manifest"]').getAttribute('href'), 'manifest.webmanifest');
-  await context.setOffline(true);
+  // The Windows WebKit port fails main navigations with its offline flag even
+  // when a service worker controls the page. Simulate an unreachable origin.
+  if (engine === 'webkit') networkDown = true;
+  else await context.setOffline(true);
   await page.reload({ waitUntil: 'load' });
   await page.waitForFunction(() => !!window.__dinoRunner);
   await page.locator('#game').focus();
@@ -276,7 +287,8 @@ try {
   await page.waitForFunction(before => window.__dinoGame.gameTime > before, frozenTime);
   await page.screenshot({ path: path.join(output, 'hosted-offline-playing.png') });
   assert.deepEqual(errors, [], 'Hosted offline reload and real frame loop');
-  report.push({ name: 'hosted-offline', lifecycle: 'passed', offline: true, realFrames: true, errors });
+  report.push({ name: 'hosted-offline', lifecycle: 'passed', offline: true, realFrames: true,
+    networkFailure: engine === 'webkit' ? 'origin socket closed' : 'browser offline flag', errors });
   await context.close();
   fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report, null, 2));
   console.log(`Passed inline syntax, client/server constants and ${report.length} browser lifecycle scenarios.`);
