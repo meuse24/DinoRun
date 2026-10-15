@@ -124,3 +124,39 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   refactor/single-html. No deployment performed.
 - Remaining required work: none. Safari/iOS hardware remains untested; no
   performance gain is claimed for this structural refactoring.
+
+## 2026-10-15: Jump feather implementation (build 2026-10-15.2)
+
+- User requested the proposed single-charge feather powerup, a plan, updated
+  embedded help, documentation/tests/Git, plus smartphone emulation and WebKit.
+- Applied develop-web-game skill; reviewed MDN's game-loop guidance. Plan:
+  FEATHER.md. Branch: feature/jump-feather; baseline implementation: 10b7c4b.
+- Added JumpFeather with deterministic eligibility/cooldown, swept-AABB pickup,
+  no stacking/expiry and one stored air jump. Ground jumps/landing preserve it;
+  death, restart and new session clear it. No new gameplay RNG consumption.
+- Added a bounded Trex.airJump impulse through the existing Game.jump command.
+  Retained ordinary jumps/landing buffer, input rising-edge behavior, speed,
+  scoring and collision rules. Chili can coexist; no immunity is added.
+- Feather spawn checks follow the horizon update and reserve space behind the
+  pickup, preventing future cacti from spawning onto it. Retry unsafe slots.
+- Inline Canvas feather badge/collectible, capped turquoise burst feedback,
+  collection/use audio and accessible announcements; reduced motion suppresses
+  particles. Readiness hint is dismissed as soon as the charge is spent.
+- Added the Jump feather help card with every control, persistence/consumption,
+  non-stacking, limits and Chili interaction. Extended text state with feather.
+- Added tests/jump-feather.mjs: real keyboard/pointer/touch and gamepad edges,
+  normal/air/third jumps, pickup mid-jump, no stacking, swept collection, RNG
+  isolation, spawn/cooldown/reserved corridor, natural scrolling collection,
+  Chili, pause, orientation, reduced motion, altitude and death/reset/help.
+- Initial feature tests passed in Chromium 151.0.7922.34 and WebKit 26.5 for
+  desktop plus Android/iPhone-style touch/DPR portrait and landscape emulation.
+- WebKit's preinstalled host dependency validator failed with spawn UNKNOWN.
+  Actual WebKit 26.5 launches successfully when the validator is skipped using
+  PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1. Real browser tests then run.
+- Windows WebKit's offline flag rejects initial file navigation and offline
+  service-worker main navigation. HTTP is blocked before file load, then the
+  flag is enabled; hosted offline tests close origin sockets instead. Both
+  engines passed the six core lifecycle scenarios with these documented harness
+  differences. Physical Android/iPhone hardware remains untested.
+- General regressions in progress: 70 scenes and five 12,000-frame traces per
+  engine against 10b7c4b, with new spawning disabled via a test-only hook.
