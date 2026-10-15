@@ -44,12 +44,24 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Dino Run" />
-    <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
-    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <script>
       (() => {
+        // Installation assets belong to hosted mode. A copied file has its own
+        // embedded tab icon and never requests a sibling manifest or icon file.
+        const hosted = /^https?:$/.test(location.protocol);
+        const links = hosted
+          ? [
+              { rel: 'manifest', href: 'manifest.webmanifest' },
+              { rel: 'icon', type: 'image/png', sizes: '192x192', href: 'icon-192.png' },
+              { rel: 'icon', type: 'image/png', sizes: '512x512', href: 'icon-512.png' },
+              { rel: 'apple-touch-icon', sizes: '180x180', href: 'icon-180.png' },
+            ]
+          : [{ rel: 'icon', type: 'image/png', sizes: '192x192', href: 'data:image/png;base64,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' }];
+        for (const attributes of links) {
+          const link = document.createElement('link');
+          for (const [name, value] of Object.entries(attributes)) link.setAttribute(name, value);
+          document.head.append(link);
+        }
         const appOrigin =
           location.protocol === 'https:' ||
           (location.protocol === 'http:' &&
@@ -2554,6 +2566,12 @@
       (() => {
         'use strict';
 
+        // Embedded components (one classic script; no imports or build step):
+        // Configuration/utilities -> preferences -> fullscreen/audio/diagnostics
+        // -> simulation/entities -> renderer -> input/session UI -> highscores
+        // -> BrowserLifecycle/GamePage -> Runner -> bootstrap/test hooks.
+
+        // Configuration and shared utilities.
         const formatText = (text, values) =>
           text.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? '{' + key + '}'));
         const FPS = 60,
@@ -2588,7 +2606,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-13.2';
+        const BUILD = '2026-10-15.1';
         const SPARK_COLORS = ['#ffb83e', '#ed6431', '#fff0a5'];
         const CONFETTI_COLORS = ['#e67842', '#ffd257', '#45b86f', '#7278bd', '#fff'];
         // Cloud ellipses use fractions of the cloud width: center x/y, radius x/y.
@@ -2698,6 +2716,7 @@
         const TREX_START_X = 50;
         const hudNumber = (value) => String(Math.min(99999, value)).padStart(5, '0');
 
+        // Preferences and storage.
         // Storage may be unavailable (for example, when browser privacy settings block it).
         // Missing and unreadable values share the same defaults; writes are best effort.
         const preferences = {
@@ -2719,6 +2738,42 @@
           },
         };
 
+        // Saved game selection and per-mode records. Keep a session fallback when
+        // file/privacy settings deny storage, using the existing storage keys.
+        class GamePreferences {
+          constructor(storage = preferences) {
+            this.storage = storage;
+            this.memory = new Map();
+          }
+          read(key) {
+            return this.memory.has(key) ? this.memory.get(key) : this.storage.get(key);
+          }
+          write(key, value) {
+            if (this.storage.set(key, value)) this.memory.delete(key);
+            else this.memory.set(key, String(value));
+          }
+          get mode() {
+            const mode = this.read('dino-mode');
+            return Object.hasOwn(GAME_MODES, mode) ? mode : 'normal';
+          }
+          set mode(mode) {
+            this.write('dino-mode', mode);
+          }
+          highScoreKey(mode) {
+            return mode === 'relaxed'
+              ? 'chromium-dino-highscore-relaxed'
+              : 'chromium-dino-highscore';
+          }
+          highScore(mode) {
+            const value = Number(this.read(this.highScoreKey(mode)));
+            return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+          }
+          saveHighScore(mode, value) {
+            this.write(this.highScoreKey(mode), value);
+          }
+        }
+
+        // Fullscreen enhancement (game input never depends on it).
         // WebKit stacks an element entering fullscreen above already open modal dialogs: Settings
         // became invisible but stayed modal. Reopening moves the dialog back on top.
         function raiseModalDialogs() {
@@ -3034,6 +3089,7 @@
         }
         const landscapeFullscreen = new LandscapeFullscreen();
 
+        // Audio: optional menu track and synthesized game sounds.
         // Optional menu track: pause preserves position; only a new session resets it.
         class MenuMusic {
           constructor(audio = new Audio()) {
@@ -3423,6 +3479,7 @@
           }
         }
 
+        // Diagnostics: opt-in reports, independent of gameplay rules.
         const UNLOGGED_EVENTS = new Set(['step', 'spark', 'jump', 'destroy', 'deathLand']);
         // Opt-in diagnostics for external testers. Kept in memory only and exported on request.
         class TestReport {
@@ -3836,6 +3893,7 @@
           }
         }
 
+        // Canvas sizing and collision/drawing helpers.
         function setCanvasSize(ctx) {
           const rect = gameEl.getBoundingClientRect();
           // Hidden views have no layout size; preserve the backing store until visible.
@@ -3926,6 +3984,7 @@
           ctx.closePath();
         }
 
+        // Simulation entities and cosmetic effects. Browser I/O stays in the shell.
         const JUMP_POSES = ['arms', 'grin', 'wave', 'tongue', 'fire', 'eyeroll', 'legs'];
         class Trex {
           constructor(rng = new RandomSource(), reducedMotion = false, poseRandom = Math.random) {
@@ -4577,30 +4636,20 @@
           // A new session returns to the start screen without beginning a round.
           newSession() {
             this.state = 'attract';
-            this.clearJumpBuffer();
-            this.acc = 0;
-            this.gameTime = 0;
-            this.countdown = 0;
             this.simulationTime = 0;
-            this.gameOverTime = 0;
             this.attractTime = 0;
-            this.speed = this.config.speed;
-            this.distance = 0;
-            this.sceneryDistance = 0;
-            this.score = 0;
-            this.night = false;
-            this.nightAlpha = 0;
-            this.recordAtStart = this.highScore;
-            this.recordCelebrated = false;
-            this.crashObstacle = null;
-            this.trex.reset();
-            this.horizon.reset();
-            this.turbo.reset();
-            this.meter.reset();
-            this.capturePrevious();
+            this.resetRound();
           }
           beginRound(countdown = 0) {
             this.state = 'playing';
+            this.resetRound(countdown);
+            this.emit('restart');
+            this.jump();
+            return true;
+          }
+          // Reset entities in this order: they share the gameplay random source.
+          // A round preserves simulationTime and attractTime; a session clears them.
+          resetRound(countdown = 0) {
             this.clearJumpBuffer();
             this.acc = 0;
             this.gameTime = 0;
@@ -4620,9 +4669,6 @@
             this.turbo.reset();
             this.meter.reset();
             this.capturePrevious();
-            this.emit('restart');
-            this.jump();
-            return true;
           }
           clearJumpBuffer() {
             this.pendingJumpUntil = 0;
@@ -6152,6 +6198,7 @@
         }
 
         // Input maps browser events onto commands and owns the active pointer capture.
+        // Input and session UI: translate controls and display game state.
         class InputController {
           constructor(runner) {
             this.runner = runner;
@@ -6677,7 +6724,6 @@
           }
         }
 
-        // Browser shell: lifecycle, persistence, audio and fullscreen stay outside Game.
         // Highscores: separate top 10 lists per mode, online (highscores.php) and on this device.
         // Validation, ranking and the plausibility bound match highscores-lib.php.
         const HIGHSCORE_API_VERSION = 1,
@@ -7397,11 +7443,267 @@
           }
         }
 
+        // Browser lifecycle: translate platform events into coordinator actions.
+        // Owns event bindings and pause/input policy; does not advance the game.
+        class BrowserLifecycle {
+          constructor(runner) {
+            this.runner = runner;
+            this.focused = document.hasFocus();
+            this.contextLost = false;
+            this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+          }
+          bind() {
+            this.bindBrowserEvents();
+            this.bindMotionEvents();
+            this.bindCanvasEvents();
+          }
+          bindBrowserEvents() {
+            const runner = this.runner;
+            window.addEventListener('pagehide', () => runner.music.sync(false));
+            window.addEventListener('pageshow', () => runner.updateMusic());
+            window.addEventListener('resize', () => runner.resize(), {
+              passive: true,
+            });
+            document.addEventListener('visibilitychange', () => {
+              runner.report.record('visibility', document.hidden ? 'hidden' : 'visible');
+              runner.updatePause();
+            });
+            window.addEventListener('blur', () => {
+              this.focused = false;
+              runner.updatePause();
+            });
+            window.addEventListener('focus', () => {
+              this.focused = true;
+              runner.updatePause();
+            });
+          }
+          bindMotionEvents() {
+            const runner = this.runner;
+            const motionChanged = () => {
+              runner.game.trex.reducedMotion.matches = this.motionQuery.matches;
+              runner.renderer.effects.reducedMotion.matches = this.motionQuery.matches;
+            };
+            if (this.motionQuery.addEventListener)
+              this.motionQuery.addEventListener('change', motionChanged);
+            else this.motionQuery.addListener(motionChanged);
+          }
+          bindCanvasEvents() {
+            const runner = this.runner;
+            // A lost 2D context pauses like focus loss; the round continues after restoration.
+            canvas.addEventListener('contextlost', () => {
+              this.contextLost = true;
+              runner.report.record('canvas', 'lost');
+              runner.updatePause();
+            });
+            canvas.addEventListener('contextrestored', () => {
+              this.contextLost = false;
+              runner.report.record('canvas', 'restored');
+              // Restored contexts start with default state: reapply scale and smoothing.
+              runner.resize();
+              runner.updatePause();
+              runner.draw(1);
+            });
+          }
+          pauseReasons() {
+            const runner = this.runner;
+            return [
+              [runner.ended, 'goodbye'],
+              [document.getElementById('settings').open, 'settings'],
+              [document.getElementById('scores').open, 'highscores'],
+              [document.getElementById('install-help').open, 'install help'],
+              [document.hidden, 'hidden'],
+              [location.hash === '#info', 'help'],
+              [!this.focused, 'blur'],
+              [this.contextLost, 'canvas'],
+            ]
+              .filter(([active]) => active)
+              .map(([, reason]) => reason);
+          }
+          canInput() {
+            const runner = this.runner;
+            return (
+              !runner.ended &&
+              !runner.paused &&
+              !pageEl.hidden &&
+              !document.hidden &&
+              location.hash !== '#info' &&
+              !document.querySelector('dialog[open]')
+            );
+          }
+        }
+
+        // Page UI: dialogs, round buttons and the embedded guide/navigation.
+        // All artwork, guide markup and behavior remain in this HTML.
+        class GamePage {
+          constructor(runner) {
+            this.runner = runner;
+            this.bindSettingsEvents();
+            this.bindAudioActivation();
+            this.bindSettingsDialog();
+            this.bindRoundButtons();
+            this.bindGuide();
+            this.showView();
+          }
+          bindSettingsEvents() {
+            const runner = this.runner;
+            runner.sound.button.addEventListener('click', () => runner.updateMusic(true));
+            document
+              .getElementById('fps-toggle')
+              .addEventListener('click', () => runner.sound.switchClick(runner.fps.enabled));
+            // Read the intended state before the fullscreen request changes it asynchronously.
+            document
+              .getElementById('fullscreen-toggle')
+              .addEventListener(
+                'click',
+                () => runner.sound.switchClick(!landscapeFullscreen.element()),
+                true,
+              );
+            document
+              .getElementById('log-toggle')
+              .addEventListener('click', () => runner.sound.switchClick(runner.report.enabled));
+          }
+          bindAudioActivation() {
+            const runner = this.runner;
+            // Sound is on by default; browsers unlock audio on the first actual input.
+            for (const event of ['pointerdown', 'pointerup'])
+              window.addEventListener(event, () => runner.unlockAudio(), true);
+            window.addEventListener('click', () => runner.updateMusic(true), true);
+            window.addEventListener(
+              'keydown',
+              (e) => {
+                if (!e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) runner.unlockAudio();
+              },
+              true,
+            );
+          }
+          bindSettingsDialog() {
+            const runner = this.runner;
+            const settings = document.getElementById('settings');
+            document.getElementById('settings-open').addEventListener('click', () => {
+              settings.showModal();
+              runner.updatePause();
+            });
+            document.getElementById('settings-close').addEventListener('click', () => settings.close());
+            settings.addEventListener('close', () => {
+              // Ignore the queued close event of a dialog that raiseModalDialogs() reopened.
+              if (settings.open) return;
+              runner.updatePause();
+              runner.resize();
+              runner.draw(1);
+              if (location.hash !== '#info') gameEl.focus({ preventScroll: true });
+            });
+          }
+          bindRoundButtons() {
+            const runner = this.runner;
+            const startButton = document.getElementById('start-game');
+            startButton.addEventListener('pointerdown', (e) => runner.input.onPointerDown(e, true));
+            startButton.addEventListener('keydown', (e) => {
+              if (!['Space', 'Enter', 'ArrowUp'].includes(e.code)) return;
+              e.preventDefault();
+              if (e.repeat) return;
+              runner.input.setMethod('keyboard');
+              runner.unlockAudio();
+              runner.startFromInput();
+              gameEl.focus({ preventScroll: true });
+            });
+            // Assistive technology can activate buttons without pointer or keyboard events.
+            startButton.addEventListener('click', (e) => {
+              if (e.detail !== 0) return;
+              runner.unlockAudio();
+              runner.startFromInput();
+              runner.endJump();
+              gameEl.focus({ preventScroll: true });
+            });
+            document.getElementById('quit-game').addEventListener('click', () => runner.quit());
+            document.getElementById('play-again').addEventListener('click', () => {
+              runner.restart();
+              gameEl.focus({
+                preventScroll: true,
+              });
+            });
+            document.getElementById('new-session').addEventListener('click', () => runner.newSession());
+          }
+          bindGuide() {
+            const runner = this.runner;
+            // The guide is isolated and offline; both menus share the same header styles.
+            // Template parsing drops head/html tags, so append to its existing style element.
+            const infoDocument =
+              '<!doctype html><html lang="en" class="help-page">' +
+              document
+                .getElementById('info-document')
+                .innerHTML.replace(
+                  '</style>',
+                  '</style>' + document.getElementById('menu-shell-styles').outerHTML,
+                ) +
+              '</html>';
+            const infoView = (this.infoView = document.getElementById('info-view'));
+            infoView.title = 'Help';
+            // Keep the calling URL in browser history; the paused game keeps its exact state.
+            document.getElementById('info-link').addEventListener('click', (e) => {
+              if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+              e.preventDefault();
+              history.pushState({ dinoHelp: true }, '', '#info');
+              this.showView();
+              landscapeFullscreen.sync();
+            });
+            infoView.addEventListener('load', () => {
+              // Events inside the guide do not bubble into the parent window.
+              for (const event of ['focus', 'blur'])
+                infoView.contentWindow?.addEventListener(event, () => runner.updateMusic());
+              infoView.contentDocument?.addEventListener('click', () => runner.updateMusic(true), true);
+              for (const event of ['pointerdown', 'pointerup', 'keydown'])
+                infoView.contentDocument?.addEventListener(
+                  event,
+                  (e) => {
+                    if (!e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) runner.unlockAudio();
+                  },
+                  true,
+                );
+              infoView.contentDocument?.addEventListener('click', (e) => {
+                if (!e.target.closest?.('[data-help-back]')) return;
+                if (history.state?.dinoHelp) {
+                  history.back();
+                } else {
+                  // Direct Help links have no in-game caller: return without leaving the site.
+                  history.replaceState(null, '', '#game');
+                  this.showView();
+                  landscapeFullscreen.sync();
+                }
+              });
+            });
+            // Load the guide while this page is still loading. A later srcdoc navigation adds a
+            // session history entry in WebKit, so Back would blank the guide instead of leaving it.
+            infoView.srcdoc = infoDocument;
+
+            window.addEventListener('hashchange', () => this.showView());
+          }
+          showView() {
+            const runner = this.runner;
+            const infoView = this.infoView;
+            const returning = !infoView.hidden;
+            const showingInfo = location.hash === '#info';
+            infoView.hidden = !showingInfo;
+            pageEl.hidden = showingInfo;
+            runner.updatePause();
+            runner.duck(false);
+            document.title = showingInfo ? 'Help · m24 Dino Run' : 'Dino Run';
+            if (!showingInfo) {
+              // Fullscreen can end while the guide hides the game. Measure after unhiding.
+              runner.resize();
+              runner.draw(1);
+              (returning ? document.getElementById('info-link') : gameEl).focus({
+                preventScroll: true,
+              });
+            }
+          }
+        }
+
+        // Coordinator: game lifecycle, input commands, event effects and frame loop.
         class Runner {
           constructor(context) {
             this.ended = false;
-            this.contextLost = false;
             this.looping = false;
+            this.browser = new BrowserLifecycle(this);
             this.stats = new SessionStats();
             this.sessionView = new SessionView();
             this.sound = new GameSound();
@@ -7411,7 +7713,7 @@
             this.game = new Game({
               mode: this.modeSelect.value,
               highScore: this.readHighScore(this.modeSelect.value),
-              reducedMotion: this.motionQuery.matches,
+              reducedMotion: this.browser.motionQuery.matches,
             });
             this.renderer = new Renderer(context, this.game);
             this.game.on((event) => this.handleEvent(event));
@@ -7423,85 +7725,20 @@
             this.highscores = new HighscoreView(this);
             this.sound.onState = (state) => this.report.record('audio', state);
             this.lastTime = null;
-            this.focused = document.hasFocus();
             this.paused = false;
             this.frame = this.frame.bind(this);
-            this.bindSettingsEvents();
-            this.bindBrowserEvents();
-            this.bindMotionEvents();
-            this.bindCanvasEvents();
+            this.browser.bind();
             this.resize();
             this.updatePause();
             this.requestFrame();
           }
           initializePreferences() {
-            this.motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+            this.gamePreferences = new GamePreferences();
             this.modeSelect = document.getElementById('mode-select');
-            this.modeSelect.value = this.readMode();
+            this.modeSelect.value = this.gamePreferences.mode;
             this.modeSelect.addEventListener('change', () => {
-              preferences.set('dino-mode', this.modeSelect.value);
+              this.gamePreferences.mode = this.modeSelect.value;
               if (!this.playing) this.draw(1);
-            });
-          }
-          bindSettingsEvents() {
-            this.sound.button.addEventListener('click', () => this.updateMusic(true));
-            document
-              .getElementById('fps-toggle')
-              .addEventListener('click', () => this.sound.switchClick(this.fps.enabled));
-            // Read the intended state before the fullscreen request changes it asynchronously.
-            document
-              .getElementById('fullscreen-toggle')
-              .addEventListener(
-                'click',
-                () => this.sound.switchClick(!landscapeFullscreen.element()),
-                true,
-              );
-            document
-              .getElementById('log-toggle')
-              .addEventListener('click', () => this.sound.switchClick(this.report.enabled));
-          }
-          bindBrowserEvents() {
-            window.addEventListener('pagehide', () => this.music.sync(false));
-            window.addEventListener('pageshow', () => this.updateMusic());
-            window.addEventListener('resize', () => this.resize(), {
-              passive: true,
-            });
-            document.addEventListener('visibilitychange', () => {
-              this.report.record('visibility', document.hidden ? 'hidden' : 'visible');
-              this.updatePause();
-            });
-            window.addEventListener('blur', () => {
-              this.focused = false;
-              this.updatePause();
-            });
-            window.addEventListener('focus', () => {
-              this.focused = true;
-              this.updatePause();
-            });
-          }
-          bindMotionEvents() {
-            const motionChanged = () => {
-              this.game.trex.reducedMotion.matches = this.motionQuery.matches;
-              this.renderer.effects.reducedMotion.matches = this.motionQuery.matches;
-            };
-            if (this.motionQuery.addEventListener)
-              this.motionQuery.addEventListener('change', motionChanged);
-            else this.motionQuery.addListener(motionChanged);
-          }
-          bindCanvasEvents() {
-            // A lost 2D context pauses like focus loss; the round continues after restoration.
-            canvas.addEventListener('contextlost', () => {
-              this.contextLost = true;
-              this.report.record('canvas', 'lost');
-              this.updatePause();
-            });
-            canvas.addEventListener('contextrestored', () => {
-              this.contextLost = false;
-              this.report.record('canvas', 'restored');
-              // Restored contexts start with default state: reapply scale and smoothing.
-              this.resize();
-              this.updatePause();
-              this.draw(1);
             });
           }
           get playing() {
@@ -7538,7 +7775,7 @@
           }
           updateMusic(retry = false) {
             // Focusing the same-origin Help iframe is still an active browser window.
-            const focused = document.hasFocus() && (this.focused || location.hash === '#info');
+            const focused = document.hasFocus() && (this.browser.focused || location.hash === '#info');
             this.music.sync(
               !this.ended &&
                 this.sound.enabled &&
@@ -7549,21 +7786,11 @@
               retry,
             );
           }
-          readMode() {
-            const mode = preferences.get('dino-mode');
-            return Object.hasOwn(GAME_MODES, mode) ? mode : 'normal';
-          }
-          highScoreKey(mode) {
-            return mode === 'relaxed'
-              ? 'chromium-dino-highscore-relaxed'
-              : 'chromium-dino-highscore';
-          }
           readHighScore(mode = this.game?.mode || 'normal') {
-            const value = Number(preferences.get(this.highScoreKey(mode)));
-            return Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+            return this.gamePreferences.highScore(mode);
           }
           saveHighScore() {
-            preferences.set(this.highScoreKey(this.game.mode), this.game.highScore);
+            this.gamePreferences.saveHighScore(this.game.mode, this.game.highScore);
           }
           prepareRound() {
             if (this.modeSelect.value === this.game.mode) return;
@@ -7576,22 +7803,8 @@
             live.textContent = '';
             this.announcementTimer = setTimeout(() => (live.textContent = text), 20);
           }
-          pauseReasons() {
-            return [
-              [this.ended, 'goodbye'],
-              [document.getElementById('settings').open, 'settings'],
-              [document.getElementById('scores').open, 'highscores'],
-              [document.getElementById('install-help').open, 'install help'],
-              [document.hidden, 'hidden'],
-              [location.hash === '#info', 'help'],
-              [!this.focused, 'blur'],
-              [this.contextLost, 'canvas'],
-            ]
-              .filter(([active]) => active)
-              .map(([, reason]) => reason);
-          }
           updatePause() {
-            const reasons = this.pauseReasons(),
+            const reasons = this.browser.pauseReasons(),
               paused = reasons.length > 0;
             if (paused !== this.paused) {
               this.paused = paused;
@@ -7618,14 +7831,7 @@
             if (this.paused && !pageEl.hidden) this.draw(1);
           }
           canInput() {
-            return (
-              !this.ended &&
-              !this.paused &&
-              !pageEl.hidden &&
-              !document.hidden &&
-              location.hash !== '#info' &&
-              !document.querySelector('dialog[open]')
-            );
+            return this.browser.canInput();
           }
           startFromInput() {
             return this.start();
@@ -7796,7 +8002,7 @@
             this.sessionView.seen.clear();
             this.sessionView.hintUntil = 0;
             this.ended = false;
-            this.focused = document.hasFocus();
+            this.browser.focused = document.hasFocus();
             this.prepareRound();
             this.game.newSession();
             this.highscores.roundLeft();
@@ -7864,6 +8070,7 @@
           }
         }
 
+        // Bootstrap: wire the embedded components once; no required runtime files.
         const context = canvas.getContext('2d', {
           alpha: false,
           // Prefer CPU raster on touch: full-resolution A53 tests reach 60 instead of 34 FPS.
@@ -7880,59 +8087,6 @@
           return;
         }
         const runner = new Runner(context);
-        // Sound is on by default; browsers unlock audio on the first actual input.
-        for (const event of ['pointerdown', 'pointerup'])
-          window.addEventListener(event, () => runner.unlockAudio(), true);
-        window.addEventListener('click', () => runner.updateMusic(true), true);
-        window.addEventListener(
-          'keydown',
-          (e) => {
-            if (!e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) runner.unlockAudio();
-          },
-          true,
-        );
-        const settings = document.getElementById('settings');
-        document.getElementById('settings-open').addEventListener('click', () => {
-          settings.showModal();
-          runner.updatePause();
-        });
-        document.getElementById('settings-close').addEventListener('click', () => settings.close());
-        settings.addEventListener('close', () => {
-          // Ignore the queued close event of a dialog that raiseModalDialogs() reopened.
-          if (settings.open) return;
-          runner.updatePause();
-          runner.resize();
-          runner.draw(1);
-          if (location.hash !== '#info') gameEl.focus({ preventScroll: true });
-        });
-
-        const startButton = document.getElementById('start-game');
-        startButton.addEventListener('pointerdown', (e) => runner.input.onPointerDown(e, true));
-        startButton.addEventListener('keydown', (e) => {
-          if (!['Space', 'Enter', 'ArrowUp'].includes(e.code)) return;
-          e.preventDefault();
-          if (e.repeat) return;
-          runner.input.setMethod('keyboard');
-          runner.unlockAudio();
-          runner.startFromInput();
-          gameEl.focus({ preventScroll: true });
-        });
-        // Assistive technology can activate buttons without pointer or keyboard events.
-        startButton.addEventListener('click', (e) => {
-          if (e.detail !== 0) return;
-          runner.unlockAudio();
-          runner.startFromInput();
-          runner.endJump();
-          gameEl.focus({ preventScroll: true });
-        });
-        document.getElementById('quit-game').addEventListener('click', () => runner.quit());
-        document.getElementById('play-again').addEventListener('click', () => {
-          runner.restart();
-          gameEl.focus({
-            preventScroll: true,
-          });
-        });
-        document.getElementById('new-session').addEventListener('click', () => runner.newSession());
         window.__dinoRunner = runner;
         window.__dinoGame = runner.game;
         window.render_game_to_text = () => {
@@ -7958,75 +8112,7 @@
         if (testHooks.manualFrames)
           window.advanceTime = (ms) => runner.draw(runner.update(ms) ?? 1);
 
-        // The guide is isolated and offline; both menus share the same header styles.
-        // Template parsing drops head/html tags, so append to its existing style element.
-        const infoDocument =
-          '<!doctype html><html lang="en" class="help-page">' +
-          document
-            .getElementById('info-document')
-            .innerHTML.replace(
-              '</style>',
-              '</style>' + document.getElementById('menu-shell-styles').outerHTML,
-            ) +
-          '</html>';
-        const infoView = document.getElementById('info-view');
-        infoView.title = 'Help';
-        // Keep the calling URL in browser history; the paused game keeps its exact state.
-        document.getElementById('info-link').addEventListener('click', (e) => {
-          if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-          e.preventDefault();
-          history.pushState({ dinoHelp: true }, '', '#info');
-          showView();
-          landscapeFullscreen.sync();
-        });
-        infoView.addEventListener('load', () => {
-          // Events inside the guide do not bubble into the parent window.
-          for (const event of ['focus', 'blur'])
-            infoView.contentWindow?.addEventListener(event, () => runner.updateMusic());
-          infoView.contentDocument?.addEventListener('click', () => runner.updateMusic(true), true);
-          for (const event of ['pointerdown', 'pointerup', 'keydown'])
-            infoView.contentDocument?.addEventListener(
-              event,
-              (e) => {
-                if (!e.repeat && !e.ctrlKey && !e.altKey && !e.metaKey) runner.unlockAudio();
-              },
-              true,
-            );
-          infoView.contentDocument?.addEventListener('click', (e) => {
-            if (!e.target.closest?.('[data-help-back]')) return;
-            if (history.state?.dinoHelp) {
-              history.back();
-            } else {
-              // Direct Help links have no in-game caller: return without leaving the site.
-              history.replaceState(null, '', '#game');
-              showView();
-              landscapeFullscreen.sync();
-            }
-          });
-        });
-        // Load the guide while this page is still loading. A later srcdoc navigation adds a
-        // session history entry in WebKit, so Back would blank the guide instead of leaving it.
-        infoView.srcdoc = infoDocument;
-
-        function showView() {
-          const returning = !infoView.hidden;
-          const showingInfo = location.hash === '#info';
-          infoView.hidden = !showingInfo;
-          pageEl.hidden = showingInfo;
-          runner.updatePause();
-          runner.duck(false);
-          document.title = showingInfo ? 'Help · m24 Dino Run' : 'Dino Run';
-          if (!showingInfo) {
-            // Fullscreen can end while the guide hides the game. Measure after unhiding.
-            runner.resize();
-            runner.draw(1);
-            (returning ? document.getElementById('info-link') : gameEl).focus({
-              preventScroll: true,
-            });
-          }
-        }
-        window.addEventListener('hashchange', showView);
-        showView();
+        new GamePage(runner);
       })();
     </script>
     <script>

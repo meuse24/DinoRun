@@ -67,3 +67,33 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   Previously tracked runtime files are untouched and excluded from new commits.
 - Next: consolidate resets/preferences, then extract browser/page components;
   run contract and visual/deterministic comparisons against the starting HTML.
+
+## 2026-10-15: Embedded components (build 2026-10-15.1)
+
+- Consolidated Game.resetRound while preserving RNG/entity reset order.
+  newSession explicitly resets the session clocks; beginRound preserves them
+  and still emits restart before the initial jump.
+- GamePreferences owns saved mode and per-mode record keys, validation and a
+  memory fallback. Records now survive mode switches with blocked storage for
+  the lifetime of the page, without changing persistent storage keys.
+- BrowserLifecycle owns focus/context/motion state and browser event bindings,
+  pause reasons and input eligibility. Runner retains simulation coordination,
+  event effects, pause transitions and the rAF loop.
+- GamePage owns settings feedback/dialogs, audio activation, round buttons and
+  embedded guide/history navigation. Added an embedded component map and section
+  labels. No CSS, physics, vector artwork, render caches or dependencies changed.
+- Hosted mode retains manifest/install icon links. File mode embeds the original
+  192px icon and no longer requests sibling installation assets. The playable
+  artifact remains one HTML; optional music and online services are independent.
+- First reset/preferences comparison passed all 70 pixel-exact scenes and all
+  five 12,000-frame deterministic traces against 10f6b21. Final full comparison
+  follows the browser/page extraction.
+- Current contract checks pass all six scenarios, including real rAF pause/resume,
+  a live service worker offline reload, touch duck, corrupt saved preferences,
+  blocked-storage records and an isolated HTML with no required file requests.
+- Ran the actual develop-web-game client via tests/skill-client.mjs. The wrapper
+  only locates Playwright and serves a safe fixture; no live score requests.
+  Inspected shot-1 plus portrait, standalone-file and hosted-offline screenshots.
+- Found an existing hosted-offline dependency on the supposedly optional song:
+  cache.addAll included it. Follow-up makes song caching best effort and checks
+  installation with its HTTP response deliberately set to 404.
