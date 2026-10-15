@@ -2629,7 +2629,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-15.3';
+        const BUILD = '2026-10-15.4';
         const FEATHER = Object.freeze({
           firstSpawnMs: 4000,
           respawnMs: 18000,
@@ -5044,7 +5044,7 @@
             );
             this.drawTrex(trex);
             if (game.playing && game.feather.charged)
-              this.drawFeatherBadge(trex.x + 64, clamp(trex.y + 12, 20, GROUND_Y - 36));
+              this.drawFeatherBadge(trex.x - 14, clamp(trex.y + 12, 20, GROUND_Y - 36));
             this.drawDeathScene(trex);
             if (!this.compactHud)
               this.drawDistanceMeter(game.meter, game.score, highScore, fg, game.level, fps);
