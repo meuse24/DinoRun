@@ -2297,6 +2297,48 @@
                 transition: none;
               }
             }
+            /* Compact help: everything fits on one or two screens. */
+            body {
+              line-height: 1.45;
+            }
+            header {
+              padding: 12px 0;
+            }
+            .grid {
+              gap: 12px;
+            }
+            .card {
+              padding: 16px 20px;
+            }
+            .card h2 {
+              font-size: 19px;
+              margin-bottom: 8px;
+            }
+            p {
+              margin-bottom: 6px;
+            }
+            li {
+              margin: 2px 0;
+            }
+            th,
+            td {
+              padding: 5px 0;
+            }
+            table {
+              margin-bottom: 8px;
+            }
+            footer {
+              padding: 14px 0 24px;
+            }
+            @media (max-width: 650px) {
+              .card {
+                padding: 14px 16px;
+              }
+              th,
+              td {
+                padding: 5px 4px;
+              }
+            }
           </style>
         </head>
         <body>
@@ -2323,251 +2365,72 @@
                     <table>
                       <thead>
                         <tr>
-                          <th>Device</th>
+                          <th></th>
                           <th>Jump</th>
                           <th>Duck</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td>Keyboard</td>
-                          <td><kbd>Space</kbd> or <kbd>↑</kbd></td>
-                          <td>Hold <kbd>↓</kbd></td>
+                          <td>Keys</td>
+                          <td><kbd>Space</kbd> <kbd>↑</kbd></td>
+                          <td><kbd>↓</kbd></td>
                         </tr>
                         <tr>
                           <td>Mouse</td>
-                          <td>Left button</td>
-                          <td>Hold the right button</td>
+                          <td>Left click</td>
+                          <td>Right click</td>
                         </tr>
                         <tr>
                           <td>Touch</td>
-                          <td>Press the ↑ button or tap a free area</td>
-                          <td>Hold the ↓ button</td>
+                          <td>↑ button or tap</td>
+                          <td>↓ button</td>
                         </tr>
                         <tr>
-                          <td>Controller</td>
+                          <td>Gamepad</td>
                           <td>A</td>
-                          <td>Hold B</td>
+                          <td>B</td>
                         </tr>
                       </tbody>
                     </table>
-                    <p>
-                      Tap, click, press Space or ↑, or press A on a controller to start.
-                      On touch devices, each round starts with a short countdown. A countdown also
-                      gives you time to get ready when the game switches to fullscreen.
-                    </p>
-                    <h3>Small or high jumps</h3>
-                    <p>
-                      Press and release for a small jump. Hold to jump higher. Press just before
-                      landing to jump again when you land.
-                    </p>
-                    <p>
-                      Your dino picks a different playful pose for each jump. These poses do not
-                      change the jump height or collision area.
-                    </p>
-                    <p>
-                      Hold Duck to stay low. Release to stand up. You can also swipe down and hold.
-                      Duck in the air to fall faster.
-                    </p>
-                    <p>
-                      After GAME OVER, choose Play again. You can also tap a free area, press Space
-                      or Enter, or press Start on a controller.
-                    </p>
+                    <p>Tap or hold for a small or big jump. Duck in the air to fall fast.</p>
                   </section>
                   <section class="card">
                     <h2>How to play</h2>
-                    <p>Your dino runs on its own. Avoid obstacles and get a high score.</p>
                     <ul>
-                      <li>Jump over cacti.</li>
-                      <li>
-                        Duck under middle birds. Jump over low birds. High birds can pass above you.
-                      </li>
-                      <li>The game gets faster as your level goes up.</li>
-                      <li>
-                        A hit ends your run with a short scene before the result. Tap or press Space
-                        to skip it. Your best score is saved on this device.
-                      </li>
+                      <li>Your dino runs by itself.</li>
+                      <li>Jump over cacti. Jump or duck to dodge birds.</li>
+                      <li>The game gets faster. Don't crash!</li>
                     </ul>
-                    <p>L = level · HI = high score · SC = current score.</p>
-                    <p>
-                      Relaxed mode is slower and gives you more space between obstacles. Each mode
-                      has its own high score.
-                    </p>
+                    <p>L = level · HI = best · SC = score</p>
                   </section>
                   <section class="card">
-                    <h2>Chili boost</h2>
-                    <p>
-                      Pick up a chili for a five-second boost. Your dino runs faster and moves
-                      forward. Cacti burn when you touch them. Birds can still hit you!
-                    </p>
-                    <p>
-                      The bar shows how much boost time is left. Your dino moves back during the
-                      last second. Boost does not change your level.
-                    </p>
-                    <h3>Quick tips</h3>
-                    <p>
-                      Look ahead for the next gap. Use small jumps when obstacles are close
-                      together.
-                    </p>
-                    <p>
-                      Day and night change every 700 points. Turn Sound off in Settings for quiet
-                      play. Your choice is saved.
-                    </p>
-                  </section>
-                  <section class="card" id="jump-feather-help">
-                    <h2>Jump feather</h2>
-                    <p>
-                      Collect a blue feather to store one extra air jump. Jump, release the jump
-                      control, then press it again while you are in the air. Use Space or ↑, a
-                      left click, a tap, the Jump button or gamepad A as usual.
-                    </p>
-                    <p>
-                      The small feather beside your dino means your air jump is ready. Ground
-                      jumps and landing keep it. An air jump spends it; feathers do not stack.
-                      There is no time limit, but a crash or new run clears it.
-                    </p>
-                    <p>
-                      Jump again as you fall for the most lift. You can combine a feather with
-                      Chili boost, but the feather alone does not protect you from cacti or birds.
+                    <h2>Power-ups</h2>
+                    <p><strong>Chili:</strong> run fast for 5 seconds and burn cacti. Birds still hurt.</p>
+                    <p id="jump-feather-help">
+                      <strong>Feather:</strong> one extra jump. Jump, then press jump again in the
+                      air. You can hold only one feather. It shows behind your dino.
                     </p>
                   </section>
                   <section class="card wide">
-                    <h2>Highscores</h2>
+                    <h2>Scores &amp; settings</h2>
                     <p>
-                      Choose Highscores on the start or game-over screen. The list follows the game
-                      mode selected in Settings. Online shows the top 10 for everyone; “This device”
-                      shows scores saved in this browser.
-                    </p>
-                    <p>
-                      When a score can reach a top 10 list, name entry opens automatically. Pick four letters with ▲ and ▼;
-                      after Z comes A again. On a keyboard, ↑ and ↓ change a letter, ← and → move
-                      between letters, and typing a letter also works. Save score adds the run to
-                      both lists if it is good enough. Cancel closes the name entry without saving.
-                    </p>
-                    <p>
-                      Without a connection the run is saved on this device only, and the game says
-                      so. Such runs are never sent later on their own. Online entries show name,
-                      score, date, device type and controls publicly.
+                      Get a top 10 score and enter four letters. Online scores show your name,
+                      score, date and device to everyone. Use the gear for Relaxed mode, sound and
+                      fullscreen.
                     </p>
                   </section>
                   <section class="card wide">
-                    <h2>Settings and sound</h2>
+                    <h2>About</h2>
                     <p>
-                      Open Settings with the gear button to choose Normal or Relaxed for your next
-                      run, switch Sound or Fullscreen, or show the frame rate (FPS). Settings and
-                      Help pause the game. The frame rate depends on your device and browser.
-                    </p>
-                    <p>
-                      If your system requests reduced motion, decorative animations and particles
-                      are reduced. Running, jumping and obstacles still move normally.
-                    </p>
-                    <p>
-                      If the optional song file is included, Dino Jump Jump loops on the start,
-                      Help, Settings and game-over screens while this browser window is active.
-                      Music pauses during gameplay and when you leave the window, then resumes from
-                      the same position, including after game over and across rounds. Only a new
-                      session or reloading resets the song. Quit stops all audio; the next launch or
-                      new session enables sound and fullscreen where supported. Sound switches both
-                      music and sound effects. Your browser may require a tap, click or key press
-                      before music can start. The game also works without the song file.
-                    </p>
-                  </section>
-                  <section class="card wide">
-                    <h2>About this game</h2>
-                    <div class="tags">
-                      <span>HTML5</span><span>CSS</span><span>JavaScript</span><span>Canvas 2D</span
-                      ><span>Web Audio</span><span>SVG</span><span>PHP (online top 10)</span>
-                    </div>
-                    <p>
-                      This game is one HTML file. It needs no extra libraries, downloads or internet
-                      connection. Graphics and sound effects are made in your browser. The optional
-                      menu song is loaded from <code>dino-jump-jump.mp3</code> beside this HTML
-                      file.
-                    </p>
-                    <p>
-                      Your best scores, local top 10 lists, last name, sound choice, game mode and
-                      fullscreen preference are saved in this browser with
-                      <code>localStorage</code> when storage is available. Clearing browser data
-                      removes these saved values.
-                    </p>
-                    <p>
-                      The online top 10 is kept on meuse24.info only when you open it or choose Save
-                      score. A saved entry publishes four letters, score and date. It stays until it
-                      drops out of the top 10 or is removed on request. To limit spam, the server
-                      briefly keeps a keyed hash of your network address, deleted after ten minutes
-                      without entries; the web host may keep its own access logs.
-                    </p>
-                    <p>
-                      The game is based on the BSD-licensed
+                      Made by Günther Meusburger (m24). Based on the
                       <a
                         href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/neterror/resources/dino_game/"
                         target="_blank"
                         rel="noopener noreferrer"
                         >Chromium T-Rex Runner</a
-                      >. This version has its own graphics, sounds and controls.
-                    </p>
-                  </section>
-                  <section class="card wide">
-                    <h2>Credits</h2>
-                    <p>Dino Run is made by Günther Meusburger (m24). Many thanks to:</p>
-                    <ul>
-                      <li>
-                        <strong>The Chromium Authors</strong> for the original
-                        <a
-                          href="https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/neterror/resources/dino_game/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          >T-Rex Runner</a
-                        >, the offline dinosaur that started it all.
-                      </li>
-                      <li>
-                        <strong>OpenAI</strong> for
-                        <a
-                          href="https://github.com/openai/codex"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          >Codex CLI</a
-                        >, a coding assistant.
-                      </li>
-                      <li>
-                        <strong>Anthropic</strong> for
-                        <a
-                          href="https://claude.com/claude-code"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          >Claude Code</a
-                        >, a coding assistant.
-                      </li>
-                      <li>
-                        <strong>Suno</strong> for the theme song “Dino Jump Jump”, created with
-                        <a href="https://suno.com" target="_blank" rel="noopener noreferrer">Suno</a
-                        >.
-                      </li>
-                      <li>
-                        <strong>Open-source tools</strong> that keep the code tidy and tested:
-                        <a href="https://prettier.io" target="_blank" rel="noopener noreferrer"
-                          >Prettier</a
-                        >,
-                        <a href="https://playwright.dev" target="_blank" rel="noopener noreferrer"
-                          >Playwright</a
-                        >
-                        and the Chrome DevTools Protocol.
-                      </li>
-                      <li>
-                        <strong>MDN Web Docs</strong> for clear answers about the web platform.
-                      </li>
-                      <li>Everyone who tested the game on real phones and gave feedback.</li>
-                    </ul>
-                  </section>
-                  <section class="card wide">
-                    <h2>Debug log and test report</h2>
-                    <p>
-                      Record test log is optional and off by default. It records technical details,
-                      frame timing, game and audio events, and errors. You can add a comment and
-                      preview, share, copy or download the report in Settings → Debug log. Expand
-                      Debug log at the bottom of Settings to access these controls. The log stays in
-                      memory until you reload; turning recording off keeps the existing log. Clear
-                      log removes the recorded data. Nothing is sent automatically.
+                      >. Thanks to OpenAI Codex, Anthropic Claude Code, Suno (song “Dino Jump
+                      Jump”), Playwright, Prettier, MDN and all testers.
                     </p>
                   </section>
                 </div>
@@ -2629,7 +2492,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-15.4';
+        const BUILD = '2026-10-15.5';
         const FEATHER = Object.freeze({
           firstSpawnMs: 4000,
           respawnMs: 18000,

@@ -291,8 +291,8 @@ try {
 
     await page.locator('#info-link').click();
     const help = page.frameLocator('#info-view').locator('#jump-feather-help');
-    assert.match(await help.innerText(), /press it again while you are in the air/);
-    assert.match(await help.innerText(), /feathers do not stack/);
+    assert.match(await help.innerText(), /press jump again in the\s+air/);
+    assert.match(await help.innerText(), /hold only one feather/);
     await help.scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(output, `${name}-help.png`) });
     assert.deepEqual(errors, [], `${name}: browser errors`);

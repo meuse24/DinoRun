@@ -145,7 +145,7 @@ try {
   await touch(page.locator('#info-link'));
   const help = page.frameLocator('#info-view');
   await help.locator('#jump-feather-help').scrollIntoViewIfNeeded();
-  assert.match(await help.locator('#jump-feather-help').innerText(), /feathers do not stack/);
+  assert.match(await help.locator('#jump-feather-help').innerText(), /hold only one feather/);
   await page.screenshot({ path: path.join(output, 'help.png') });
   await touch(help.locator('[data-help-back]').first());
   await page.waitForFunction(() => !window.__dinoRunner.paused);
