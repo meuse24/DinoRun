@@ -39,6 +39,11 @@ const server = http.createServer((request, response) => {
   if (request.url === '/dino.html') {
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(source);
+  } else if (['/service-worker.js', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png',
+    '/icon-180.png'].includes(request.url)) {
+    const types = { '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json' };
+    response.writeHead(200, { 'Content-Type': types[path.extname(request.url)] });
+    fs.createReadStream(path.join(root, request.url.slice(1))).pipe(response);
   } else {
     response.writeHead(404).end();
   }
@@ -70,7 +75,9 @@ try {
     const page = await context.newPage();
     const errors = [];
     const network = [];
+    const requests = [];
     page.on('pageerror', error => errors.push(String(error)));
+    page.on('request', request => requests.push(request.url()));
     await context.route(/^https?:/, route => {
       if (!useFile && route.request().url() === url) return route.continue();
       network.push(route.request().url());
@@ -94,12 +101,17 @@ try {
       });
       else {
         localStorage.setItem('dino-fullscreen-disabled', 'true');
+        if (localStorage.getItem('dino-mode') === null) localStorage.setItem('dino-mode', 'unknown');
+        if (localStorage.getItem('chromium-dino-highscore') === null)
+          localStorage.setItem('chromium-dino-highscore', 'invalid');
       }
     }, { blocked: !!blocked });
     await page.goto(useFile ? pathToFileURL(file).href : url, { waitUntil: 'load' });
     await page.waitForFunction(() => !!window.__dinoRunner);
     assert.equal((await state(page)).state, 'attract', name);
     assert.equal((await state(page)).paused, false, name);
+    assert.equal(await page.evaluate(() => window.__dinoGame.highScore), 0,
+      'Missing or invalid records fall back to zero');
     assert.deepEqual(await page.evaluate(() => {
       const g = window.__dinoGame;
       const speeds = {};
@@ -122,6 +134,14 @@ try {
     assert.equal((await state(page)).player.ducking, true);
     await page.keyboard.up('ArrowDown');
     assert.equal((await state(page)).player.ducking, false);
+    if (options.hasTouch) {
+      await page.locator('#touch-duck').dispatchEvent('pointerdown',
+        { pointerType: 'touch', pointerId: 9, button: 0 });
+      assert.equal((await state(page)).player.ducking, true, 'Touch duck press');
+      await page.locator('#touch-duck').dispatchEvent('pointerup',
+        { pointerType: 'touch', pointerId: 9, button: 0 });
+      assert.equal((await state(page)).player.ducking, false, 'Touch duck release');
+    }
     await page.keyboard.down('Space');
     await advance(page, 100);
     assert.equal((await state(page)).player.jumping, true);
@@ -192,7 +212,8 @@ try {
     assert.equal(restarted.score, 0);
     assert.equal(await page.evaluate(() => window.__dinoGame.simulationTime), simulationTime,
       'Round restart keeps the simulation clock');
-    if (!blocked) assert.equal(await page.evaluate(() => window.__dinoRunner.readHighScore('normal')), 12);
+    assert.equal(await page.evaluate(() => window.__dinoRunner.readHighScore('normal')), 12,
+      'Per-mode records remain available even when storage is blocked');
 
     await page.evaluate(() => window.__dinoRunner.quit());
     assert.equal(await page.locator('#goodbye').evaluate(dialog => dialog.open), true);
@@ -204,6 +225,14 @@ try {
     assert.equal(await page.evaluate(() => window.__dinoRunner.stats.deaths), 0);
     assert.equal(await page.evaluate(() => window.__dinoRunner.renderer.effects.particles.length), 0);
     await page.screenshot({ path: path.join(output, `${name}-reset.png`) });
+    if (useFile) {
+      // A shared direct Help link has no in-game history entry to go back to.
+      await page.goto(pathToFileURL(file).href + '#info', { waitUntil: 'load' });
+      await page.waitForFunction(() => !!window.__dinoRunner?.paused);
+      await page.frameLocator('#info-view').locator('[data-help-back]').first().click();
+      await page.waitForFunction(() => location.hash === '#game' && !window.__dinoRunner.paused);
+      assert.equal((await state(page)).state, 'attract');
+    }
     if (!blocked) {
       await page.reload({ waitUntil: 'load' });
       assert.equal((await state(page)).mode, 'relaxed');
@@ -213,9 +242,42 @@ try {
     assert.deepEqual(errors, [], `${name}: uncaught browser errors`);
     assert(network.every(request => /(?:manifest\.webmanifest|icon-\d+\.png|dino-jump-jump\.mp3)$/.test(request)),
       `${name}: unexpected runtime dependency: ${network}`);
+    if (useFile) assert(requests.every(request => request.split('#')[0] === pathToFileURL(file).href
+      || request.endsWith('/dino-jump-jump.mp3')),
+    `${name}: standalone copy requested a file other than optional music: ${requests}`);
     report.push({ name, lifecycle: 'passed', offline: !!useFile, blockedStorage: !!blocked, errors });
     await context.close();
   }
+  // A real service worker must retain the hosted game for offline reopening,
+  // even though the fixture deliberately returns 404 for the optional song.
+  // Also exercise the normal rAF loop, not only the deterministic test hook.
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(String(error)));
+  await page.addInitScript(() => {
+    window.__dinoTest = { highscoreApiUrl: null };
+    localStorage.setItem('dino-fullscreen-disabled', 'true');
+  });
+  await page.goto(url, { waitUntil: 'load' });
+  await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
+  assert.equal(await page.locator('link[rel="manifest"]').getAttribute('href'), 'manifest.webmanifest');
+  await context.setOffline(true);
+  await page.reload({ waitUntil: 'load' });
+  await page.waitForFunction(() => !!window.__dinoRunner);
+  await page.locator('#game').focus();
+  await page.keyboard.press('Space');
+  await page.waitForFunction(() => window.__dinoGame.gameTime > 100);
+  await page.locator('#settings-open').click();
+  const frozenTime = await page.evaluate(() => window.__dinoGame.gameTime);
+  await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(() => window.__dinoGame.gameTime), frozenTime);
+  await page.locator('#settings-close').click();
+  await page.waitForFunction(before => window.__dinoGame.gameTime > before, frozenTime);
+  await page.screenshot({ path: path.join(output, 'hosted-offline-playing.png') });
+  assert.deepEqual(errors, [], 'Hosted offline reload and real frame loop');
+  report.push({ name: 'hosted-offline', lifecycle: 'passed', offline: true, realFrames: true, errors });
+  await context.close();
   fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report, null, 2));
   console.log(`Passed inline syntax, client/server constants and ${report.length} browser lifecycle scenarios.`);
 } finally {

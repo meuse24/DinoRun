@@ -14,8 +14,16 @@ There is no build step, package manifest, or configured linter. Use modern Node.
 
 - `node dev-server.js`: serve the game at `http://127.0.0.1:8765/dino.html`. Override the port with `$env:DINO_DEV_PORT = '9000'` in PowerShell. This server proxies highscore requests to the live API; it does not execute local PHP.
 - `node --check dev-server.js`: check preview-server syntax.
+- `node tests/game-contract.mjs`: run baseline-independent lifecycle, score-rule,
+  standalone offline file and hosted offline installation checks. It starts its
+  own fixture server and never contacts the live highscore service.
+- `node tests/skill-client.mjs`: run the installed develop-web-game Playwright
+  client against a deterministic fixture with online scores disabled.
 - `php -l highscores-lib.php`: check PHP syntax; repeat for other changed PHP files.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
+- Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.
+  Keep the game in one self-contained HTML, with no required sibling assets for
+  `file://` play. The menu song is optional; hosted PWA assets remain separate.
 
 ## Coding Style & Naming Conventions
 
@@ -27,7 +35,7 @@ Tests use Playwright and Node strict assertions; no coverage percentage is confi
 
 ## Commit & Pull Request Guidelines
 
-Git history is unavailable in this checkout. Use short imperative commit subjects, such as `Fix mountain snow contours`. Include the behavior changed, verification commands, relevant issues, and before/after screenshots for visual changes in pull requests.
+Use Git with short imperative commit subjects, such as `Fix mountain snow contours`. Include the behavior changed, verification commands, relevant issues, and before/after screenshots for visual changes in pull requests.
 
 ## Configuration & Data
 

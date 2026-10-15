@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dino-run-v3';
+const CACHE_NAME = 'dino-run-v4';
 const CACHE_PREFIX = 'dino-run-';
 const GAME_URL = new URL('./dino.html', self.registration.scope).href;
 const STATIC_URLS = [
@@ -12,7 +12,13 @@ const MUSIC_URL = new URL('./dino-jump-jump.mp3', self.registration.scope).href;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll([GAME_URL, ...STATIC_URLS])),
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all([
+        cache.addAll([GAME_URL, ...STATIC_URLS.filter((url) => url !== MUSIC_URL)]),
+        // A shared HTML/game installation may omit the optional menu track.
+        cache.add(MUSIC_URL).catch(() => {}),
+      ]),
+    ),
   );
   self.skipWaiting();
 });

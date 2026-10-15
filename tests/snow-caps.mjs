@@ -6,10 +6,9 @@ import { pathToFileURL } from 'node:url';
 const { chromium } = await import(process.env.DINO_PLAYWRIGHT
   ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
 const root = path.resolve(import.meta.dirname, '..');
-const output = path.join(root, 'output/snow-caps');
+const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output'), 'snow-caps');
 fs.mkdirSync(output, { recursive: true });
-const sources = [fs.readFileSync(process.argv[2], 'utf8'), fs.readFileSync(path.join(root, 'dino.html'), 'utf8')]
-  .map(source => source.replace('ctx.fill(face.snow);', 'if (!window.__hideSnow) ctx.fill(face.snow);'));
+const sources = [fs.readFileSync(process.argv[2], 'utf8'), fs.readFileSync(path.join(root, 'dino.html'), 'utf8')];
 const browser = await chromium.launch({ headless: true });
 const report = [];
 try {
@@ -37,8 +36,15 @@ try {
           const pixels = await page.evaluate(({ offset, night }) => {
             const r = window.__dinoRunner.renderer, ctx = r.ctx, c = ctx.canvas;
             ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); ctx.restore();
-            window.__hideSnow = true;
-            r.drawMountainLayer(null, offset, 187, 64, 139, '#788593', night * 0.62, 17, true, 128, 0.3, '#121b3e');
+            // Observe retained snow paths instead of rewriting production source text.
+            const fill = ctx.fill;
+            ctx.fill = function (path, ...args) {
+              if (r.mountainLayers.some(layer => layer?.faces.some(face => face.snow === path))) return;
+              return fill.call(this, path, ...args);
+            };
+            try {
+              r.drawMountainLayer(null, offset, 187, 64, 139, '#788593', night * 0.62, 17, true, 128, 0.3, '#121b3e');
+            } finally { ctx.fill = fill; }
             return c.toDataURL();
           }, { offset, night });
           const index = report.filter(item => item.name === name).length;

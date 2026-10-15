@@ -13,7 +13,8 @@ assert(baselineFile, 'Pass the original HTML for the before/after comparison');
 const url = process.argv[3] || 'http://127.0.0.1:8765/dino.html';
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const output = path.join(root, 'output', engine === 'chromium' ? 'render-cache' : `render-cache-${engine}`);
+const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output'),
+  engine === 'chromium' ? 'render-cache' : `render-cache-${engine}`);
 fs.mkdirSync(output, { recursive: true });
 const versions = [fs.readFileSync(baselineFile, 'utf8'), fs.readFileSync(path.join(root, 'dino.html'), 'utf8')];
 const browser = await playwright[engine].launch({ headless: true });

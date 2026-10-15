@@ -97,3 +97,30 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Found an existing hosted-offline dependency on the supposedly optional song:
   cache.addAll included it. Follow-up makes song caching best effort and checks
   installation with its HTTP response deliberately set to 404.
+
+## 2026-10-15: Refactoring completed and verified
+
+- Service-worker cache v4 now caches required installation assets separately from
+  the optional song. Hosted offline install/reload succeeds when music is 404.
+- Extended game-contract.mjs to six scenarios, real rAF pause/resume, touch duck,
+  direct file Help links, corrupt stored preferences, blocked-storage per-mode
+  records and explicit standalone request checks. All passed on the final build.
+- Final comparison against 10f6b21 passed: 70/70 Canvas scenes pixel-identical
+  (max channel difference 0; changed pixels 0); all five simulation/effect traces
+  match across 12,000 frame advances per configuration, preserving cache bounds,
+  RNG behavior, landings, turbo destruction, collisions and restarts.
+- Snow checks passed 54 non-snow image comparisons and 156 contour checks. The
+  test now intercepts retained snow paths instead of altering production source.
+- Added DINO_TEST_OUTPUT support to comparison scripts. Final reports are under
+  output/refactoring/comparison; original tracked historical outputs restored.
+- Ran tests/skill-client.mjs using the actual installed skill client, with two
+  action bursts for start/jump/landing/duck and a positive score. No error files;
+  inspected gameplay screenshot/state and mobile/night/turbo/file/PWA examples.
+- Inline script syntax, Node script syntax, service-worker syntax, shared PHP/JS
+  constants and git diff --check passed. Backend PHP code is unchanged. No real
+  highscore requests or mutable-data changes were made.
+- All four plan steps completed; REFACTORING.md contains architecture/results
+  and AGENTS.md documents the repeatable commands. Git branch:
+  refactor/single-html. No deployment performed.
+- Remaining required work: none. Safari/iOS hardware remains untested; no
+  performance gain is claimed for this structural refactoring.
