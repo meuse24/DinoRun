@@ -4,13 +4,16 @@
 // Run the safe preview from tests/android-preview.cjs, then this script.
 // No device/viewport emulation or manual game frames; CDP touch input in real Chrome.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
-const output = path.join(root, 'output/feather/device');
+const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/feather'), 'device');
+const artifactFile = path.resolve(process.argv[2] || path.join(root, 'dino.html'));
+const artifactSha256 = createHash('sha256').update(fs.readFileSync(artifactFile)).digest('hex');
 fs.mkdirSync(output, { recursive: true });
 const adb = (...args) => execFileSync('adb',
   [...(process.env.DINO_ANDROID_SERIAL ? ['-s', process.env.DINO_ANDROID_SERIAL] : []), ...args],
@@ -21,6 +24,7 @@ const original = {
   rotation: adb('shell', 'settings', 'get', 'system', 'user_rotation'),
 };
 const metadata = {
+  artifact: path.relative(root, artifactFile), artifactSha256,
   model: adb('shell', 'getprop', 'ro.product.model'),
   android: adb('shell', 'getprop', 'ro.build.version.release'),
   build: fs.readFileSync(path.join(root, 'dino.html'), 'utf8').match(/const BUILD = '([^']+)'/)[1],
@@ -44,6 +48,7 @@ try {
   await page.waitForFunction(() => !!window.__dinoRunner);
   assert.equal(await page.locator('#build-info').textContent(), 'Build ' + metadata.build);
   assert.equal(await page.evaluate(() => window.__dinoTest.highscoreApiUrl), null);
+  assert.equal(await page.evaluate(() => window.__dinoArtifactSha256), artifactSha256);
   assert.equal(await page.evaluate(() => !!window.__dinoTest.manualFrames), false);
   const cdp = await page.context().newCDPSession(page);
   const touch = async (locator, hold = 0) => {
@@ -165,11 +170,22 @@ try {
   assert.equal((await state()).feather.charged, false);
   const touches = await page.evaluate(() => window.__deviceTouches);
   assert(touches.length > 10 && touches.every(t => t.trusted && t.pointerType === 'touch'));
+  await page.evaluate(() => {
+    const g = window.__dinoGame;
+    g.score = 12; g.recordAtStart = 0; g.gameOver();
+  });
+  await page.waitForFunction(() => document.getElementById('scores').open);
+  assert.equal(await page.locator('#scores-entry-view').isVisible(), true);
+  await page.screenshot({ path: path.join(output, 'automatic-name.png') });
+  await touch(page.locator('#entry-cancel'));
+  await page.waitForFunction(() => !window.__dinoRunner.paused);
+  await touch(page.locator('#play-again'));
+  await page.waitForFunction(() => window.__dinoGame.playing);
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
-  await page.waitForFunction(async build => {
+  await page.waitForFunction(async hash => {
     const response = await caches.match(location.href.split('#')[0]);
-    return !!response && (await response.text()).includes("const BUILD = '" + build + "'");
-  }, metadata.build);
+    return !!response && (await response.text()).includes(hash);
+  }, artifactSha256);
   // Break only this test origin's USB bridge, leaving the phone's connectivity
   // and all other browser tabs alone. The actual service worker must reload it.
   adb('reverse', '--remove', 'tcp:8877');
@@ -177,6 +193,7 @@ try {
   await page.reload({ waitUntil: 'load' });
   await page.waitForFunction(() => !!window.__dinoRunner);
   assert.equal(await page.evaluate(() => window.__dinoTest.highscoreApiUrl), null);
+  assert.equal(await page.evaluate(() => window.__dinoArtifactSha256), artifactSha256);
   await touch(page.locator('#start-game'));
   await page.waitForFunction(() => window.__dinoGame.playing && !window.__dinoGame.countingDown);
   await page.waitForFunction(() => !window.__dinoGame.trex.jumping);
@@ -192,7 +209,8 @@ try {
   adb('reverse', 'tcp:8877', 'tcp:8877');
   reverseRemoved = false;
   assert.deepEqual(errors, []);
-  const report = { metadata, layouts, help: 'passed', deathRestart: 'passed', trustedTouches: touches.length,
+  const report = { metadata, layouts, help: 'passed', deathRestart: 'passed', automaticNameDialog: 'passed',
+    trustedTouches: touches.length,
     offlineReloadAndAirJump: 'passed with test USB origin bridge disconnected',
     errors, orientationRestored: original };
   fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report, null, 2));

@@ -12,6 +12,9 @@ import { pathToFileURL } from 'node:url';
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
 const source = fs.readFileSync(process.argv[2] || path.join(root, 'dino.html'), 'utf8');
+// Named constants are audited in the readable source. The selected artifact
+// itself is parsed and exercised below, including runtime mode/score behavior.
+const ruleSource = fs.readFileSync(path.join(root, 'dino.html'), 'utf8');
 const php = fs.readFileSync(path.join(root, 'highscores-lib.php'), 'utf8');
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/refactoring'), `contract-${engine}`);
 fs.mkdirSync(output, { recursive: true });
@@ -23,7 +26,7 @@ assert(!/<link\b[^>]*\brel\s*=\s*["']stylesheet|@import\s/i.test(source),
   'Styles must remain embedded');
 
 const phpNumber = name => Number(php.match(new RegExp(`const ${name} = ([\\d.]+);`))?.[1]);
-const jsNumber = name => Number(source.match(new RegExp(`\\b${name} = ([\\d.]+)[,;]`))?.[1]);
+const jsNumber = name => Number(ruleSource.match(new RegExp(`\\b${name} = ([\\d.]+)[,;]`))?.[1]);
 assert.equal(jsNumber('FPS'), phpNumber('DINO_STEPS_PER_SECOND'));
 assert.equal(jsNumber('CHILI_MULTIPLIER'), phpNumber('DINO_TURBO'));
 assert.equal(jsNumber('POINTS_PER_PX'), phpNumber('DINO_POINTS_PER_PX'));

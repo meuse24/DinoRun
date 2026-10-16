@@ -2,9 +2,13 @@
 const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
 const root = path.resolve(__dirname, '..');
-const source = fs.readFileSync(path.join(root, 'dino.html'), 'utf8').replace('<script>',
-  '<script>window.__dinoTest = { highscoreApiUrl: null };</script><script>');
+const artifact = fs.readFileSync(process.argv[2] || path.join(root, 'dino.html'), 'utf8');
+const hash = createHash('sha256').update(artifact).digest('hex');
+const source = artifact.replace('<script>',
+  '<script>window.__dinoTest = { highscoreApiUrl: null };' +
+  'window.__dinoArtifactSha256 = ' + JSON.stringify(hash) + ';</script><script>');
 const assets = { 'service-worker.js': 'text/javascript', 'manifest.webmanifest': 'application/manifest+json',
   'icon-192.png': 'image/png', 'icon-512.png': 'image/png', 'icon-180.png': 'image/png',
   'dino-jump-jump.mp3': 'audio/mpeg' };

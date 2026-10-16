@@ -10,11 +10,11 @@ const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
 const pw = await import(process.env.DINO_PLAYWRIGHT
   ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
-const output = path.join(root, 'output/feather', engine);
+const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/feather'), engine);
 fs.mkdirSync(output, { recursive: true });
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-feather-'));
 const html = path.join(temporary, 'dino.html');
-fs.copyFileSync(path.join(root, 'dino.html'), html);
+fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), html);
 let browser;
 const report = [];
 const state = page => page.evaluate(() => JSON.parse(window.render_game_to_text()));

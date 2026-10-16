@@ -15,7 +15,7 @@ const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output
 fs.mkdirSync(output, { recursive: true });
 for (const name of fs.readdirSync(output).filter(name => /^errors-\d+\.json$/.test(name)))
   fs.unlinkSync(path.join(output, name));
-const fixture = fs.readFileSync(path.join(root, 'dino.html'), 'utf8').replace('<script>', `<script>
+const fixture = fs.readFileSync(process.argv[2] || path.join(root, 'dino.html'), 'utf8').replace('<script>', `<script>
   localStorage.setItem('dino-fullscreen-disabled', 'true');
   const audio = new EventTarget();
   audio.pause = () => {};

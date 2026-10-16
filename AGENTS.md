@@ -10,7 +10,15 @@
 
 ## Build, Test, and Development Commands
 
-There is no build step, package manifest, or configured linter. Use modern Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7.4+.
+The readable game runs without a build step. Optional delivery tooling uses
+`package.json`/`package-lock.json`; there is no configured linter. Use modern
+Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7.4+.
+
+- `npm ci` then `npm run build`: generate `release/dino.html` and its size/hash
+  report using Terser, CSSO and HTMLMinifier-Terser. See `RELEASE.md`. Keep the
+  source HTML readable; tools are development dependencies only.
+- `node tests/release.mjs`: compare source/release UI, rendering and state in
+  desktop/mobile layouts; accepts `DINO_BROWSER=webkit`.
 
 - `node dev-server.js`: serve the game at `http://127.0.0.1:8765/dino.html`. Override the port with `$env:DINO_DEV_PORT = '9000'` in PowerShell. This server proxies highscore requests to the live API; it does not execute local PHP.
 - `node --check dev-server.js`: check preview-server syntax.
@@ -22,6 +30,8 @@ There is no build step, package manifest, or configured linter. Use modern Node.
   automatic name-dialog timing. Also accepts `DINO_BROWSER=webkit`.
 - `node tests/skill-client.mjs`: run the installed develop-web-game Playwright
   client against a deterministic fixture with online scores disabled.
+  This client, game-contract.mjs, jump-feather.mjs and the Android preview/runner
+  accept an optional HTML path to test a generated delivery artifact.
 - `node tests/jump-feather.mjs`: check feather pickups, all input methods,
   charge/physics/lifecycle/help and phone portrait/landscape emulation using an
   isolated standalone file. Set `DINO_BROWSER=webkit` for the WebKit run;

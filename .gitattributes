@@ -1,0 +1,3 @@
+dino.html text eol=lf
+release/*.html text eol=lf
+release/*.json text eol=lf

@@ -1,0 +1,18 @@
+{
+  "name": "dino-run-release",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional release tooling for the standalone Dino Run HTML game",
+  "scripts": {
+    "build": "node scripts/build-release.mjs",
+    "test:release": "node tests/release.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "csso": "5.0.5",
+    "html-minifier-terser": "7.2.0",
+    "terser": "5.51.2"
+  }
+}

@@ -261,3 +261,36 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   live highscore requests. Inline syntax, Node syntax and diff checks pass.
 - Final verification completed on 2026-10-16; aggregate:
   output/architecture/verification.json. No required tasks remain before commit.
+
+## 2026-10-16: Compact standalone delivery
+
+- User requested Terser, CSSO/clean-css, then HTMLMinifier, software installation and exact size savings; subsequently requested the actual connected-phone test.
+- Installed pinned local dev tools (Terser 5.51.2, CSSO 5.0.5, HTMLMinifier-Terser 7.2.0), with package lock. Added repeatable build script and separate release/dino.html; readable game source/build remain unchanged.
+- Build processes all three inline scripts, then all three styles (including help), then markup. Preserves Chromium attribution, SVG case, inline spacing and public properties; no runtime imports.
+- Initial visual comparison caught CSSO restructuring changing utility-button transparency. Reduced case confirms it moves the background fallback after color-mix. Disabled restructuring and rebuilt: 330338 -> 169433 UTF-8 bytes, saved 160905 bytes (48.71%).
+- Delivery/report/usage documented in RELEASE.md. Regression fixtures now accept an artifact path; named client/server constant audit still reads the source while browser behavior checks execute the actual release.
+- Desktop/mobile browser validation in progress. Physical Galaxy A53 is connected, but Chrome was in the background and CDP did not respond; user asked to bring Chrome forward. Phone settings restored after the failed connection attempt. Temporary safe release preview will be stopped after testing.
+- Isolated a second visual difference to HTML whitespace collapse in the round
+  menu (WebKit landscape: 194 edge pixels, maximum channel delta 9). JS-only and
+  CSS-only builds were identical; preserving that menu's whitespace fixed it.
+  Its attributes still pass through HTMLMinifier; other markup is collapsed.
+  CSS animation phases are frozen consistently in UI comparisons.
+- Final artifact: 169903 bytes, saving 160435 bytes (48.57%). Gzip/Brotli
+  measurements: 58300/51775 bytes. The source remains 330338 bytes, unchanged.
+- Final physical-device run passed on Galaxy A53/SM-A536B, Android 16, Chrome
+  155.0.8059.79 in actual portrait and landscape, with trusted touches and normal
+  rAF (controlled pickup/obstacle fixtures). Passed feather/duck/pause, help,
+  death/restart, automatic name dialog and offline reload/air jump after removing
+  only the test origin's USB bridge. SHA-256 matches the final release artifact.
+  Inspected screenshots. Rotation restored (auto=1, rotation=0), own tab closed,
+  test bridges removed and temporary server stopped. No live score submissions.
+- Final validation passed: 24 pixel-identical source/release UI and gameplay
+  scenes per engine (48 total), all seven lifecycle/offline/file scenarios per
+  engine, feather checks in three layouts per engine and the installed skill
+  action client. Chromium 151.0.7922.34 / WebKit 26.5. The single WebKit settings
+  click timeout during a parallel run passed on rerun and in the final suite.
+- Final hash d8307ad3117e97cc46f8d3ec1d6da113d1fbd7e3648844073ad24aa4046f3072;
+  aggregate output/release/verification.json. Build reproducibility/hash checks,
+  inline/Node syntax, npm installation audit (zero findings) and diff checks
+  pass. Source dino.html and live backend/data are unchanged. No required work
+  remains before commit.
