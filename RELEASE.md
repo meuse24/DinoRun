@@ -28,19 +28,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-15.6)
+## Size (UTF-8 bytes, build 2026-10-16.1)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 330,338 |
-| After Terser | 197,340 |
-| After CSSO | 176,260 |
-| Final HTML | 169,903 |
+| Readable source | 339,320 |
+| After Terser | 201,926 |
+| After CSSO | 180,846 |
+| Final HTML | 174,403 |
 
-Saved: **160,435 bytes (48.57%)**, before transport compression. The optional
+Saved: **164,917 bytes (48.60%)**, before transport compression. The optional
 song is not counted or altered. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-58,300 bytes; Brotli quality 11 gives 51,775 bytes. These are measurements only;
+59,286 bytes; Brotli quality 11 gives 52,576 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -66,10 +66,12 @@ see `FEATHER.md` for the Windows WebKit setup. Run with Chromium, then with
 node tests/release.mjs
 node tests/game-contract.mjs release/dino.html
 node tests/jump-feather.mjs release/dino.html
+node tests/shield-bubble.mjs release/dino.html
 ```
 
 `tests/release.mjs` checks hashes/reproducibility and compares both DOM UI and
 gameplay against the readable source: start, settings, help, feather gameplay,
+shield pickup/protection/duck/pop,
 automatic name entry and game over in four desktop/mobile layouts. The lifecycle
 suite audits named client/PHP constants in the readable source and exercises the
 selected delivery artifact in the browser, including standalone file/offline and
@@ -86,9 +88,18 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Verified result
+## Shield delivery verification
 
-Final delivery SHA-256:
+Build `2026-10-16.1`, SHA-256:
+`2977b167fd2ae999bf7e2fade85da8b56b2d59af4e2f030e2ccc034f24f6c92d`.
+Chromium 151.0.7922.34 and WebKit 26.5 each pass 40 pixel-identical
+source/release scenes, including the shield in all four layouts. Further shield
+behavior and offline evidence is recorded in [SHIELD.md](SHIELD.md).
+The shield build has not been tested on a physical phone.
+
+## Previous physical-device verification (build 2026-10-15.6)
+
+Previously tested delivery SHA-256:
 `d8307ad3117e97cc46f8d3ec1d6da113d1fbd7e3648844073ad24aa4046f3072`.
 
 - Chromium 151.0.7922.34 and WebKit 26.5: all 24 UI/gameplay comparisons per

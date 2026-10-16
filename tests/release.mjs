@@ -121,6 +121,29 @@ for (const [name, viewport] of [
       await advance(1);
       await page.locator('#game').focus(); await page.keyboard.press('Space'); await advance(10);
       await snapshot('playing');
+      // Pass the opening clear/countdown time before testing collectibles.
+      await advance(60);
+      await page.evaluate(() => {
+        const g = window.__dinoGame;
+        g.shield.pickup = { x: 240, y: 157 };
+        g.capturePrevious(); window.__dinoRunner.draw(1);
+      });
+      await snapshot('shield-pickup');
+      await page.evaluate(() => {
+        const g = window.__dinoGame;
+        g.shield.pickup = { x: g.trex.x + 25, y: g.trex.y + 24 };
+      });
+      await advance(1);
+      assert.equal(await page.evaluate(() => window.__dinoGame.shield.charged), true);
+      await snapshot('shield-protected');
+      await advance(60);
+      await page.evaluate(() => { window.__dinoGame.duck(true); window.__dinoRunner.draw(1); });
+      await snapshot('shield-duck');
+      await page.evaluate(() => {
+        const g = window.__dinoGame;
+        g.duck(false); g.shield.consume(); window.__dinoRunner.draw(1);
+      });
+      await snapshot('shield-pop');
       await page.evaluate(() => {
         const g = window.__dinoGame; g.score = 12; g.gameTime = 4000; g.gameOver();
       });

@@ -294,3 +294,20 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   inline/Node syntax, npm installation audit (zero findings) and diff checks
   pass. Source dino.html and live backend/data are unchanged. No required work
   remains before commit.
+
+## 2026-10-16: Shield bubble
+
+- Request: plan and implement a collectible bubble surviving one cactus or bird collision; research webgame best practices and use Git.
+- Baseline 7530590, clean working tree; branch feat/shield-bubble. Saved source under output/shield/baseline.html. Plan, research and player contract: SHIELD.md.
+- Applying develop-web-game skill; retain standalone Canvas architecture, fixed steps, explicit world and independent cosmetic effects.
+- Implemented ShieldBubble with deterministic spawn/cooldown, swept pickup and exact one-obstacle protection. Added Canvas shell/emblem/pop, separate sounds, accessible announcements/help, and shared-world/reset integration. Chili preserves protection on cacti; shield catches birds. Worker cache bumped to v5.
+- First visual inspection: shell remains readable around running/jumping/ducking dino; no added assets. New offline test uses actual obstacle classes. Fixed fixture isolation (unrelated incoming obstacle) and waits for existing asynchronous live-region/resize updates; no corresponding gameplay defects.
+- Source regression suites: Chromium/WebKit contract (7 each), architecture (11 each), feather (3 layouts each) and installed skill action client pass. Source/release shield verification in progress.
+- Source/release comparison passes 40 pixel-identical scenes per engine (80 total), including shield pickup/protected/duck/pop. Expanded delivery fixture waits until the opening clear/countdown period before collecting.
+- Isolated WebKit landscape-to-portrait test issue: the emulated iPhone profile supplied a portrait screen with an initial landscape viewport. Inner/visual viewport changed but layout viewport/media queries stayed landscape. Matching initial screen to viewport fixes the minimal reproduction (world resizes 600 -> 420). Updated only the new test harness; no game workaround. Full source/release shield reruns underway.
+- Corrected-profile shield source tests now pass all three layouts in WebKit 26.5; Chromium 151.0.7922.34 also passes all three. Covered natural/swept collection, deterministic/no-stack/cooldown/safe corridors, real cactus/cluster/bird contacts, next/simultaneous hits, same-step pickup, Chili/feather, duck near-miss, pause/pickup/pop clocks, orientation, reset, reduced motion and help. No browser errors/external requests.
+- Delivery contract and feather passed both engines. Delivery shield passed Chromium; corrected-profile WebKit and installed release skill-client are completing. All 80 source/release comparisons passed; inline/Node syntax, hash/size checks and git diff --check pass.
+- Final delivery shield checks pass three layouts in Chromium and WebKit; source/delivery installed skill-client runs pass. Contract/feather pass against both artifacts in both engines; 80 source/release comparison scenes are pixel-identical. New shield tests have no uncaught/browser-console errors and request only their isolated HTML.
+- Inspected source/delivery gameplay, pickup/shell/jump/duck/pop, touch layouts, help and night images. The WebKit dark-mode snapshot also needed the existing asynchronous media-query update to settle; added a wait and verified source/release night renders separately.
+- Final report: output/shield/verification.json. Build 2026-10-16.1, delivery 174403 bytes, SHA-256 2977b167fd2ae999bf7e2fade85da8b56b2d59af4e2f030e2ccc034f24f6c92d. Source is 339320 bytes. Reproducibility, hashes, inline/Node syntax and diff checks pass. Updated release documentation and test instructions.
+- No physical-phone shield run, live highscore requests, deployment or backend/data edits. All required implementation/verification tasks complete; optional future check: physical Android/iPhone shield playtest.

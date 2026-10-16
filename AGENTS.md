@@ -36,6 +36,10 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   charge/physics/lifecycle/help and phone portrait/landscape emulation using an
   isolated standalone file. Set `DINO_BROWSER=webkit` for the WebKit run;
   `game-contract.mjs` also accepts `DINO_BROWSER`.
+- `node tests/shield-bubble.mjs [game.html]`: check shield collection, single-hit
+  cactus/bird/cluster protection, Chili/feather interaction, spawning, lifecycle,
+  offline rendering and touch portrait/landscape. Accepts `DINO_BROWSER=webkit`;
+  see `SHIELD.md` for the player contract and validation evidence.
 - `node tests/android-preview.cjs` and `node tests/android-feather.mjs`: run the
   controlled physical-Android checks over USB/CDP. Requires Chrome open and the
   ADB bridges documented in FEATHER.md. The runner restores rotation settings,

@@ -75,18 +75,18 @@ Get-Content release/size-report.json
 Get-FileHash release/dino.html -Algorithm SHA256
 ```
 
-Erprobtes Ergebnis für Spiel-Build `2026-10-15.6`, jeweils UTF-8-Bytes:
+Ergebnis für Spiel-Build `2026-10-16.1` mit Schutzblase, jeweils UTF-8-Bytes:
 
 | Stufe | Bytes |
 | --- | ---: |
-| Lesbare Quelle | 330.338 |
-| Nach Terser | 197.340 |
-| Nach CSSO | 176.260 |
-| Fertige HTML-Datei | 169.903 |
+| Lesbare Quelle | 339.320 |
+| Nach Terser | 201.926 |
+| Nach CSSO | 180.846 |
+| Fertige HTML-Datei | 174.403 |
 
-**Ersparnis: 160.435 Bytes bzw. 48,57 %.** Der optionale Song ist dabei nicht
+**Ersparnis: 164.917 Bytes bzw. 48,60 %.** Der optionale Song ist dabei nicht
 mitgerechnet. Die gemessenen Größen mit zusätzlichem gzip/Brotli betragen
-58.300/51.775 Bytes; entsprechende Serverkompression wird vom Build nicht
+59.286/52.576 Bytes; entsprechende Serverkompression wird vom Build nicht
 eingerichtet. Nach Quelländerungen gelten die neu erzeugten Berichtswerte.
 
 ## 4. Kompakte Datei testen
@@ -102,6 +102,7 @@ $env:DINO_BROWSER = 'chromium'
 node tests/release.mjs
 node tests/game-contract.mjs release/dino.html
 node tests/jump-feather.mjs release/dino.html
+node tests/shield-bubble.mjs release/dino.html
 ```
 
 Dieselben Prüfungen mit WebKit ausführen:
@@ -113,6 +114,7 @@ $env:PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = '1'
 node tests/release.mjs
 node tests/game-contract.mjs release/dino.html
 node tests/jump-feather.mjs release/dino.html
+node tests/shield-bubble.mjs release/dino.html
 ```
 
 Der WebKit-Browser wird dabei tatsächlich gestartet. Zusätzlich kann der
@@ -124,7 +126,7 @@ node tests/skill-client.mjs release/dino.html
 
 Die Tests deaktivieren echte Online-Highscore-Einreichungen. Geprüft werden
 unter anderem reproduzierbare Builds, Bild- und Zustandsübereinstimmung mit der
-Quelle, Desktop-/Smartphone-Layouts, Hilfe, Namensdialog, Feder, Neustart und
+Quelle, Desktop-/Smartphone-Layouts, Hilfe, Namensdialog, Feder, Schutzblase, Neustart und
 Offline-/`file://`-Betrieb. Berichte und Screenshots liegen unter `output/release`.
 
 ## 5. Optional auf dem angeschlossenen Android-Handy prüfen
@@ -155,10 +157,13 @@ Test prüft die SHA-256-Kennung der geladenen Datei, verwendet echte Touch-Einga
 und stellt die ursprünglichen Rotationseinstellungen wieder her. Er öffnet und
 schließt seinen eigenen Tab. Der Server deaktiviert Online-Highscore-Zugriffe.
 
-Die finale kompakte Datei wurde auf dem Galaxy A53 mit Android 16 und Chrome
+Die frühere kompakte Datei (Build `2026-10-15.6`) wurde auf dem Galaxy A53 mit Android 16 und Chrome
 155 erfolgreich in beiden Orientierungen sowie nach Offline-Neuladen geprüft.
 Chromium und WebKit bestanden zusätzlich zusammen 48 pixelgleiche
 Vergleichsszenen. Direktes Android-`file://`-Öffnen war nicht Teil des Handytests.
+Der neue Schutzblasen-Build `2026-10-16.1` besteht 80 pixelgleiche
+Vergleichsszenen in Chromium/WebKit. Er wurde bisher mit Handyemulation geprüft;
+ein physischer Handytest der Schutzblase wurde nicht durchgeführt.
 
 ## 6. Ausliefern
 
