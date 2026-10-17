@@ -40,6 +40,9 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   cactus/bird/cluster protection, Chili/feather interaction, spawning, lifecycle,
   offline rendering and touch portrait/landscape. Accepts `DINO_BROWSER=webkit`;
   see `SHIELD.md` for the player contract and validation evidence.
+- `node tests/attract-screen.mjs [game.html]`: check the rotating score/demo/
+  power-up preview, persistent Start target, isolated demo, online/local scores,
+  pause, reduced motion and five desktop/touch layouts. Accepts `DINO_BROWSER`.
 - `node tests/android-preview.cjs` and `node tests/android-feather.mjs`: run the
   controlled physical-Android checks over USB/CDP. Requires Chrome open and the
   ADB bridges documented in FEATHER.md. The runner restores rotation settings,

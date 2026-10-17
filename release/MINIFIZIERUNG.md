@@ -58,6 +58,11 @@ Das Skript verarbeitet die Quelle in dieser Reihenfolge:
   `ignoreCustomFragments` diesen Abschnitt beim gesamten HTML-Durchlauf. Ohne
   diese Ausnahme unterschieden sich in WebKit 194 Kantenpixel des Menüs.
 
+Seit dem rotierenden Startbildschirm enthält das Menü weitere `section`-Tags.
+Das Build-Skript erfasst deshalb den gesamten Menüabschnitt über ausgeglichene
+Tags und schützt ihn mit temporären Markierungen. Ein Ausdruck bis zum ersten
+`</section>` würde nur einen Teil schützen und die HTML-Struktur beschädigen.
+
 Die vollständigen, tatsächlich verwendeten Optionen stehen im Build-Skript.
 Keine pauschalen Minifier-Standardeinstellungen darüberlaufen lassen.
 
@@ -75,18 +80,18 @@ Get-Content release/size-report.json
 Get-FileHash release/dino.html -Algorithm SHA256
 ```
 
-Ergebnis für Spiel-Build `2026-10-16.1` mit Schutzblase, jeweils UTF-8-Bytes:
+Ergebnis für Spiel-Build `2026-10-17.1` mit rotierendem Startbildschirm, jeweils UTF-8-Bytes:
 
 | Stufe | Bytes |
 | --- | ---: |
-| Lesbare Quelle | 339.320 |
-| Nach Terser | 201.926 |
-| Nach CSSO | 180.846 |
-| Fertige HTML-Datei | 174.403 |
+| Lesbare Quelle | 360.922 |
+| Nach Terser | 219.476 |
+| Nach CSSO | 196.244 |
+| Fertige HTML-Datei | 189.665 |
 
-**Ersparnis: 164.917 Bytes bzw. 48,60 %.** Der optionale Song ist dabei nicht
+**Ersparnis: 171.257 Bytes bzw. 47,45 %.** Der optionale Song ist dabei nicht
 mitgerechnet. Die gemessenen Größen mit zusätzlichem gzip/Brotli betragen
-59.286/52.576 Bytes; entsprechende Serverkompression wird vom Build nicht
+62.886/55.623 Bytes; entsprechende Serverkompression wird vom Build nicht
 eingerichtet. Nach Quelländerungen gelten die neu erzeugten Berichtswerte.
 
 ## 4. Kompakte Datei testen
@@ -103,6 +108,7 @@ node tests/release.mjs
 node tests/game-contract.mjs release/dino.html
 node tests/jump-feather.mjs release/dino.html
 node tests/shield-bubble.mjs release/dino.html
+node tests/attract-screen.mjs release/dino.html
 ```
 
 Dieselben Prüfungen mit WebKit ausführen:
@@ -115,6 +121,7 @@ node tests/release.mjs
 node tests/game-contract.mjs release/dino.html
 node tests/jump-feather.mjs release/dino.html
 node tests/shield-bubble.mjs release/dino.html
+node tests/attract-screen.mjs release/dino.html
 ```
 
 Der WebKit-Browser wird dabei tatsächlich gestartet. Zusätzlich kann der
@@ -164,6 +171,9 @@ Vergleichsszenen. Direktes Android-`file://`-Öffnen war nicht Teil des Handytes
 Der neue Schutzblasen-Build `2026-10-16.1` besteht 80 pixelgleiche
 Vergleichsszenen in Chromium/WebKit. Er wurde bisher mit Handyemulation geprüft;
 ein physischer Handytest der Schutzblase wurde nicht durchgeführt.
+Auch der neue Startbildschirm (`2026-10-17.1`) hat bisher Browser-/Handyemulations-
+tests sowie 96 pixelgleiche Vergleichsszenen; ein neuer physischer Handytest wurde nicht durchgeführt. Details stehen
+in `../ATTRACT.md`.
 
 ## 6. Ausliefern
 

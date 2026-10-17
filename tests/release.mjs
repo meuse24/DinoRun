@@ -104,6 +104,20 @@ for (const [name, viewport] of [
         assert.equal(difference.changed, 0, `${name}/${scene}: ${JSON.stringify(difference)}`);
       };
       await snapshot('start');
+      await page.evaluate(() => {
+        const r = window.__dinoRunner;
+        r.attract.select(1);
+        for (let i = 0; i < 90; i++) r.update(1000 / 60);
+        r.draw(1);
+      });
+      await snapshot('attract-demo');
+      await page.evaluate(() => {
+        const r = window.__dinoRunner; r.attract.select(2); r.draw(1);
+      });
+      await snapshot('attract-powerups');
+      await page.evaluate(() => {
+        const r = window.__dinoRunner; r.attract.select(0); r.draw(1);
+      });
       await page.locator('#settings-open').click();
       await snapshot('settings');
       await page.locator('#settings-close').click();

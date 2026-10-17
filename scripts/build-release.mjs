@@ -68,13 +68,24 @@ const markupOptions = {
 // WebKit paints the transformed menu's rounded edges differently when its text
 // whitespace nodes are collapsed (isolated comparison: 194 pixels, max delta 9).
 // Minify its markup/attributes too, retaining only this layout-sensitive spacing.
-const panelPattern = /<section\b[^>]*\bid=["']?round-panel["']?[\s\S]*?<\/section>/gi;
-const panels = [...html.matchAll(panelPattern)];
-assert.equal(panels.length, 1, 'Expected one round menu');
-html = html.replace(panels[0][0], await minifyHtml(panels[0][0], {
-  ...markupOptions, collapseWhitespace: false,
-}));
-html = await minifyHtml(html, { ...markupOptions, ignoreCustomFragments: [panelPattern] });
+const panelStart = /<section\b[^>]*\bid=["']?round-panel["']?[^>]*>/i.exec(html);
+assert(panelStart, 'Expected the round menu');
+// The rotating preview contains nested sections. Match balanced tags rather
+// than stopping at the first slide's closing tag and protecting partial HTML.
+let depth = 0, panelEnd;
+for (const tag of html.slice(panelStart.index).matchAll(/<\/?section\b[^>]*>/gi)) {
+  depth += /^<\//.test(tag[0]) ? -1 : 1;
+  if (depth === 0) { panelEnd = panelStart.index + tag.index + tag[0].length; break; }
+}
+assert(panelEnd, 'Unclosed round menu');
+const panel = html.slice(panelStart.index, panelEnd);
+const protectedPanel = await minifyHtml(panel, { ...markupOptions, collapseWhitespace: false });
+const startMarker = '<!--dino-round-start-->', endMarker = '<!--dino-round-end-->';
+html = html.slice(0, panelStart.index) + startMarker + protectedPanel + endMarker + html.slice(panelEnd);
+html = await minifyHtml(html, { ...markupOptions,
+  ignoreCustomFragments: [/<!--dino-round-start-->[\s\S]*?<!--dino-round-end-->/g],
+});
+html = html.replace(startMarker, '').replace(endMarker, '');
 html = html.trim() + '\n';
 stages.push({ tool: 'HTMLMinifier-Terser', bytes: bytes(html) });
 

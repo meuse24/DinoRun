@@ -20,7 +20,9 @@ The locally installed, exactly pinned development tools run in this order:
 3. HTMLMinifier-Terser 7.2.0 minifies markup, preserving inline text spacing,
    explicit tag boundaries and SVG attribute case. Whitespace nodes inside the
    transformed round menu are retained for pixel-identical WebKit painting; its
-   attributes are still minified. JS/CSS are not minified again.
+   attributes are still minified. The menu boundary uses balanced section tags
+   so nested attract slides are protected as a complete element. JS/CSS are not
+   minified again.
 
 Official documentation: [Terser](https://github.com/terser/terser),
 [CSSO](https://github.com/css/csso),
@@ -28,19 +30,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-16.1)
+## Size (UTF-8 bytes, build 2026-10-17.1)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 339,320 |
-| After Terser | 201,926 |
-| After CSSO | 180,846 |
-| Final HTML | 174,403 |
+| Readable source | 360,922 |
+| After Terser | 219,476 |
+| After CSSO | 196,244 |
+| Final HTML | 189,665 |
 
-Saved: **164,917 bytes (48.60%)**, before transport compression. The optional
+Saved: **171,257 bytes (47.45%)**, before transport compression. The optional
 song is not counted or altered. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-59,286 bytes; Brotli quality 11 gives 52,576 bytes. These are measurements only;
+62,886 bytes; Brotli quality 11 gives 55,623 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -67,10 +69,11 @@ node tests/release.mjs
 node tests/game-contract.mjs release/dino.html
 node tests/jump-feather.mjs release/dino.html
 node tests/shield-bubble.mjs release/dino.html
+node tests/attract-screen.mjs release/dino.html
 ```
 
 `tests/release.mjs` checks hashes/reproducibility and compares both DOM UI and
-gameplay against the readable source: start, settings, help, feather gameplay,
+gameplay against the readable source: start/attract demo/power-ups, settings, help, feather gameplay,
 shield pickup/protection/duck/pop,
 automatic name entry and game over in four desktop/mobile layouts. The lifecycle
 suite audits named client/PHP constants in the readable source and exercises the
@@ -88,7 +91,17 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Shield delivery verification
+## Attract delivery verification
+
+Build `2026-10-17.1`, SHA-256:
+`9d37db43e1a8c96565a76a77869cd42a470bd551c7c1ff80150fd45d7fb64133`.
+The new attract behavior passes five desktop/touch layouts in both engines,
+against source and release. All 48 UI/gameplay comparison scenes per engine
+(96 total) are pixel-identical. See [ATTRACT.md](ATTRACT.md) and
+`output/attract/verification.json` for the validation evidence. This build has
+no new physical-phone verification.
+
+## Previous shield delivery verification
 
 Build `2026-10-16.1`, SHA-256:
 `2977b167fd2ae999bf7e2fade85da8b56b2d59af4e2f030e2ccc034f24f6c92d`.
