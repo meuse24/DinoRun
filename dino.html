@@ -726,6 +726,45 @@
       #game-controls button {
         text-align: left;
       }
+      #volume-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 22px;
+        margin-top: 14px;
+        padding: 18px;
+        border: 1px solid var(--menu-line);
+        border-radius: 18px;
+        background: var(--menu-panel);
+      }
+      .volume-row { min-width: 0; }
+      .volume-row label {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        font: 800 14px monospace;
+      }
+      .volume-row output { font-variant-numeric: tabular-nums; }
+      .volume-row input {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        margin: 0;
+        accent-color: #173f69;
+        cursor: pointer;
+        touch-action: pan-y;
+      }
+      .volume-row input:focus-visible {
+        outline: 3px solid #e67842;
+        outline-offset: 3px;
+      }
+      #volume-help {
+        grid-column: 1 / -1;
+        margin: 0;
+        font: 12px/1.5 monospace;
+      }
+      @media (max-width: 480px) {
+        #volume-controls { grid-template-columns: 1fr; }
+      }
       #mode-control {
         padding: 22px;
         border: 1px solid var(--menu-line);
@@ -2005,6 +2044,17 @@
             </button>
             <button id="sound-toggle" type="button" role="switch" aria-checked="true">Sound</button>
           </div>
+          <section id="volume-controls" aria-label="Volume" aria-describedby="volume-help">
+            <div class="volume-row">
+              <label for="music-volume">Music volume <output id="music-volume-value" for="music-volume" aria-hidden="true">45%</output></label>
+              <input id="music-volume" type="range" min="0" max="100" step="1" value="45" aria-valuetext="45%">
+            </div>
+            <div class="volume-row">
+              <label for="effects-volume">Effects volume <output id="effects-volume-value" for="effects-volume" aria-hidden="true">100%</output></label>
+              <input id="effects-volume" type="range" min="0" max="100" step="1" value="100" aria-valuetext="100%">
+            </div>
+            <p id="volume-help">Sound off mutes both. Your levels are saved in this browser.</p>
+          </section>
           <div id="mode-control">
             <label for="mode-select">Game mode</label>
             <select id="mode-select" aria-describedby="mode-help">
@@ -2632,8 +2682,8 @@
                     <h2>Scores &amp; settings</h2>
                     <p>
                       Get a top 10 score and enter four letters. Online scores show your name,
-                      score, date and device to everyone. Use the gear for Relaxed mode, sound and
-                      fullscreen.
+                      score, date and device to everyone. Use the gear for Relaxed mode, music
+                      and effects volume, sound and fullscreen.
                     </p>
                   </section>
                   <section class="card wide">
@@ -2705,7 +2755,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-17.4';
+        const BUILD = '2026-10-17.5';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -3204,15 +3254,23 @@
         const landscapeFullscreen = new LandscapeFullscreen();
 
         // Audio: optional menu track and synthesized game sounds.
+        const volumeLevel = (value) => clamp(Math.round(Number(value) || 0), 0, 100);
+        const savedVolume = (key, fallback) => {
+          const raw = preferences.get(key), value = Number(raw);
+          return raw !== null && raw.trim() !== '' && Number.isFinite(value) && value >= 0 && value <= 100
+            ? Math.round(value) : fallback;
+        };
         // Optional menu track: pause preserves position; only a new session resets it.
         class MenuMusic {
           constructor(audio = new Audio()) {
             this.audio = audio;
             this.wanted = null;
             this.unavailable = false;
+            this.volume = savedVolume('dino-music-volume', 45);
             audio.preload = 'none';
             audio.loop = true;
-            audio.volume = 0.45;
+            audio.volume = this.volume / 100;
+            audio.muted = this.volume === 0;
             audio.src = 'dino-jump-jump.mp3';
             audio.addEventListener('error', () => {
               // A separately shared HTML may not include the optional song.
@@ -3224,7 +3282,14 @@
               if (!this.wanted) audio.pause();
             });
           }
+          setVolume(value) {
+            this.volume = volumeLevel(value);
+            this.audio.volume = this.volume / 100;
+            this.audio.muted = this.volume === 0;
+            preferences.set('dino-music-volume', this.volume);
+          }
           sync(wanted, retry = false) {
+            wanted = wanted && this.volume > 0;
             const changed = wanted !== this.wanted;
             this.wanted = wanted;
             if (!wanted) {
@@ -3257,6 +3322,8 @@
         class GameSound {
           constructor() {
             this.context = null;
+            this.output = null;
+            this.volume = savedVolume('dino-effects-volume', 100);
             this.stale = false;
             this.onState = null;
             this.enabled = preferences.get('dino-sound-muted') !== 'true';
@@ -3276,6 +3343,20 @@
           updateButton() {
             this.button.textContent = 'Sound';
             this.button.setAttribute('aria-checked', String(this.enabled));
+            this.updateVolume();
+          }
+          setVolume(value) {
+            this.volume = volumeLevel(value);
+            preferences.set('dino-effects-volume', this.volume);
+            this.updateVolume();
+          }
+          updateVolume() {
+            if (!this.context || !this.output) return;
+            const gain = this.output.gain, t = this.context.currentTime, value = gain.value;
+            // A short ramp avoids clicks and also affects already scheduled sounds.
+            gain.cancelScheduledValues(t);
+            gain.setValueAtTime(value, t);
+            gain.linearRampToValueAtTime(this.enabled ? this.volume / 100 : 0, t + 0.012);
           }
           // Called from user input only: browsers allow audio to start or resume there.
           unlock() {
@@ -3291,6 +3372,9 @@
                   latencyHint: 'interactive',
                 });
                 this.context = audio;
+                this.output = audio.createGain();
+                this.output.gain.value = this.volume / 100;
+                this.output.connect(audio.destination);
                 audio.addEventListener?.('statechange', () => {
                   if (this.context === audio) this.onState?.(audio.state);
                 });
@@ -3301,6 +3385,7 @@
           discard() {
             const audio = this.context;
             this.context = null;
+            this.output = null;
             this.stale = false;
             try {
               if (audio.state !== 'closed') Promise.resolve(audio.close()).catch(() => {});
@@ -3327,7 +3412,7 @@
             );
           }
           switchClick(on, finalClick = false) {
-            if (!this.enabled) return;
+            if (!this.enabled || this.volume === 0) return;
             this.unlock();
             const audio = this.context,
               requested = now();
@@ -3354,7 +3439,7 @@
                   gain.gain.linearRampToValueAtTime(0.1, t + 0.002);
                   gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
                   tone.connect(gain);
-                  gain.connect(audio.destination);
+                  gain.connect(this.output);
                   tone.onended = () => {
                     tone.disconnect();
                     gain.disconnect();
@@ -3369,7 +3454,7 @@
           }
           updateSteps(dt, speed, running) {
             const audio = this.context;
-            if (!running || !this.enabled || !audio || audio.state !== 'running') {
+            if (!running || !this.enabled || this.volume === 0 || !audio || audio.state !== 'running') {
               this.stepTimer = 0;
               return;
             }
@@ -3389,7 +3474,7 @@
               gain.gain.linearRampToValueAtTime(0.055, t + 0.002);
               gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
               tone.connect(gain);
-              gain.connect(audio.destination);
+              gain.connect(this.output);
               tone.onended = () => {
                 tone.disconnect();
                 gain.disconnect();
@@ -3400,7 +3485,7 @@
           }
           crash() {
             const audio = this.context;
-            if (!this.enabled || !audio || audio.state !== 'running') return;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
             try {
               const t = audio.currentTime;
               for (const [type, start, end, volume, duration] of [
@@ -3416,7 +3501,7 @@
                 gain.gain.linearRampToValueAtTime(volume, t + 0.006);
                 gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
                 tone.connect(gain);
-                gain.connect(audio.destination);
+                gain.connect(this.output);
                 tone.onended = () => {
                   tone.disconnect();
                   gain.disconnect();
@@ -3431,7 +3516,7 @@
           // Arcade start beeps: a short tick for 3, 2, 1 and a higher, longer tone for GO.
           countdown(go) {
             const audio = this.context;
-            if (!this.enabled || !audio || audio.state !== 'running') return;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
             try {
               const t = audio.currentTime,
                 duration = go ? 0.38 : 0.14,
@@ -3444,7 +3529,7 @@
               gain.gain.setValueAtTime(0.06, t + duration * 0.6);
               gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
               tone.connect(gain);
-              gain.connect(audio.destination);
+              gain.connect(this.output);
               tone.onended = () => {
                 tone.disconnect();
                 gain.disconnect();
@@ -3455,7 +3540,7 @@
           }
           shield(pop = false) {
             const audio = this.context;
-            if (!this.enabled || !audio || audio.state !== 'running') return;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
             try {
               const t = audio.currentTime, duration = pop ? 0.18 : 0.28,
                 tone = audio.createOscillator(), gain = audio.createGain();
@@ -3466,7 +3551,7 @@
               gain.gain.linearRampToValueAtTime(0.1, t + 0.008);
               gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
               tone.connect(gain);
-              gain.connect(audio.destination);
+              gain.connect(this.output);
               tone.onended = () => { tone.disconnect(); gain.disconnect(); };
               tone.start(t);
               tone.stop(t + duration + 0.01);
@@ -3475,7 +3560,7 @@
           death() {
             this.crash();
             const audio = this.context;
-            if (!this.enabled || !audio || audio.state !== 'running') return;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
             this.stopDeath();
             const nodes = this.deathNodes;
             try {
@@ -3509,7 +3594,7 @@
                 gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
                 tone.connect(filter);
                 filter.connect(gain);
-                gain.connect(audio.destination);
+                gain.connect(this.output);
                 nodes.push(tone, filter, gain);
                 if (last) {
                   const vibrato = audio.createOscillator(),
@@ -3536,7 +3621,7 @@
               gain.gain.linearRampToValueAtTime(0.14, t + 0.008);
               gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
               thump.connect(gain);
-              gain.connect(audio.destination);
+              gain.connect(this.output);
               nodes.push(thump, gain);
               thump.start(t);
               thump.stop(t + 0.24);
@@ -3555,7 +3640,7 @@
           }
           celebrate() {
             const audio = this.context;
-            if (!this.enabled || !audio || audio.state !== 'running') return;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
             try {
               [523.25, 659.25, 783.99].forEach((frequency, index) => {
                 const tone = audio.createOscillator(),
@@ -3567,7 +3652,7 @@
                 gain.gain.linearRampToValueAtTime(0.09, t + 0.008);
                 gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.17);
                 tone.connect(gain);
-                gain.connect(audio.destination);
+                gain.connect(this.output);
                 tone.onended = () => {
                   tone.disconnect();
                   gain.disconnect();
@@ -3580,10 +3665,10 @@
           play() {
             this.unlock();
             const audio = this.context;
-            if (!this.enabled || !audio) return;
+            if (!this.enabled || this.volume === 0 || !audio) return;
             const requested = now();
             const emit = () => {
-              if (!this.enabled || audio.state !== 'running' || now() - requested > 150) return;
+              if (!this.enabled || this.volume === 0 || audio.state !== 'running' || now() - requested > 150) return;
               try {
                 const tone = audio.createOscillator(),
                   gain = audio.createGain(),
@@ -3598,7 +3683,7 @@
                 gain.gain.linearRampToValueAtTime(0.16, t + 0.008);
                 gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.32);
                 tone.connect(gain);
-                gain.connect(audio.destination);
+                gain.connect(this.output);
                 tone.onended = () => {
                   tone.disconnect();
                   gain.disconnect();
@@ -8200,6 +8285,24 @@
           bindSettingsEvents() {
             const runner = this.runner;
             runner.sound.button.addEventListener('click', () => runner.updateMusic(true));
+            for (const [name, channel] of [['music', runner.music], ['effects', runner.sound]]) {
+              const slider = document.getElementById(name + '-volume');
+              const value = document.getElementById(name + '-volume-value');
+              const show = () => {
+                slider.value = channel.volume;
+                value.value = channel.volume + '%';
+                slider.setAttribute('aria-valuetext', value.value);
+              };
+              show();
+              slider.addEventListener('input', () => {
+                channel.setVolume(slider.value);
+                show();
+                if (name === 'music') runner.updateMusic(true);
+              });
+              slider.addEventListener('keydown', (event) => event.stopPropagation());
+              // One preview when a change ends; dragging does not make repeated tones.
+              if (name === 'effects') slider.addEventListener('change', () => runner.sound.switchClick(true));
+            }
             document
               .getElementById('fps-toggle')
               .addEventListener('click', () => runner.sound.switchClick(runner.fps.enabled));
@@ -8792,6 +8895,7 @@
           return JSON.stringify({
             coordinates: 'logical canvas pixels; origin top left, x right, y down',
             state: game.state, paused: runner.paused, mode: game.mode,
+            audio: { enabled: runner.sound.enabled, musicVolume: runner.music.volume, effectsVolume: runner.sound.volume },
             attract: game.state === 'attract' ? {
               panel: runner.attract.slides[runner.attract.index], elapsedMs: runner.attract.elapsed,
               paused: runner.attract.paused,

@@ -30,19 +30,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-17.4)
+## Size (UTF-8 bytes, build 2026-10-17.5)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 363,561 |
-| After Terser | 221,531 |
-| After CSSO | 197,738 |
-| Final HTML | 191,141 |
+| Readable source | 368,518 |
+| After Terser | 225,073 |
+| After CSSO | 200,902 |
+| Final HTML | 194,113 |
 
-Saved: **172,420 bytes (47.43%)**, before transport compression. The optional
+Saved: **174,405 bytes (47.33%)**, before transport compression. The optional
 song is not counted or altered. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-63,268 bytes; Brotli quality 11 gives 55,949 bytes. These are measurements only;
+64,023 bytes; Brotli quality 11 gives 56,515 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
