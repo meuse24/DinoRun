@@ -32,6 +32,51 @@ check(is_string($testRoot) && is_dir($testRoot), 'Run through tests/admin-web.mj
 $prefix = rtrim(str_replace('\\', '/', (string) realpath($testRoot)), '/') . '/';
 check(strpos(str_replace('\\', '/', dino_data_dir()) . '/', $prefix) === 0, 'Refuse non-fixture data');
 
+$originalPassword = stream_get_contents(STDIN);
+$baseHash = dino_admin_password_hash();
+check(password_verify($originalPassword, $baseHash), 'Isolated fixture credential supplied on stdin');
+$credentialFile = dino_data_dir() . '/admin-password.php';
+$nextPassword = 'random words for isolated test only';
+foreach (['short', str_repeat('a', 73), str_repeat('ä', 37), "long enough but contains\0null", "invalid utf8 password \xff"] as $invalid) {
+    expect_error(function () use ($baseHash, $originalPassword, $invalid): void {
+        dino_admin_change_password($baseHash, $originalPassword, $invalid, $invalid);
+    }, 400);
+    check(!file_exists($credentialFile), 'Invalid password must not create credentials');
+}
+expect_error(function () use ($baseHash, $nextPassword): void {
+    dino_admin_change_password($baseHash, 'wrong', $nextPassword, $nextPassword);
+}, 400);
+expect_error(function () use ($baseHash, $originalPassword, $nextPassword): void {
+    dino_admin_change_password($baseHash, $originalPassword, $nextPassword, 'different');
+}, 400);
+expect_error(function () use ($baseHash, $originalPassword): void {
+    dino_admin_change_password($baseHash, $originalPassword, $originalPassword, $originalPassword);
+}, 400);
+dino_admin_change_password($baseHash, $originalPassword, $nextPassword, $nextPassword);
+$changedHash = dino_admin_password_hash();
+check(password_verify($nextPassword, $changedHash) && !password_verify($originalPassword, $changedHash), 'Persisted password replaces bootstrap');
+$raw = (string) file_get_contents($credentialFile);
+check(strpos($raw, "<?php exit; ?>\n") === 0 && strpos($raw, $nextPassword) === false, 'Guarded hash only; no plaintext password');
+expect_error(function () use ($baseHash, $originalPassword, $nextPassword): void {
+    dino_admin_change_password($baseHash, $originalPassword, $nextPassword, $nextPassword);
+}, 401);
+check(file_get_contents($credentialFile) === $raw, 'Stale change cannot overwrite current credential');
+// Boundary: 36 two-byte characters fit exactly; longer UTF-8 input is rejected.
+$unicodePassword = str_repeat('ä', 36);
+dino_admin_change_password($changedHash, $nextPassword, $unicodePassword, $unicodePassword);
+check(password_verify($unicodePassword, dino_admin_password_hash()), '72-byte Unicode password supported');
+check(glob(dino_data_dir() . '/.admin-password-*.php') === [], 'No credential temporary files left');
+$invalidState = ['v' => 1, 'config_key' => '', 'password_hash' => dino_admin_password_hash()];
+file_put_contents($credentialFile, "<?php exit; ?>\n" . json_encode($invalidState));
+expect_error(function (): void { dino_admin_password_hash(); }, 503);
+file_put_contents($credentialFile, 'corrupt');
+expect_error(function (): void { dino_admin_password_hash(); }, 503);
+expect_error(function () use ($baseHash, $originalPassword, $nextPassword): void {
+    dino_admin_change_password($baseHash, $originalPassword, $nextPassword, $nextPassword);
+}, 503);
+check(file_get_contents($credentialFile) === 'corrupt', 'Storage failure never resets credentials silently');
+unlink($credentialFile);
+
 $now = 1700000000;
 $hash = password_hash('isolated-test-value', PASSWORD_DEFAULT);
 $session = ['admin_key' => hash('sha256', $hash), 'admin_started' => $now - 10, 'admin_seen' => $now - 5];
@@ -96,4 +141,4 @@ $raw = (string) file_get_contents(dino_data_dir() . '/admin-login.php');
 check(strpos($raw, '192.0.2.') === false, 'No raw IPs stored');
 file_put_contents(dino_data_dir() . '/admin-login.php', 'damaged');
 expect_error(function () use ($hash, $now): void { dino_admin_login_attempt('192.0.2.1', $hash, $now + 1800); }, 503);
-echo "PHP session, moderation, backup, revision and throttle checks passed\n";
+echo "PHP password change, session, moderation, backup, revision and throttle checks passed\n";

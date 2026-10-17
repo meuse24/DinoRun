@@ -52,6 +52,44 @@ Die Anwendung vertraut keinem vom Browser gesetzten `X-Forwarded-Proto`.
 beschreibbaren privaten Session-Speicher und PHP 7.4 oder neuer; für den Betrieb
 eine noch unterstützte PHP-Version verwenden.
 
+## Passwort in der Webverwaltung ändern
+
+Für ein Update einer bereits eingerichteten Verwaltung nur `score-console.php`
+und `highscores-admin-lib.php` gemeinsam hochladen. Private Konfiguration und
+Datenverzeichnis beibehalten; keine neue Ersteinrichtung notwendig.
+
+Nach der Anmeldung oben **Passwort ändern** auswählen. Bisheriges Passwort,
+neues Passwort und Wiederholung eingeben, dann **Passwort speichern** drücken.
+Das neue Passwort benötigt mindestens 15 Zeichen; mehrere zufällige Wörter
+oder ein Passwortmanager eignen sich dafür. Bis zu 72 UTF-8-Bytes sind erlaubt
+(Umlaute und Emojis benötigen mehrere Bytes). Zu lange Eingaben werden abgelehnt
+und nicht still gekürzt. Keine vorgeschriebenen Sonderzeichen oder regelmäßigen
+Pflichtwechsel. Das bisherige Passwort muss stimmen; das neue muss sich davon
+unterscheiden. Fehler geben die Passwörter nicht erneut im Formular aus.
+
+Nach erfolgreichem Speichern sind alle bisherigen Sitzungen ungültig,
+einschließlich der aktuellen. Erneut mit dem neuen Passwort anmelden. Eine
+fehlgeschlagene Speicherung lässt das bisherige Passwort bestehen.
+
+Gespeichert wird ausschließlich ein gesalzener PHP-Passworthash in
+`<data_dir>/admin-password.php`, atomisch unter derselben Dateisperre wie die
+Ranglisten. Die Datei erhält Berechtigung `0600` und einen PHP-Abbruchschutz.
+Die Konfiguration und die Ranglisten werden dabei nicht verändert. Das
+Datenverzeichnis muss weiterhin privat und für PHP beschreibbar sein; die neue
+Datei beim Sichern oder Umziehen der Installation mitnehmen. Ein erneuter Upload
+der Programmdateien setzt das geänderte Passwort nicht zurück.
+
+**Passwort vergessen:** Im Serverterminal `php admin.php create-password`
+ausführen und den neu erzeugten Hash in der privaten Konfiguration ersetzen.
+Diese neue Konfiguration macht das gespeicherte Web-Passwort und alle alten
+Sitzungen ungültig; mit dem zugehörigen neu erzeugten Passwort anmelden.
+Ein leerer Konfigurationshash deaktiviert die Verwaltung weiterhin vollständig.
+Beschädigte Passwortdateien sperren den Zugriff mit HTTP 503; sie werden nie
+stillschweigend auf ein altes Passwort zurückgesetzt. In diesem Fall die
+beschädigte `admin-password.php` per SSH aus dem Datenverzeichnis entfernen
+und einen neuen Konfigurationshash setzen. Keine Datei mit Passwörtern in Git
+oder ins öffentliche Downloadverzeichnis kopieren.
+
 ## Verhalten und Sicherungen
 
 - Vor Löschen und Zurücksetzen wird der vorherige Datensatz nach
@@ -83,6 +121,9 @@ eine noch unterstützte PHP-Version verwenden.
   `admin-login.php` gespeichert. Beim gemeinsam genutzten Internetzugang teilen
   sich Geräte dieses Limit. Der Browser erhält bei Überschreitung HTTP 429 mit
   `Retry-After`; nach Ablauf des Fensters erneut versuchen.
+  Die Prüfung des bisherigen Passworts beim Passwortwechsel nutzt dieselbe
+  Begrenzung, damit auch eine bereits offene Sitzung keine unbeschränkten
+  Passwortversuche erlaubt.
 
 Die Verwaltungsseite liest direkt den konfigurierten Server-Speicher. Lokale
 Browser-Rekorde und bereits angezeigte/cached Listen auf Spielgeräten werden nicht
@@ -111,13 +152,19 @@ Scores, Backups und einen PHP-Server auf einem freien Loopback-Port. Sie testen
 CLI und HTTP, Anmeldebegrenzung, CSRF, Session-Wechsel/-Ablauf, Passwortwechsel,
 Bestätigungen, Replay, konkurrierende Änderungen, Backupfehler und API-Lesen.
 Vier Browsergrößen prüfen Anmeldung, Abbrechen, Löschen, beide Reset-Arten und
-Abmelden ohne JavaScript. Die TLS-Zustandssimulation prüft Cookie-Flags und die
+Passwortwechsel mit erneuter Anmeldung sowie Abmelden ohne JavaScript.
+Die Passworttests umfassen falsches bisheriges Passwort, Wiederholung,
+Mindestlänge, Unicode-/Byte-Grenzen, Nullbytes, unverändertes Passwort,
+CSRF, Drosselung, konkurrierende Änderungen, fehlgeschlagenes atomisches Speichern,
+Sitzungswiderruf, Konfigurations-Wiederherstellung und unveränderte
+Ranglisten/Konfiguration.
+Die TLS-Zustandssimulation prüft Cookie-Flags und die
 HTTP-Sperre; sie ersetzt keinen Test der echten HTTPS-Konfiguration des Hosters.
 Temporäre Server und Daten werden entfernt. Keine Verbindung zur Live-API.
 
 Playwright 1.62.1 injiziert bei jedem WebKit-Screenshot ein leeres `body {}`-
 Stylesheet zum Synchronisieren von Animationen. Die strikte CSP lehnt dieses
-korrekt ab. Die vier exakt zugeordneten Screenshot-Meldungen je Layout stehen
+korrekt ab. Die fünf exakt zugeordneten Screenshot-Meldungen je Layout stehen
 separat im Bericht; andere Browserfehler lassen den Test fehlschlagen. CSP und
 JavaScript-Sperre werden für die Bedienungstests nicht umgangen.
 
@@ -127,7 +174,7 @@ PHP 8.4.26 und Playwright 1.62.1: alle PHP-/CLI-/HTTP-Sicherheitsprüfungen sowi
 vier vollständige Bedienabläufe pro Browser bestanden, in Chromium
 151.0.7922.34 und WebKit 26.5. Enthalten sind auch gültige Backups bei beschädigter
 Hauptdatei, konkurrierende Resets und unveränderte Daten bei Backupfehlern.
-Screenshots von Anmeldung, Listen und Bestätigung visuell geprüft. Die
+Screenshots von Anmeldung, Listen, Bestätigung und Passwortformular visuell geprüft. Die
 Handygrößen sind Browseremulation; ein physischer Handytest dieser Verwaltung
 wurde nicht durchgeführt. Der bestehende Spielvertrag besteht zusätzlich alle
 sieben Chromium-Szenarien. Spiel-HTML, Build und minifizierte Datei sind unverändert.
@@ -139,4 +186,5 @@ auf dem echten Server erfolgt mit dem oben beschriebenen privaten Passwort-Hash.
 
 Grundlagen: [PHP Session-Sicherheit](https://www.php.net/manual/en/features.session.security.management.php),
 [PHP password_hash](https://www.php.net/manual/en/function.password-hash.php),
+[OWASP Passwortwechsel](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html#change-password-feature),
 [OWASP CSRF-Schutz](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).

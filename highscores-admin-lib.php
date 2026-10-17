@@ -135,3 +135,85 @@ function dino_admin_authenticated(array $session, string $hash, int $now): bool
         && $now - $session['admin_started'] < 28800
         && $now - $session['admin_seen'] < 1200;
 }
+
+// The configured hash enables the console and acts as a recovery credential.
+// Replacing it invalidates the saved override as well as every existing session.
+function dino_admin_password_hash(): string
+{
+    $base = dino_config()['admin_password_hash'];
+    if (!is_string($base) || password_get_info($base)['algoName'] === 'unknown') {
+        throw new DinoHttpError(404, 'disabled', 'Not available.');
+    }
+    $file = dino_data_dir() . '/admin-password.php';
+    if (!file_exists($file)) {
+        return $base;
+    }
+    $prefix = "<?php exit; ?>\n";
+    $raw = @file_get_contents($file);
+    $state = is_string($raw) && strpos($raw, $prefix) === 0
+        ? json_decode(substr($raw, strlen($prefix)), true) : null;
+    if (!is_array($state) || ($state['v'] ?? null) !== 1
+        || !is_string($state['config_key'] ?? null) || !is_string($state['password_hash'] ?? null)
+        || preg_match('/^[a-f0-9]{64}$/D', $state['config_key']) !== 1
+        || password_get_info($state['password_hash'])['algoName'] === 'unknown') {
+        throw new DinoHttpError(503, 'storage', 'Password storage is not available.');
+    }
+    return hash_equals(hash('sha256', $base), $state['config_key']) ? $state['password_hash'] : $base;
+}
+
+function dino_admin_change_password(string $expectedHash, string $current, string $password, string $repeat): void
+{
+    dino_locked(function () use ($expectedHash, $current, $password, $repeat): void {
+        $hash = dino_admin_password_hash();
+        if (!hash_equals($hash, $expectedHash)) {
+            throw new DinoHttpError(401, 'login', 'Password changed. Sign in again.');
+        }
+        if (strlen($current) > 1024 || !password_verify($current, $hash)) {
+            throw new DinoHttpError(400, 'current_password', 'Current password is incorrect.');
+        }
+        // PASSWORD_DEFAULT currently uses bcrypt: reject truncation beyond 72
+        // bytes, including multibyte input. Count Unicode characters for minimum.
+        $length = preg_match_all('/./us', $password);
+        if ($length === false || $length < 15 || strlen($password) > 72 || strpos($password, "\0") !== false) {
+            throw new DinoHttpError(400, 'password_length', 'Invalid new password length.');
+        }
+        if (!hash_equals($password, $repeat)) {
+            throw new DinoHttpError(400, 'password_repeat', 'Passwords do not match.');
+        }
+        if (password_verify($password, $hash)) {
+            throw new DinoHttpError(400, 'password_same', 'Choose a different password.');
+        }
+        $newHash = password_hash($password, PASSWORD_DEFAULT);
+        if (!is_string($newHash)) {
+            throw new DinoHttpError(503, 'storage', 'Password could not be saved.');
+        }
+        $state = ['v' => 1, 'config_key' => hash('sha256', dino_config()['admin_password_hash']),
+            'password_hash' => $newHash];
+        $raw = "<?php exit; ?>\n" . json_encode($state, JSON_UNESCAPED_SLASHES) . "\n";
+        $file = dino_data_dir() . '/admin-password.php';
+        // Restrict the temporary file before writing secrets; its .php suffix
+        // and exit guard also protect accidental placement in a PHP webroot.
+        $temp = dino_data_dir() . '/.admin-password-' . bin2hex(random_bytes(12)) . '.php';
+        $handle = @fopen($temp, 'x');
+        if ($handle === false) {
+            throw new DinoHttpError(503, 'storage', 'Password could not be saved.');
+        }
+        try {
+            if (!@chmod($temp, 0600) || @fwrite($handle, $raw) !== strlen($raw) || !@fflush($handle)) {
+                throw new DinoHttpError(503, 'storage', 'Password could not be saved.');
+            }
+            fclose($handle);
+            $handle = null;
+            if (!@rename($temp, $file)) {
+                throw new DinoHttpError(503, 'storage', 'Password could not be saved.');
+            }
+        } finally {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+            if (is_file($temp)) {
+                @unlink($temp);
+            }
+        }
+    });
+}

@@ -7,6 +7,8 @@
 - `highscores.php` exposes the API; `highscores-lib.php` handles validation and file storage; `admin.php` provides CLI moderation.
 - `score-console.php` provides password-protected web moderation, disabled until
   configured. `highscores-admin-lib.php` shares backups/mutations with the CLI.
+  Web password changes persist a guarded hash in `data_dir/admin-password.php`;
+  replacing the configured bootstrap hash resets it and revokes sessions.
   See `ADMIN.md`; keep password hashes and runtime state out of Git.
 - `tests/` contains browser regression scripts. `output/` holds generated screenshots and JSON reports. `progress.md` records findings and validation.
 - `highscores-data/` holds mutable scores, locks, rate-limit data, and secrets.

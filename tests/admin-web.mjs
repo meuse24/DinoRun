@@ -35,6 +35,8 @@ const env = { ...process.env, DINO_HIGHSCORES_CONFIG: config, DINO_ADMIN_TEST_RO
 const storeFile = path.join(data, 'highscores.json');
 const digest = () => createHash('sha256').update(fs.readFileSync(storeFile)).digest('hex');
 const clearThrottle = () => { const file = path.join(data, 'admin-login.php'); if (fs.existsSync(file)) fs.unlinkSync(file); };
+const credentialFile = path.join(data, 'admin-password.php');
+const clearCredential = () => { if (fs.existsSync(credentialFile)) fs.unlinkSync(credentialFile); };
 const entries = [
   { id: '00000000-0000-4000-8000-000000000001', name: 'DINO', score: 900, achievedAt: '2026-10-17T10:00:00Z' },
   { id: '00000000-0000-4000-8000-000000000002', name: 'LUCA', score: 700, achievedAt: '2026-10-17T10:01:00Z' },
@@ -54,7 +56,7 @@ let serverLog = '';
 try {
   for (const file of ['score-console.php', 'admin.php', 'highscores-lib.php', 'highscores-admin-lib.php', 'tests/admin-web-unit.php'])
     execFileSync(php, ['-l', path.join(root, file)], { encoding: 'utf8', windowsHide: true });
-  assert.match(run(path.join(root, 'tests/admin-web-unit.php')), /checks passed/);
+  assert.match(run(path.join(root, 'tests/admin-web-unit.php'), [], { input: secret }), /checks passed/);
   checks.push('PHP session expiry/hash revocation, moderation, exact backups, revisions, bounded per-IP/global throttle and corrupt-state rejection');
   clearThrottle(); seed();
 
@@ -119,9 +121,9 @@ try {
   api = await pw.request.newContext();
   const csrf = html => { const match = html.match(/name="csrf" value="([a-f0-9]{64})"/); assert(match, 'CSRF field'); return match[1]; };
   const post = (client, form, headers = {}) => client.post(url, { form, headers, maxRedirects: 0 });
-  const login = async client => {
+  const login = async (client, password = secret) => {
     const form = await client.get(url);
-    const response = await post(client, { action: 'login', mode: 'normal', csrf: csrf(await form.text()), password: secret });
+    const response = await post(client, { action: 'login', mode: 'normal', csrf: csrf(await form.text()), password });
     assert.equal(response.status(), 303);
     return response;
   };
@@ -151,6 +153,9 @@ try {
   assert.equal(anonymous.headers()['referrer-policy'], 'no-referrer');
   assert.equal((await post(api, { action: 'login', mode: 'normal', password: secret, csrf: 'bad' })).status(), 403);
   assert.equal(digest(), untouched);
+  assert.equal((await post(api, { action: 'change_password', mode: 'normal', current_password: secret,
+    new_password: secret, repeat_password: secret })).status(), 401);
+  assert(!fs.existsSync(credentialFile));
   checks.push('Disabled-by-default, HTTPS guard/XFP spoof denial, secure cookie flags, private headers, direct-file/anonymous/method/body/CSRF guards');
 
   clearThrottle();
@@ -197,10 +202,97 @@ try {
   assert((await publicApi.json()).entries.some(e => e.name === 'DINO'));
   checks.push('Existing public highscore API still serves the isolated store');
 
+  // Exercise real password changes across independent sessions and requests.
+  clearThrottle();
+  await login(api);
+  const peer = await pw.request.newContext();
+  await login(peer);
+  const passwordBeforeScores = digest(), configBefore = fs.readFileSync(config, 'utf8');
+  let passwordToken = csrf(await (await api.get(url + '?view=password')).text());
+  const newSecret = randomBytes(24).toString('base64url');
+  const changeForm = { action: 'change_password', mode: 'normal', csrf: passwordToken,
+    current_password: secret, new_password: newSecret, repeat_password: newSecret };
+  assert.equal((await post(api, { ...changeForm, csrf: 'bad' })).status(), 403);
+  assert.equal((await post(api, changeForm, { 'Sec-Fetch-Site': 'cross-site' })).status(), 403);
+  assert(!fs.existsSync(credentialFile));
+  for (let i = 0; i < 5; i++) {
+    clearThrottle();
+    const invalid = [ { current_password: 'wrong' }, { repeat_password: 'different' },
+      { new_password: 'short', repeat_password: 'short' },
+      { new_password: 'ä'.repeat(37), repeat_password: 'ä'.repeat(37) },
+      { new_password: secret, repeat_password: secret } ][i];
+    const rejected = await post(api, { ...changeForm, ...invalid });
+    assert.equal(rejected.status(), 400);
+    const rejectedHtml = await rejected.text();
+    assert.match(rejectedHtml, /id="current-password"/);
+    for (const value of [secret, newSecret]) assert(!rejectedHtml.includes(value), 'Do not echo passwords');
+    assert(!fs.existsSync(credentialFile));
+  }
+  clearThrottle();
+  for (let i = 0; i < 5; i++)
+    assert.equal((await post(api, { ...changeForm, current_password: 'wrong' })).status(), 400);
+  assert.equal((await post(api, changeForm)).status(), 429, 'Password reauthentication is rate limited');
+  assert(!fs.existsSync(credentialFile));
+  clearThrottle();
+  assert.equal((await post(api, changeForm)).status(), 303);
+  const savedCredential = fs.readFileSync(credentialFile, 'utf8');
+  assert.match(savedCredential, /^<\?php exit; \?>\n/);
+  assert(!savedCredential.includes(secret) && !savedCredential.includes(newSecret));
+  if (process.platform !== 'win32') assert.equal(fs.statSync(credentialFile).mode & 0o777, 0o600);
+  const guardedCopy = path.join(www, 'guarded-password-test.php');
+  fs.copyFileSync(credentialFile, guardedCopy);
+  const guardedResponse = await api.get(origin + '/guarded-password-test.php');
+  assert.equal(guardedResponse.status(), 200);
+  assert.equal(await guardedResponse.text(), '', 'PHP guard hides credential even if web-served');
+  fs.unlinkSync(guardedCopy);
+  assert.match(await (await api.get(url)).text(), /Passwort geändert/);
+  assert.match(await (await peer.get(url)).text(), /id="password"/, 'Other sessions revoked');
+  assert.equal((await post(peer, changeForm)).status(), 401, 'Stale authenticated POST rejected');
+  passwordToken = csrf(await (await api.get(url)).text());
+  assert.equal((await post(api, { action: 'login', mode: 'normal', csrf: passwordToken, password: secret })).status(), 401);
+  await login(api, newSecret);
+  assert.match(await (await api.get(url)).text(), /Ranglisten verwalten/);
+  assert.equal(digest(), passwordBeforeScores, 'Credential change preserves scores');
+  assert.equal(fs.readFileSync(config, 'utf8'), configBefore, 'No rewriting PHP config');
+  settings({ admin_password_hash: '' });
+  assert.equal((await api.get(url)).status(), 404, 'Config can still disable saved credentials');
+  settings({ admin_password_hash: generatedHash });
+  clearThrottle();
+  await login(peer, generatedPassword);
+  assert.match(await (await api.get(url)).text(), /id="password"/, 'Config recovery revokes saved-password session');
+  settings({}); clearCredential(); clearThrottle();
+  await peer.dispose();
+
+  // Two independent PHP workers cannot overwrite a concurrently changed hash.
+  const passwordWorker = path.join(fixture, 'password-worker.php');
+  fs.writeFileSync(passwordWorker, `<?php define('DINO_HIGHSCORES',true);require ${phpString(path.join(www, 'highscores-lib.php'))};require ${phpString(path.join(www, 'highscores-admin-lib.php'))};$v=json_decode(stream_get_contents(STDIN),true);try{dino_admin_change_password($v[0],$v[1],$v[2],$v[2]);echo 'ok';}catch(DinoHttpError $e){echo $e->status;}catch(Throwable $e){echo '503';}`);
+  const changeWorker = () => new Promise((resolve, reject) => {
+    const child = spawn(php, [passwordWorker], { env, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+    let result = '', stderr = '';
+    child.stdout.on('data', b => { result += b; }); child.stderr.on('data', b => { stderr += b; });
+    child.on('error', reject);
+    child.on('exit', code => code === 0 ? resolve(result) : reject(new Error('Password worker failed: ' + stderr)));
+    child.stdin.end(JSON.stringify([passwordHash, secret, newSecret]));
+  });
+  assert.deepEqual((await Promise.all([changeWorker(), changeWorker()])).sort(), ['401', 'ok']);
+  const beforeFailedWrite = fs.readFileSync(credentialFile, 'utf8');
+  const persistedHash = JSON.parse(beforeFailedWrite.split('\n')[1]).password_hash;
+  // Disable replacement in this one isolated worker, after verification and
+  // temporary writing. An actual storage failure must retain the previous hash.
+  const failedWrite = execFileSync(php, ['-d', 'disable_functions=rename', passwordWorker],
+    { env, input: JSON.stringify([persistedHash, newSecret, randomBytes(24).toString('base64url')]),
+      encoding: 'utf8', windowsHide: true });
+  assert.equal(failedWrite, '503');
+  assert.equal(fs.readFileSync(credentialFile, 'utf8'), beforeFailedWrite);
+  assert(!fs.readdirSync(data).some(file => file.startsWith('.admin-password-')), 'Failed write cleans temporary secret');
+  assert.equal(digest(), passwordBeforeScores);
+  clearCredential(); clearThrottle();
+  checks.push('Password change validation/UTF-8 bounds, guarded atomic hash persistence/failure, reauthentication throttle, CSRF, all-session revocation, old/new login, config recovery/disable, concurrent-change conflict, unchanged scores/config');
+
   clearThrottle();
   browser = await pw[engine].launch({ headless: true });
   for (const [name, viewport] of [['desktop', { width: 1280, height: 900 }], ['portrait', { width: 390, height: 844 }], ['landscape', { width: 844, height: 390 }], ['small', { width: 320, height: 568 }]]) {
-    seed();
+    seed(); clearCredential(); clearThrottle();
     const context = await browser.newContext({ viewport, javaScriptEnabled: false,
       ...(name === 'desktop' ? {} : { hasTouch: true, isMobile: true, deviceScaleFactor: 2 }),
       colorScheme: name === 'landscape' ? 'dark' : 'light' });
@@ -265,6 +357,25 @@ try {
     await page.getByRole('button', { name: 'Jetzt endgültig löschen' }).click();
     await page.getByText('Hier sind noch keine Highscores gespeichert.').waitFor();
     assert.deepEqual(readStore().lists, { normal: [], relaxed: [] });
+    phase = 'password form';
+    await page.getByRole('link', { name: 'Passwort ändern', exact: true }).click();
+    await page.getByRole('heading', { name: 'Passwort ändern', exact: true }).waitFor();
+    assert.equal(await page.locator('input[type=password]').count(), 3);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
+    phase = 'password screenshot';
+    await page.screenshot({ path: path.join(output, `${name}-password.png`), fullPage: true, caret: 'initial' });
+    phase = 'password cancel';
+    await page.getByRole('link', { name: 'Abbrechen', exact: true }).click();
+    assert(!fs.existsSync(credentialFile));
+    await page.getByRole('link', { name: 'Passwort ändern', exact: true }).click();
+    await page.getByLabel('Bisheriges Passwort', { exact: true }).fill(secret);
+    await page.getByLabel('Neues Passwort', { exact: true }).fill(newSecret);
+    await page.getByLabel('Neues Passwort wiederholen', { exact: true }).fill(newSecret);
+    await page.getByRole('button', { name: 'Passwort speichern', exact: true }).click();
+    await page.getByRole('status').filter({ hasText: 'Passwort geändert' }).waitFor();
+    await page.getByLabel('Administrator-Passwort').fill(newSecret);
+    await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
+    await page.getByRole('heading', { name: 'Ranglisten verwalten' }).waitFor();
     await page.getByRole('button', { name: 'Abmelden', exact: true }).click();
     await page.getByLabel('Administrator-Passwort').waitFor();
     const isScreenshotCsp = error => engine === 'webkit' && typeof error === 'object'
@@ -274,8 +385,8 @@ try {
     const screenshotBlocks = errors.filter(isScreenshotCsp);
     const unexpected = errors.filter(error => !isScreenshotCsp(error));
     assert.deepEqual(unexpected, []);
-    assert.equal(screenshotBlocks.length, engine === 'webkit' ? 4 : 0,
-      'Only the four identified empty screenshot-helper styles may be rejected');
+    assert.equal(screenshotBlocks.length, engine === 'webkit' ? 5 : 0,
+      'Only the five identified empty screenshot-helper styles may be rejected');
     layouts.push({ name, viewport, javascriptDisabled: true, checks: 'passed', browserErrors: unexpected,
       screenshotHarnessCspRejections: screenshotBlocks.map(error => error.phase) });
     await context.close();

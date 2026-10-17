@@ -51,12 +51,10 @@ $authenticated = false;
 $confirmation = null;
 $store = null;
 $mode = 'normal';
+$passwordPage = false;
 try {
     $config = dino_config();
-    $hash = $config['admin_password_hash'];
-    if (!is_string($hash) || $hash === '' || password_get_info($hash)['algoName'] === 'unknown') {
-        throw new DinoHttpError(404, 'disabled', 'Not available.');
-    }
+    $hash = dino_admin_password_hash();
     $https = in_array(strtolower((string) ($_SERVER['HTTPS'] ?? '')), ['on', '1'], true);
     $local = $config['admin_allow_local_http'] === true && PHP_SAPI === 'cli-server'
         && in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true);
@@ -103,6 +101,8 @@ try {
         throw new DinoHttpError(400, 'input', 'Invalid mode.');
     }
     $mode = $selected;
+    $passwordPage = $authenticated && (($_GET['view'] ?? '') === 'password'
+        || ($_SERVER['REQUEST_METHOD'] === 'POST' && dino_admin_field('action') === 'change_password'));
     if (isset($_SESSION['flash'])) {
         $notice = $_SESSION['flash'];
         unset($_SESSION['flash']);
@@ -127,6 +127,18 @@ try {
             }
             $_SESSION = ['admin_key' => hash('sha256', $hash), 'admin_started' => $now,
                 'admin_seen' => $now, 'admin_rotated' => $now, 'csrf' => bin2hex(random_bytes(32))];
+            dino_admin_redirect($mode);
+        } elseif ($action === 'change_password') {
+            dino_admin_login_attempt($_SERVER['REMOTE_ADDR'] ?? '', $hash, $now);
+            // Rotate before saving so a session-storage failure leaves the
+            // credential untouched. Successful changes require a fresh login.
+            if (!session_regenerate_id(true)) {
+                throw new DinoHttpError(503, 'storage', 'Session is not available.');
+            }
+            dino_admin_change_password($hash, dino_admin_field('current_password'),
+                dino_admin_field('new_password'), dino_admin_field('repeat_password'));
+            $_SESSION = ['csrf' => bin2hex(random_bytes(32)),
+                'flash' => 'Passwort geändert. Bitte mit dem neuen Passwort anmelden.'];
             dino_admin_redirect($mode);
         } elseif ($action === 'logout') {
             $_SESSION = [];
@@ -192,7 +204,7 @@ try {
         // Returning to a list cancels a previous confirmation.
         unset($_SESSION['pending']);
     }
-    if ($authenticated && $store === null) {
+    if ($authenticated && !$passwordPage && $store === null) {
         $store = dino_read_store();
     }
 } catch (DinoHttpError $failure) {
@@ -203,6 +215,10 @@ try {
     $messages = ['disabled' => 'Diese Seite ist nicht verfügbar.',
         'https' => 'Bitte öffne die Verwaltung über HTTPS.',
         'password' => 'Die Anmeldung ist fehlgeschlagen.', 'login' => 'Bitte zuerst anmelden.',
+        'current_password' => 'Das bisherige Passwort ist nicht korrekt.',
+        'password_length' => 'Das neue Passwort muss mindestens 15 Zeichen lang sein und darf höchstens 72 UTF-8-Bytes belegen.',
+        'password_repeat' => 'Die neuen Passwörter stimmen nicht überein.',
+        'password_same' => 'Bitte wähle ein anderes Passwort als bisher.',
         'rate' => 'Zu viele Anmeldeversuche. Bitte nach Ablauf der Wartezeit erneut versuchen.',
         'csrf' => 'Diese Anfrage ist abgelaufen oder ungültig. Bitte die Seite neu laden.',
         'confirmation' => 'Die Bestätigung fehlt oder ist abgelaufen. Bitte die Aktion erneut auswählen.',
@@ -235,7 +251,8 @@ try {
     * { box-sizing:border-box; }
     body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,sans-serif; }
     header { border-bottom:1px solid var(--line); background:var(--panel); }
-    .header-inner { max-width:1080px; margin:auto; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .header-inner { max-width:1080px; margin:auto; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+    .account { display:flex; gap:8px; flex-wrap:wrap; }
     .brand { font-weight:1000; letter-spacing:-.04em; font-size:24px; color:var(--ink); }
     .brand span { color:var(--accent); } .eyebrow { display:block; font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
     main { max-width:1080px; margin:auto; padding:32px 24px 48px; }
@@ -281,7 +298,7 @@ try {
 <header><div class="header-inner">
   <div><div class="brand">DINO <span>RUN</span></div><span class="eyebrow">Private Verwaltung</span></div>
   <?php if ($authenticated && !$unavailable): ?>
-  <form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="action" value="logout"><button type="submit">Abmelden</button></form>
+  <nav class="account" aria-label="Verwaltung"><a class="button" href="?mode=<?= $mode ?>&amp;view=password">Passwort ändern</a><form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="action" value="logout"><button type="submit">Abmelden</button></form></nav>
   <?php endif; ?>
 </div></header>
 <main>
@@ -300,6 +317,21 @@ try {
         <button class="primary wide" type="submit">Anmelden</button>
       </form>
       <footer>Die Sitzung endet nach 20 Minuten ohne Aktivität.</footer>
+    </section>
+  <?php elseif ($passwordPage): ?>
+    <section class="card login" aria-labelledby="password-title">
+      <span class="eyebrow">Administrator</span><h1 id="password-title">Passwort ändern</h1>
+      <p class="muted">Nach dem Speichern werden alle Sitzungen beendet. Melde dich anschließend mit dem neuen Passwort an.</p>
+      <form method="post">
+        <?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="change_password"><input type="hidden" name="mode" value="<?= $mode ?>">
+        <input type="hidden" name="username" value="admin" autocomplete="username">
+        <label for="current-password">Bisheriges Passwort</label><input id="current-password" name="current_password" type="password" autocomplete="current-password" required maxlength="1024">
+        <p id="password-help" class="muted">Mindestens 15 Zeichen, zum Beispiel mehrere zufällige Wörter. Maximal 72 UTF-8-Bytes; Umlaute und Emojis benötigen mehrere Bytes.</p>
+        <label for="new-password">Neues Passwort</label><input id="new-password" name="new_password" type="password" autocomplete="new-password" aria-describedby="password-help" required minlength="15" maxlength="72">
+        <label for="repeat-password">Neues Passwort wiederholen</label><input id="repeat-password" name="repeat_password" type="password" autocomplete="new-password" required minlength="15" maxlength="72">
+        <button class="primary wide" type="submit">Passwort speichern</button>
+        <div class="actions"><a class="button" href="?mode=<?= $mode ?>">Abbrechen</a></div>
+      </form>
     </section>
   <?php elseif ($confirmation !== null): ?>
     <section class="card confirmation" aria-labelledby="confirm-title">
