@@ -30,6 +30,7 @@ for (const [name, viewport] of [
   ['landscape', { width: 844, height: 390 }],
   ['compact-landscape', { width: 663, height: 234 }],
 ]) {
+  if (process.env.DINO_RELEASE_LAYOUTS && !process.env.DINO_RELEASE_LAYOUTS.split(',').includes(name)) continue;
   // A fresh process bounds retained graphics resources between layouts.
   const browser = await pw[engine].launch({ headless: true });
   const before = new Map();
@@ -71,10 +72,19 @@ for (const [name, viewport] of [
         }
       }, frames);
       const snapshot = async scene => {
+        // Mobile WebKit can retain a native select's hover paint across contexts.
+        // Normalize the pointer before comparing otherwise identical controls.
+        await page.mouse.move(0, 0);
         const state = await page.evaluate(() => JSON.parse(window.render_game_to_text()));
+        const select = scene === 'settings' ? await page.locator('#mode-select').evaluate(element => ({
+          rect: element.getBoundingClientRect().toJSON(), html: element.outerHTML,
+          hover: element.matches(':hover'), focus: element.matches(':focus'),
+          active: document.activeElement?.id,
+          style: Object.fromEntries([...getComputedStyle(element)].map(key => [key, getComputedStyle(element).getPropertyValue(key)])),
+        })) : null;
         const image = await page.screenshot({ animations: 'disabled',
           path: path.join(output, `${name}-${scene}-${version}.png`) });
-        if (version === 'source') { before.set(scene, { state, image }); return; }
+        if (version === 'source') { before.set(scene, { state, image, select }); return; }
         assert.deepEqual(state, before.get(scene).state, `${name}/${scene}: game state changed`);
         const difference = await page.evaluate(async ({ a, b }) => {
           const images = [new Image(), new Image()];
@@ -101,6 +111,8 @@ for (const [name, viewport] of [
         }, { a: 'data:image/png;base64,' + before.get(scene).image.toString('base64'),
           b: 'data:image/png;base64,' + image.toString('base64') });
         results.push({ name, scene, ...difference });
+        if (difference.changed && scene === 'settings') fs.writeFileSync(path.join(output, `${name}-select-diagnostic.json`),
+          JSON.stringify({ source: before.get(scene).select, release: select }, null, 2));
         assert.equal(difference.changed, 0, `${name}/${scene}: ${JSON.stringify(difference)}`);
       };
       await snapshot('start');

@@ -80,18 +80,18 @@ Get-Content release/size-report.json
 Get-FileHash release/dino.html -Algorithm SHA256
 ```
 
-Ergebnis für Spiel-Build `2026-10-17.1` mit rotierendem Startbildschirm, jeweils UTF-8-Bytes:
+Ergebnis für Spiel-Build `2026-10-17.2` mit breitem, kompaktem Startbildschirm, jeweils UTF-8-Bytes:
 
 | Stufe | Bytes |
 | --- | ---: |
-| Lesbare Quelle | 360.922 |
-| Nach Terser | 219.476 |
-| Nach CSSO | 196.244 |
-| Fertige HTML-Datei | 189.665 |
+| Lesbare Quelle | 363.019 |
+| Nach Terser | 220.989 |
+| Nach CSSO | 197.318 |
+| Fertige HTML-Datei | 190.739 |
 
-**Ersparnis: 171.257 Bytes bzw. 47,45 %.** Der optionale Song ist dabei nicht
+**Ersparnis: 172.280 Bytes bzw. 47,46 %.** Der optionale Song ist dabei nicht
 mitgerechnet. Die gemessenen Größen mit zusätzlichem gzip/Brotli betragen
-62.886/55.623 Bytes; entsprechende Serverkompression wird vom Build nicht
+63.185/55.844 Bytes; entsprechende Serverkompression wird vom Build nicht
 eingerichtet. Nach Quelländerungen gelten die neu erzeugten Berichtswerte.
 
 ## 4. Kompakte Datei testen
@@ -177,6 +177,13 @@ sowie 96 pixelgleiche Vergleichsszenen. Zusätzlich wurde die lesbare Quelldatei
 Start aus allen Ansichten, Schutzblase, Feder, Touchsteuerung, Neustart und
 Offline-Neuladen bestehen in Hoch- und Querformat. Die kompakte Datei wurde bei
 diesem neuen Handytest nicht direkt geladen. Details stehen in `../ATTRACT.md`.
+
+Build `2026-10-17.2` nutzt im Querformat die gesamte verfügbare Breite und ist
+vertikal kompakter: Vorschau links, START rechts. Quelle und kompakte Datei
+bestehen zehn Layouts pro Browser, einschließlich mehrfacher Größen- und
+Orientierungswechsel. Die Quelle besteht auch den erneuten physischen Galaxy-
+A53-Test in beiden Orientierungen, inklusive Start aus allen Ansichten und
+Schutzblasenprüfung. Berichte: `../output/attract-wide`.
 
 ## 6. Ausliefern
 

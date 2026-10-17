@@ -1,6 +1,6 @@
 # Rotating attract screen
 
-Build `2026-10-17.1` replaces the small Start game / Highscores menu with a
+Introduced in build `2026-10-17.1`, the attract screen replaces the small Start game / Highscores menu with a
 persistent orange START button and three rotating preview panels:
 
 - **Highscores, 8 seconds:** real top ten, five entries per four-second page.
@@ -32,6 +32,20 @@ private seeded random source, independent Game.world, and a separate Renderer
 using the existing Canvas. No demo event connects to Runner's audio, session
 statistics, highscore controller or persistence. Live gameplay stays in the
 existing Game. No new runtime assets or dependencies are required.
+
+Build `2026-10-17.2` removes the 1080 px width cap. Every landscape window uses
+the full width inside safe-area padding, with the preview on the left and the
+stationary START on the right. Height is bounded by 520 px, available height and
+the normal track proportions. At 1920x1080 the stage grows from 1080 to 1896 px
+wide and shrinks from 680 to 520 px high; at 1366x768 it is 1342x492 px.
+
+Wide, short windows also use the full safe width. The demo and its separate idle
+backdrop each own a responsive world; they fit the Canvas without stretching
+vectors. The real gameplay world stays at its existing 600/420 logical width.
+The coordinator restores its Canvas dimensions on each gameplay/menu transition.
+Explicit page-container width sizing avoids a stale WebKit grid aspect-ratio
+height after repeated landscape/portrait resize while paused. Portrait retains
+the vertical menu. There are no new runtime assets.
 
 Score fetching stays in HighscoreController/HighscoreApi. The preview loads only
 the selected mode and allows at most one refresh per mode per minute, on a score
@@ -65,17 +79,20 @@ node tests/skill-client.mjs release/dino.html
 Run browser checks with Chromium and `DINO_BROWSER=webkit`. This Windows WebKit
 installation needs `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1`; see FEATHER.md.
 Attract tests use isolated standalone files, no live scores, and desktop plus
-touch/DPR viewports 390x844, 844x390, 663x234 and 320x568. They check both score
+touch/DPR viewports 390x844, 844x390, 663x234, 844x234 and 320x568, plus desktop
+1280x720, 1920x1080, 1366x768, 1920x500 and tablet 1024x768. They check both score
 pages, the full loop, focus, stationary/unobstructed START, installation controls,
 pause, real jump/duck demonstration, independent RNG/world/records/statistics,
 fresh starts from each panel, keyboard/touch, reduced motion, mode changes, late
-responses, cache fallback and bounded requests. Reports include layout metrics.
+responses, cache fallback and bounded requests, full safe width, compact height,
+uniform Canvas scaling and repeated orientation changes while paused. Reports
+include layout metrics.
 
 Source and delivery results are collected under `output/attract`. Screenshots
 are visually inspected. Emulation and physical-device results are recorded
 separately. Nothing has been deployed.
 
-## Verified result
+## Previous verified result (2026-10-17.1)
 
 - Chromium 151.0.7922.34 and WebKit 26.5: attract tests pass five layouts per
   engine for source and compact delivery. No browser errors or required network
@@ -93,7 +110,7 @@ separately. Nothing has been deployed.
   Hash/reproducibility, inline/Node syntax and diff checks pass. Aggregate:
   `output/attract/verification.json`. No required implementation work remains.
 
-## Physical Galaxy A53 verification (2026-10-17)
+## Previous physical Galaxy A53 verification (2026-10-17.1)
 
 Build `2026-10-17.1` was tested through the existing server on port 8765:
 readable `dino.html`, SHA-256
@@ -124,3 +141,41 @@ where direct CDP initialization hangs, use `tests/android-cdp-relay.mjs` as
 documented there. Reports: `output/attract/phone/verification.json`,
 `output/attract/phone/device/attract-report.json` and
 `output/attract/phone-regression/device/report.json`.
+
+## Full-width verification (2026-10-17.2)
+
+- Chromium 151.0.7922.34 and WebKit 26.5: source and compact delivery pass all
+  ten layouts, including full safe width in wide/short windows, compact height,
+  unchanged vector proportions and paused repeated orientation changes. Existing
+  rotation, score, isolation, reduced-motion, touch/keyboard and START checks pass.
+- Source and delivery lifecycle/offline suites pass seven scenarios per engine;
+  architecture passes 11 per engine. Installed develop-web-game client passes.
+- All 48 source/delivery scenes per engine are pixel-identical (96 total),
+  including the compact landscape menu, settings, actual gameplay and restart.
+- Physical Galaxy A53 / SM-A536B, Android 16, Chrome 155.0.8059.79: source loaded
+  through the existing 8765 server. Actual portrait 320x581 and landscape 637x234
+  pass full rotation, preview/settings pause and starts from every panel. The
+  landscape stage fills the 621 px available width; START remains 200x60 px.
+  Shield pickup/first-hit survival/subsequent lethal contact pass. Trusted touch,
+  normal rAF, controlled hazards; no browser errors or live score submissions.
+- Screenshots inspected on desktop, small landscape/portrait and physical phone.
+  Original rotation restored (auto=1, user_rotation=0), own tabs/relay/USB bridges
+  removed; the user's existing 8765 server remains running.
+- Source: 363,019 bytes, SHA-256
+  `7cc14cbcb77db22baca776c87983f03c29361419f63319da5f5677f8c329f868`.
+  Delivery: 190,739 bytes (47.46% saved), SHA-256
+  `edbddd381b1bdc54f5ab5de07134ec584f6aa21458192a60ccc87c55208badc3`.
+  Compact delivery is compared in both desktop engines; the physical run loaded
+  the source. No new physical iPhone or sustained-performance claim.
+
+Aggregate: `output/attract-wide/verification.json`. Reports/screenshots:
+`output/attract-wide`, physical report
+`output/attract-wide/phone/device/attract-report.json`.
+
+The delivery comparison normalizes the mouse position before each snapshot.
+Mobile WebKit otherwise retained a native select's hover state in only one of
+the source/release contexts, producing a small fill difference despite identical
+geometry and computed styles. The targeted 12-scene landscape comparison passes
+with equal pointer state; exact pixel tolerance remains unchanged. Use
+`DINO_RELEASE_LAYOUTS=landscape` for a targeted comparison when diagnosing a
+failure; omit it for the full four-layout suite.

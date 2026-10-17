@@ -30,19 +30,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-17.1)
+## Size (UTF-8 bytes, build 2026-10-17.2)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 360,922 |
-| After Terser | 219,476 |
-| After CSSO | 196,244 |
-| Final HTML | 189,665 |
+| Readable source | 363,019 |
+| After Terser | 220,989 |
+| After CSSO | 197,318 |
+| Final HTML | 190,739 |
 
-Saved: **171,257 bytes (47.45%)**, before transport compression. The optional
+Saved: **172,280 bytes (47.46%)**, before transport compression. The optional
 song is not counted or altered. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-62,886 bytes; Brotli quality 11 gives 55,623 bytes. These are measurements only;
+63,185 bytes; Brotli quality 11 gives 55,844 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -79,6 +79,10 @@ automatic name entry and game over in four desktop/mobile layouts. The lifecycle
 suite audits named client/PHP constants in the readable source and exercises the
 selected delivery artifact in the browser, including standalone file/offline and
 hosted service-worker fallback. Live highscore submission is disabled.
+The fixture normalizes pointer position before screenshots to compare native
+controls in the same hover state. Pixel comparisons remain exact. Optional
+`DINO_RELEASE_LAYOUTS` selects comma-separated layout names for diagnostics;
+leave it unset for the complete comparison.
 
 Run `node tests/skill-client.mjs release/dino.html` for the installed web-game
 skill action client. Set `DINO_TEST_OUTPUT=output/release` for reports/screenshots.
@@ -91,7 +95,21 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Attract delivery verification
+## Full-width attract delivery
+
+Build `2026-10-17.2`, SHA-256:
+`edbddd381b1bdc54f5ab5de07134ec584f6aa21458192a60ccc87c55208badc3`.
+Landscape uses the full safe width, a compact height and side-by-side preview
+and START. Responsive preview worlds preserve the artwork proportions while
+the actual game keeps its existing dimensions. Source and compact attract tests
+pass ten layouts per engine, including paused rotation/resizing. Lifecycle and
+offline suites pass both artifacts in Chromium/WebKit. All 48 source/delivery
+comparison scenes per engine are pixel-identical (96 total). Physical Galaxy A53
+attract/touch/shield checks pass against the source on port 8765; the compact artifact
+was not directly loaded on the phone. See [ATTRACT.md](ATTRACT.md) and
+`output/attract-wide/verification.json`.
+
+## Previous attract delivery verification
 
 Build `2026-10-17.1`, SHA-256:
 `9d37db43e1a8c96565a76a77869cd42a470bd551c7c1ff80150fd45d7fb64133`.

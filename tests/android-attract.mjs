@@ -75,6 +75,13 @@ try {
       return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth &&
         button.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
     }), true, 'Start receives touches and fits on the actual phone');
+    assert.equal(await page.evaluate(() => {
+      if (!matchMedia('(orientation: landscape)').matches) return true;
+      const stage = document.getElementById('stage').getBoundingClientRect();
+      const style = getComputedStyle(document.getElementById('page'));
+      const available = innerWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      return Math.abs(stage.width - available) < 1 && stage.height <= 521;
+    }), true, 'Landscape attract screen uses the full safe width and compact height');
     return rect;
   };
   await page.evaluate(() => {

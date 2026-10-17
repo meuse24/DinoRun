@@ -501,6 +501,7 @@
 
       #page {
         touch-action: none;
+        container-type: inline-size;
       }
       #touch-controls {
         position: absolute;
@@ -1650,7 +1651,7 @@
       }
       /* Attract mode: the content rotates, the primary action stays anchored. */
       #stage.idle {
-        width: min(1080px, 100%);
+        width: 100%;
         max-width: none;
         height: min(680px, calc(100dvh - var(--top-space) - var(--footer-space)));
         display: grid;
@@ -1761,28 +1762,37 @@
         #stage.idle:has(#install-game:not([hidden])) #touch-controls { right: auto; justify-content: flex-start; }
         #stage.idle #install-game { top: auto; bottom: -64px; right: 0; min-height: 44px; }
       }
-      @media (max-height: 500px) and (orientation: landscape) {
+      /* Landscape uses the whole safe width and a compact horizontal menu.
+         The isolated preview world adapts to the Canvas, preserving artwork proportions. */
+      @media (orientation: landscape) {
+        #stage.idle {
+          max-width: none;
+          /* Resolve against the page width explicitly. An auto aspect-ratio
+             height with percentage grid children can stay stale after rotation. */
+          height: min(36.666667cqw, 520px, calc(100dvh - var(--top-space) - var(--footer-space)));
+        }
+        #stage.idle #game { height: 100%; aspect-ratio: auto; }
         #stage.idle #round-panel { padding: 0; }
         #start-view { grid-template-columns: minmax(0, 1fr) minmax(200px, 30%); grid-template-rows: auto minmax(0, 1fr); gap: 6px 22px; }
-        #stage.idle #round-panel h1 { font-size: 30px; }
-        #stage.idle #round-panel h1 img { width: 40px; height: 20px; }
+        #stage.idle #round-panel h1 { font-size: clamp(30px, 3.4cqw, 48px); }
+        #stage.idle #round-panel h1 img { width: clamp(40px, 4cqw, 52px); height: auto; }
         #attract-content { grid-column: 1; grid-row: 2; }
         #attract-footer { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 30%; min-width: 200px; padding-bottom: 48px; }
-        #round-panel #start-game { min-height: 60px; font-size: 25px; }
+        #round-panel #start-game { min-height: clamp(60px, 6cqw, 80px); font-size: clamp(25px, 2.6cqw, 36px); }
         #attract-navigation { margin-bottom: 4px; }
-        #round-panel .attract-heading h2 { font-size: 21px; margin: 0 0 6px; }
+        #round-panel .attract-heading h2 { font-size: clamp(21px, 2.5cqw, 32px); margin: 0 0 6px; }
         .attract-kicker { display: none; }
-        .attract-scoreboard { padding: 6px 14px; }
-        #round-panel #attract-score-source { margin-bottom: 4px; font-size: 10px; }
-        #attract-score-list li { font-size: 14px; padding: 2px 0; }
-        #round-panel #attract-personal-best { margin-top: 4px; padding-top: 4px; font-size: 10px; }
+        .attract-scoreboard { width: min(520px, 100%); padding: clamp(6px, 1cqw, 16px) clamp(14px, 2cqw, 28px); }
+        #round-panel #attract-score-source { margin-bottom: 4px; font-size: clamp(10px, 1cqw, 14px); }
+        #attract-score-list li { font-size: clamp(14px, 1.6cqw, 22px); padding: clamp(2px, 0.4cqw, 6px) 0; }
+        #round-panel #attract-personal-best { margin-top: 4px; padding-top: 4px; font-size: clamp(10px, 1cqw, 14px); }
         .attract-powerups { gap: 6px; }
-        .attract-powerup { padding: 8px 4px; border-radius: 14px; }
-        .attract-powerup svg { width: 32px; height: 32px; }
-        .attract-powerup h3 { font-size: 13px; margin: 4px 0; }
-        #round-panel .attract-powerup p { font-size: 11px; }
+        .attract-powerup { padding: clamp(8px, 1.4cqw, 20px) clamp(4px, 1cqw, 14px); border-radius: 14px; }
+        .attract-powerup svg { width: clamp(32px, 4cqw, 56px); height: clamp(32px, 4cqw, 56px); }
+        .attract-powerup h3 { font-size: clamp(13px, 1.6cqw, 20px); margin: 4px 0; }
+        #round-panel .attract-powerup p { font-size: clamp(11px, 1.2cqw, 15px); }
         .attract-demo-label { display: none; }
-        #attract-demo .attract-heading, #attract-demo .attract-demo-caption { text-align: left; }
+        #attract-demo .attract-heading, #attract-demo .attract-demo-caption { text-align: center; }
         #stage.idle #install-game { top: auto; bottom: 8px; right: 128px; min-height: 32px; }
       }
       @media (max-height: 300px) and (orientation: landscape) {
@@ -2681,7 +2691,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-17.1';
+        const BUILD = '2026-10-17.2';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -8000,6 +8010,12 @@
             this.demoRenderer = new Renderer(context, this.demo);
             this.demoRenderer.effects.rng = new RandomSource(random);
             this.demoRenderer.compactHud = true;
+            // A separate idle backdrop lets wide previews fit the available
+            // height without stretching artwork or resizing the real game.
+            this.backdrop = new Game({ width: runner.game.world.width,
+              random: () => 0.5, cosmeticRandom: () => 0.5,
+              featherEnabled: false, shieldEnabled: false });
+            this.backdropRenderer = new Renderer(context, this.backdrop);
             this.dots.forEach((button, i) => button.addEventListener('click', () => {
               this.select(i);
               runner.draw(1);
@@ -8094,6 +8110,7 @@
           }
           advance(dt) {
             if (!this.active || this.paused) return;
+            if (this.wide) this.backdrop.advance(dt);
             this.elapsed += dt;
             if (this.elapsed >= this.durations[this.index]) this.select((this.index + 1) % 3);
             if (this.index === 0) {
@@ -8131,9 +8148,23 @@
               this.pauseButton.textContent = this.paused ? '▶' : 'Ⅱ';
             }
           }
+          resize() {
+            this.wide = matchMedia('(orientation: landscape)').matches;
+            const rect = gameEl.getBoundingClientRect();
+            const width = this.wide && rect.height > 0
+              ? Math.max(BASE_W, HEIGHT * rect.width / rect.height)
+              : this.runner.game.world.width;
+            this.demo.resize(width);
+            this.backdrop.resize(width);
+            return width;
+          }
           draw() {
-            if (this.index !== 1) return false;
-            this.demo.resize(this.runner.game.world.width);
+            if (this.index !== 1) {
+              if (!this.wide) return false;
+              this.backdrop.trex.reducedMotion.matches = this.runner.browser.motionQuery.matches;
+              this.backdropRenderer.draw(1);
+              return true;
+            }
             this.demo.trex.reducedMotion.matches = this.runner.browser.motionQuery.matches;
             this.demoRenderer.draw(this.demoAlpha);
             return true;
@@ -8446,7 +8477,8 @@
           resize() {
             this.renderer.compactHud = matchMedia('(max-width:600px) and (orientation:portrait)').matches;
             this.game.resize(this.renderer.compactHud ? PORTRAIT_W : BASE_W);
-            setCanvasSize(this.renderer.ctx, this.game.world.width);
+            setCanvasSize(this.renderer.ctx, this.game.state === 'attract'
+              ? this.attract.resize() : this.game.world.width);
             this.report.size();
             if (this.paused && !pageEl.hidden) this.draw(1);
           }
@@ -8682,7 +8714,8 @@
             this.sessionView.update(this.game, this.input, this.paused, night);
             const idle = this.game.state === 'attract';
             this.attract.sync();
-            if (wasIdle !== idle) setCanvasSize(this.renderer.ctx, this.game.world.width);
+            if (wasIdle !== idle) setCanvasSize(this.renderer.ctx,
+              idle ? this.attract.resize() : this.game.world.width);
             const selectedMode = this.modeSelect.value;
             const recordMode = this.playing || this.game.inDeathScene ? this.game.mode : selectedMode;
             const highScore =

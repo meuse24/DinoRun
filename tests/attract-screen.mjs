@@ -27,9 +27,14 @@ try {
   const device = engine === 'webkit' ? pw.devices['iPhone 13'] : pw.devices['Pixel 7'];
   for (const config of [
     { name: 'desktop', viewport: { width: 1280, height: 720 } },
+    { name: 'full-hd', viewport: { width: 1920, height: 1080 } },
+    { name: 'laptop', viewport: { width: 1366, height: 768 } },
+    { name: 'wide-short', viewport: { width: 1920, height: 500 } },
+    { name: 'tablet', viewport: { width: 1024, height: 768 } },
     { ...device, name: 'portrait', viewport: { width: 390, height: 844 } },
     { ...device, name: 'landscape', viewport: { width: 844, height: 390 } },
     { ...device, name: 'compact-landscape', viewport: { width: 663, height: 234 } },
+    { ...device, name: 'wide-phone', viewport: { width: 844, height: 234 } },
     { ...device, name: 'small-portrait', viewport: { width: 320, height: 568 } },
   ]) {
     const { name, defaultBrowserType, ...options } = config;
@@ -89,6 +94,26 @@ try {
         const r = title.getBoundingClientRect();
         return r.top >= 0 && r.bottom <= innerHeight;
       }), true, 'Title remains on screen');
+      if (options.viewport.width > options.viewport.height) {
+        const layout = await page.evaluate(() => {
+          const stage = document.getElementById('stage').getBoundingClientRect();
+          const game = document.getElementById('game').getBoundingClientRect();
+          const style = getComputedStyle(document.getElementById('page'));
+          const canvas = document.querySelector('canvas');
+          return { stage: stage.toJSON(), game: game.toJSON(),
+            available: innerWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+            renderedAspect: canvas.width / canvas.height, logicalWidth: window.__dinoGame.world.width,
+            previewWidth: window.__dinoRunner.attract.demo.world.width };
+        });
+        assert(Math.abs(layout.stage.width - layout.available) < 1, name + ': use the full safe width');
+        assert(layout.stage.height <= 521, name + ': compact landscape height');
+        assert(layout.game.top >= -1 && layout.game.bottom <= options.viewport.height + 1,
+          name + ': preview fits vertically');
+        assert(Math.abs(layout.renderedAspect / (layout.game.width / layout.game.height) - 1) < 0.005,
+          name + ': preview artwork keeps equal horizontal/vertical scale');
+        assert.equal(layout.logicalWidth, 600, 'Preview sizing leaves real gameplay world unchanged');
+        assert(Math.abs(layout.previewWidth / 220 - layout.game.width / layout.game.height) < 0.005);
+      }
     };
     await checkStart();
     await page.screenshot({ path: path.join(output, `${name}-scores.png`) });
@@ -189,6 +214,8 @@ try {
       assert.equal(started.feather.charged, false);
       assert.equal(started.chili.remainingMs, 0);
       assert.equal(await page.locator('#start-game').isVisible(), false);
+      assert.equal(await page.evaluate(() => window.__dinoRunner.game.world.width),
+        options.viewport.width <= 600 && options.viewport.height >= options.viewport.width ? 420 : 600);
       await page.evaluate(() => {
         const r = window.__dinoRunner;
         r.highscoreController.roundLeft(); r.game.newSession(); r.draw(1);
@@ -247,10 +274,34 @@ try {
       });
       assert.match(await page.locator('#attract-score-source').textContent(), /Saved online/);
       assert.match(await page.locator('#attract-score-list').textContent(), /ZZZZ/);
+      // A paused preview must also resize correctly across orientation changes.
+      await page.locator('#settings-open').click();
+      const elapsed = (await state(page)).attract.elapsedMs;
+      for (const [width, height] of [[1920, 500], [390, 844], [844, 234], [1280, 720]]) {
+        await page.setViewportSize({ width, height });
+        await page.waitForFunction(({ width, height }) => innerWidth === width && innerHeight === height,
+          { width, height });
+        await page.evaluate(() => { window.__dinoRunner.resize(); window.__dinoRunner.draw(1); });
+        assert.equal((await state(page)).attract.elapsedMs, elapsed, 'Resize preserves paused preview time');
+        const resized = await page.evaluate(() => {
+          const r = document.getElementById('game').getBoundingClientRect(), c = document.querySelector('canvas');
+          return { aspect: r.width / r.height, backing: c.width / c.height,
+            rect: r.toJSON(), width: window.__dinoGame.world.width,
+            wide: window.__dinoRunner.attract.wide, previewWidth: window.__dinoRunner.attract.demo.world.width,
+            media: matchMedia('(orientation: landscape)').matches };
+        });
+        assert(Math.abs(resized.backing / resized.aspect - 1) < 0.005,
+          'Orientation keeps preview proportions: ' + JSON.stringify({ width, height, resized }));
+        assert.equal(resized.width, width === 390 ? 420 : 600);
+      }
+      await page.locator('#settings-close').click();
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+      await checkStart();
     }
     assert.deepEqual(errors, [], name + ': browser errors');
     assert(requests.every(url => url === pathToFileURL(file).href), 'Standalone requests no required asset');
-    report.push({ name, engine, version: browser.version(), viewport: options.viewport,
+    const geometry = await page.locator('#stage').boundingBox();
+    report.push({ name, engine, version: browser.version(), viewport: options.viewport, geometry,
       touch: !!options.hasTouch, checks: 'passed', errors });
     await context.close();
   }
