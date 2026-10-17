@@ -209,7 +209,7 @@ try {
   await login(peer);
   const passwordBeforeScores = digest(), configBefore = fs.readFileSync(config, 'utf8');
   let passwordToken = csrf(await (await api.get(url + '?view=password')).text());
-  const newSecret = randomBytes(24).toString('base64url');
+  const newSecret = 'Zx' + randomBytes(3).toString('hex'); // Eight characters: short-password regression.
   const changeForm = { action: 'change_password', mode: 'normal', csrf: passwordToken,
     current_password: secret, new_password: newSecret, repeat_password: newSecret };
   assert.equal((await post(api, { ...changeForm, csrf: 'bad' })).status(), 403);
@@ -218,8 +218,8 @@ try {
   for (let i = 0; i < 5; i++) {
     clearThrottle();
     const invalid = [ { current_password: 'wrong' }, { repeat_password: 'different' },
-      { new_password: 'short', repeat_password: 'short' },
-      { new_password: 'ä'.repeat(37), repeat_password: 'ä'.repeat(37) },
+      { new_password: '', repeat_password: '' },
+      { new_password: 'Ab!12', repeat_password: 'Ab!12' },
       { new_password: secret, repeat_password: secret } ][i];
     const rejected = await post(api, { ...changeForm, ...invalid });
     assert.equal(rejected.status(), 400);
@@ -280,14 +280,14 @@ try {
   // Disable replacement in this one isolated worker, after verification and
   // temporary writing. An actual storage failure must retain the previous hash.
   const failedWrite = execFileSync(php, ['-d', 'disable_functions=rename', passwordWorker],
-    { env, input: JSON.stringify([persistedHash, newSecret, randomBytes(24).toString('base64url')]),
+    { env, input: JSON.stringify([persistedHash, newSecret, randomBytes(24).toString('hex')]),
       encoding: 'utf8', windowsHide: true });
   assert.equal(failedWrite, '503');
   assert.equal(fs.readFileSync(credentialFile, 'utf8'), beforeFailedWrite);
   assert(!fs.readdirSync(data).some(file => file.startsWith('.admin-password-')), 'Failed write cleans temporary secret');
   assert.equal(digest(), passwordBeforeScores);
   clearCredential(); clearThrottle();
-  checks.push('Password change validation/UTF-8 bounds, guarded atomic hash persistence/failure, reauthentication throttle, CSRF, all-session revocation, old/new login, config recovery/disable, concurrent-change conflict, unchanged scores/config');
+  checks.push('Short alphanumeric password validation/bounds, guarded atomic hash persistence/failure, reauthentication throttle, CSRF, all-session revocation, old/new login, config recovery/disable, concurrent-change conflict, unchanged scores/config');
 
   clearThrottle();
   browser = await pw[engine].launch({ headless: true });
@@ -361,6 +361,8 @@ try {
     await page.getByRole('link', { name: 'Passwort ändern', exact: true }).click();
     await page.getByRole('heading', { name: 'Passwort ändern', exact: true }).waitFor();
     assert.equal(await page.locator('input[type=password]').count(), 3);
+    assert.equal(await page.locator('#new-password').getAttribute('minlength'), null);
+    assert.equal(await page.locator('#new-password').getAttribute('pattern'), '[A-Za-z0-9]+');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true);
     phase = 'password screenshot';
     await page.screenshot({ path: path.join(output, `${name}-password.png`), fullPage: true, caret: 'initial' });
@@ -369,6 +371,8 @@ try {
     assert(!fs.existsSync(credentialFile));
     await page.getByRole('link', { name: 'Passwort ändern', exact: true }).click();
     await page.getByLabel('Bisheriges Passwort', { exact: true }).fill(secret);
+    await page.getByLabel('Neues Passwort', { exact: true }).fill('Ab!12');
+    assert.equal(await page.locator('#new-password').evaluate(input => input.validity.patternMismatch), true);
     await page.getByLabel('Neues Passwort', { exact: true }).fill(newSecret);
     await page.getByLabel('Neues Passwort wiederholen', { exact: true }).fill(newSecret);
     await page.getByRole('button', { name: 'Passwort speichern', exact: true }).click();

@@ -171,11 +171,10 @@ function dino_admin_change_password(string $expectedHash, string $current, strin
         if (strlen($current) > 1024 || !password_verify($current, $hash)) {
             throw new DinoHttpError(400, 'current_password', 'Current password is incorrect.');
         }
-        // PASSWORD_DEFAULT currently uses bcrypt: reject truncation beyond 72
-        // bytes, including multibyte input. Count Unicode characters for minimum.
-        $length = preg_match_all('/./us', $password);
-        if ($length === false || $length < 15 || strlen($password) > 72 || strpos($password, "\0") !== false) {
-            throw new DinoHttpError(400, 'password_length', 'Invalid new password length.');
+        // ASCII letters/digits only, with no minimum beyond a nonempty value.
+        // Keep bcrypt's 72-byte boundary so passwords are never truncated.
+        if (preg_match('/^[A-Za-z0-9]{1,72}$/D', $password) !== 1) {
+            throw new DinoHttpError(400, 'password_format', 'Use 1 to 72 ASCII letters or digits.');
         }
         if (!hash_equals($password, $repeat)) {
             throw new DinoHttpError(400, 'password_repeat', 'Passwords do not match.');

@@ -36,8 +36,8 @@ $originalPassword = stream_get_contents(STDIN);
 $baseHash = dino_admin_password_hash();
 check(password_verify($originalPassword, $baseHash), 'Isolated fixture credential supplied on stdin');
 $credentialFile = dino_data_dir() . '/admin-password.php';
-$nextPassword = 'random words for isolated test only';
-foreach (['short', str_repeat('a', 73), str_repeat('ä', 37), "long enough but contains\0null", "invalid utf8 password \xff"] as $invalid) {
+$nextPassword = 'Ab12Cd34';
+foreach (['', str_repeat('a', 73), 'ä', 'Ab 12', 'Ab-12', 'Ab_12', 'Ab!12', "Ab12\n", "Ab12\0", "Ab12\xff"] as $invalid) {
     expect_error(function () use ($baseHash, $originalPassword, $invalid): void {
         dino_admin_change_password($baseHash, $originalPassword, $invalid, $invalid);
     }, 400);
@@ -61,10 +61,16 @@ expect_error(function () use ($baseHash, $originalPassword, $nextPassword): void
     dino_admin_change_password($baseHash, $originalPassword, $nextPassword, $nextPassword);
 }, 401);
 check(file_get_contents($credentialFile) === $raw, 'Stale change cannot overwrite current credential');
-// Boundary: 36 two-byte characters fit exactly; longer UTF-8 input is rejected.
-$unicodePassword = str_repeat('ä', 36);
-dino_admin_change_password($changedHash, $nextPassword, $unicodePassword, $unicodePassword);
-check(password_verify($unicodePassword, dino_admin_password_hash()), '72-byte Unicode password supported');
+expect_error(function () use ($changedHash, $nextPassword): void {
+    dino_admin_change_password($changedHash, $nextPassword, $nextPassword, $nextPassword);
+}, 400);
+// Short, letters-only, digits-only and the maximum length are valid.
+$previousPassword = $nextPassword;
+foreach (['a', '7', 'AbCd', '1234', str_repeat('a1', 36)] as $accepted) {
+    dino_admin_change_password(dino_admin_password_hash(), $previousPassword, $accepted, $accepted);
+    check(password_verify($accepted, dino_admin_password_hash()), 'Accepted alphanumeric boundary');
+    $previousPassword = $accepted;
+}
 check(glob(dino_data_dir() . '/.admin-password-*.php') === [], 'No credential temporary files left');
 $invalidState = ['v' => 1, 'config_key' => '', 'password_hash' => dino_admin_password_hash()];
 file_put_contents($credentialFile, "<?php exit; ?>\n" . json_encode($invalidState));

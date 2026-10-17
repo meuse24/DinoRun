@@ -60,11 +60,11 @@ Datenverzeichnis beibehalten; keine neue Ersteinrichtung notwendig.
 
 Nach der Anmeldung oben **Passwort ändern** auswählen. Bisheriges Passwort,
 neues Passwort und Wiederholung eingeben, dann **Passwort speichern** drücken.
-Das neue Passwort benötigt mindestens 15 Zeichen; mehrere zufällige Wörter
-oder ein Passwortmanager eignen sich dafür. Bis zu 72 UTF-8-Bytes sind erlaubt
-(Umlaute und Emojis benötigen mehrere Bytes). Zu lange Eingaben werden abgelehnt
-und nicht still gekürzt. Keine vorgeschriebenen Sonderzeichen oder regelmäßigen
-Pflichtwechsel. Das bisherige Passwort muss stimmen; das neue muss sich davon
+Das neue Passwort darf 1 bis 72 Zeichen lang sein. Erlaubt sind ausschließlich
+Buchstaben `A–Z`, `a–z` und Zahlen `0–9`; reine Buchstaben- oder Zahlenfolgen
+sind ebenfalls möglich. Leerzeichen, Umlaute und Sonderzeichen sind nicht erlaubt.
+Zu lange Eingaben werden abgelehnt und nicht still gekürzt. Das bisherige
+Passwort muss stimmen; das neue muss sich davon
 unterscheiden. Fehler geben die Passwörter nicht erneut im Formular aus.
 
 Nach erfolgreichem Speichern sind alle bisherigen Sitzungen ungültig,
@@ -154,7 +154,8 @@ Bestätigungen, Replay, konkurrierende Änderungen, Backupfehler und API-Lesen.
 Vier Browsergrößen prüfen Anmeldung, Abbrechen, Löschen, beide Reset-Arten und
 Passwortwechsel mit erneuter Anmeldung sowie Abmelden ohne JavaScript.
 Die Passworttests umfassen falsches bisheriges Passwort, Wiederholung,
-Mindestlänge, Unicode-/Byte-Grenzen, Nullbytes, unverändertes Passwort,
+kurze Passwörter, reine Buchstaben/Zahlen, Längengrenzen, unzulässige Zeichen,
+Nullbytes, unverändertes Passwort,
 CSRF, Drosselung, konkurrierende Änderungen, fehlgeschlagenes atomisches Speichern,
 Sitzungswiderruf, Konfigurations-Wiederherstellung und unveränderte
 Ranglisten/Konfiguration.

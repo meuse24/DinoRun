@@ -216,7 +216,7 @@ try {
         'https' => 'Bitte öffne die Verwaltung über HTTPS.',
         'password' => 'Die Anmeldung ist fehlgeschlagen.', 'login' => 'Bitte zuerst anmelden.',
         'current_password' => 'Das bisherige Passwort ist nicht korrekt.',
-        'password_length' => 'Das neue Passwort muss mindestens 15 Zeichen lang sein und darf höchstens 72 UTF-8-Bytes belegen.',
+        'password_format' => 'Das neue Passwort darf nur Buchstaben (A–Z, a–z) und Zahlen (0–9) enthalten und muss 1 bis 72 Zeichen lang sein.',
         'password_repeat' => 'Die neuen Passwörter stimmen nicht überein.',
         'password_same' => 'Bitte wähle ein anderes Passwort als bisher.',
         'rate' => 'Zu viele Anmeldeversuche. Bitte nach Ablauf der Wartezeit erneut versuchen.',
@@ -326,9 +326,9 @@ try {
         <?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="change_password"><input type="hidden" name="mode" value="<?= $mode ?>">
         <input type="hidden" name="username" value="admin" autocomplete="username">
         <label for="current-password">Bisheriges Passwort</label><input id="current-password" name="current_password" type="password" autocomplete="current-password" required maxlength="1024">
-        <p id="password-help" class="muted">Mindestens 15 Zeichen, zum Beispiel mehrere zufällige Wörter. Maximal 72 UTF-8-Bytes; Umlaute und Emojis benötigen mehrere Bytes.</p>
-        <label for="new-password">Neues Passwort</label><input id="new-password" name="new_password" type="password" autocomplete="new-password" aria-describedby="password-help" required minlength="15" maxlength="72">
-        <label for="repeat-password">Neues Passwort wiederholen</label><input id="repeat-password" name="repeat_password" type="password" autocomplete="new-password" required minlength="15" maxlength="72">
+        <p id="password-help" class="muted">1 bis 72 Zeichen. Erlaubt sind nur Buchstaben (A–Z, a–z) und Zahlen (0–9), keine Leerzeichen oder Sonderzeichen.</p>
+        <label for="new-password">Neues Passwort</label><input id="new-password" name="new_password" type="password" autocomplete="new-password" aria-describedby="password-help" required maxlength="72" pattern="[A-Za-z0-9]+">
+        <label for="repeat-password">Neues Passwort wiederholen</label><input id="repeat-password" name="repeat_password" type="password" autocomplete="new-password" required maxlength="72" pattern="[A-Za-z0-9]+">
         <button class="primary wide" type="submit">Passwort speichern</button>
         <div class="actions"><a class="button" href="?mode=<?= $mode ?>">Abbrechen</a></div>
       </form>
