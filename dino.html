@@ -776,6 +776,19 @@
         outline: 3px solid #e67842;
         outline-offset: 3px;
       }
+      #highscore-admin-link {
+        display: inline-flex;
+        align-items: center;
+        min-height: 48px;
+        margin-bottom: 16px;
+        color: var(--menu-ink);
+        font: 800 14px monospace;
+        text-underline-offset: 4px;
+      }
+      #highscore-admin-link:focus-visible {
+        outline: 3px solid #e67842;
+        outline-offset: 3px;
+      }
       #test-report p {
         font:
           14px/1.45 system-ui,
@@ -2002,6 +2015,7 @@
           </div>
           <details id="debug-log">
             <summary>Debug log</summary>
+            <a id="highscore-admin-link" href="https://meuse24.info/apps/dino/score-console.php" target="_blank" rel="noopener noreferrer">Highscores verwalten (neuer Tab)</a>
             <section id="test-report" aria-labelledby="log-toggle">
               <button id="log-toggle" type="button" role="switch" aria-checked="false">
                 Record test log
@@ -2691,7 +2705,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-17.2';
+        const BUILD = '2026-10-17.3';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,

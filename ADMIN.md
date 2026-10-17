@@ -37,13 +37,16 @@ einzugeben. Die Oberfläche funktioniert auch auf dem Handy und ohne JavaScript.
    `DINO_HIGHSCORES_CONFIG` eingebunden werden; sie überschreibt lokale Werte.
 4. Die Verwaltung über **HTTPS** öffnen, zum Beispiel unter
    `https://DEINE-DOMAIN/apps/dino/score-console.php`. Das Passwort eingeben.
-   Im Spiel wird kein Verwaltungslink ergänzt. Die Datei darf umbenannt werden;
-   die Formulare und Weiterleitungen verwenden ihren aktuellen Dateinamen.
+   Im Spiel führt **Settings → Debug log → Highscores verwalten** zur Verwaltung
+   auf `https://meuse24.info/apps/dino/score-console.php` in einem neuen Tab.
+   Bei einer anderen Domain oder einem umbenannten PHP-Endpunkt den Link in
+   `dino.html` anpassen und die Auslieferungsdatei neu bauen. Die Formulare und
+   Weiterleitungen der Verwaltung verwenden ihren aktuellen Dateinamen.
 
 Ein leerer oder ungültiger Hash sperrt die Oberfläche mit HTTP 404. Kein
 Standardpasswort und keine öffentliche Einrichtungsfunktion sind vorhanden.
-Der Dateiname ist zusätzliche Unauffälligkeit; der Zugriffsschutz besteht aus
-der serverseitigen Anmeldung. Ein Verzeichnisschutz des Hosters kann zusätzlich
+Der Zugriffsschutz besteht aus der serverseitigen Anmeldung. Ein
+Verzeichnisschutz des Hosters kann zusätzlich
 verwendet werden.
 
 Ein TLS-Proxy muss `HTTPS=on` im vertrauenswürdigen PHP-/Webserver-Setup setzen.

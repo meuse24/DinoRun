@@ -1,6 +1,6 @@
 <?php
 // Private web moderation. Enable via admin_password_hash in the server config.
-// May be renamed; no game/PWA link or required sibling frontend asset.
+// May be renamed; no required sibling frontend asset. Update the game's link if renamed.
 declare(strict_types=1);
 ini_set('display_errors', '0');
 
