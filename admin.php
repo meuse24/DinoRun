@@ -4,6 +4,7 @@
  *   php admin.php list [normal|relaxed]
  *   php admin.php remove <id>
  *   php admin.php reset <normal|relaxed|all> [--yes]
+ *   php admin.php create-password
  * Changes use the same lock and atomic replacement as the API and keep a timestamped backup
  * in <data_dir>/backups/. HTTP requests are refused.
  */
@@ -16,28 +17,12 @@ if (PHP_SAPI !== 'cli') {
 
 define('DINO_HIGHSCORES', true);
 require __DIR__ . '/highscores-lib.php';
+require __DIR__ . '/highscores-admin-lib.php';
 
 function admin_fail(string $message): void
 {
     fwrite(STDERR, $message . "\n");
     exit(1);
-}
-
-function admin_backup(): string
-{
-    $file = dino_store_file();
-    if (!is_file($file)) {
-        return '';
-    }
-    $dir = dino_data_dir() . '/backups';
-    if (!is_dir($dir) && !@mkdir($dir, 0750, true) && !is_dir($dir)) {
-        admin_fail('Cannot create backup directory ' . $dir);
-    }
-    $target = $dir . '/highscores-' . gmdate('Ymd-His') . '-' . bin2hex(random_bytes(2)) . '.json';
-    if (!@copy($file, $target)) {
-        admin_fail('Backup failed; nothing was changed.');
-    }
-    return $target;
 }
 
 function admin_print(array $store, array $modes): void
@@ -58,7 +43,12 @@ $command = $args[0] ?? '';
 $modes = array_keys(DINO_MAX_SPEED);
 
 try {
-    if ($command === 'list') {
+    if ($command === 'create-password') {
+        $password = rtrim(strtr(base64_encode(random_bytes(24)), '+/', '-_'), '=');
+        echo "Save this generated password in your password manager:\n$password\n\n";
+        echo "Add only this hash to your private highscores.config.php:\n";
+        echo "'admin_password_hash' => '" . password_hash($password, PASSWORD_DEFAULT) . "',\n";
+    } elseif ($command === 'list') {
         $selected = isset($args[1]) ? [$args[1]] : $modes;
         foreach ($selected as $mode) {
             if (!dino_is_mode($mode)) {
@@ -71,20 +61,7 @@ try {
         if (!dino_is_id($id)) {
             admin_fail('Usage: php admin.php remove <id>  (IDs are shown by "list")');
         }
-        $removed = dino_locked(function () use ($id): ?array {
-            $store = dino_read_store();
-            foreach ($store['lists'] as $mode => $list) {
-                foreach ($list as $index => $entry) {
-                    if ($entry['id'] === $id) {
-                        $backup = admin_backup();
-                        array_splice($store['lists'][$mode], $index, 1);
-                        dino_save_store($store);
-                        return [$mode, $entry, $backup];
-                    }
-                }
-            }
-            return null;
-        });
+        $removed = dino_admin_remove($id);
         if ($removed === null) {
             admin_fail('No entry with ID ' . $id);
         }
@@ -101,18 +78,10 @@ try {
                 admin_fail('Cancelled.');
             }
         }
-        $backup = dino_locked(function () use ($target, $modes): string {
-            $store = dino_read_store();
-            $backup = admin_backup();
-            foreach ($target === 'all' ? $modes : [$target] as $mode) {
-                $store['lists'][$mode] = [];
-            }
-            dino_save_store($store);
-            return $backup;
-        });
+        $backup = dino_admin_reset($target);
         echo "Reset $target. Backup: " . ($backup ?: '(no previous data)') . "\n";
     } else {
-        admin_fail("Usage:\n  php admin.php list [normal|relaxed]\n  php admin.php remove <id>\n  php admin.php reset <normal|relaxed|all> [--yes]");
+        admin_fail("Usage:\n  php admin.php list [normal|relaxed]\n  php admin.php remove <id>\n  php admin.php reset <normal|relaxed|all> [--yes]\n  php admin.php create-password");
     }
 } catch (DinoHttpError $error) {
     admin_fail($error->getMessage());

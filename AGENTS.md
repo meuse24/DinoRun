@@ -5,6 +5,9 @@
 - `dino.html` contains the UI, styles, and Canvas 2D game code, including `Game`, `Renderer`, `Horizon`, and `Runner`.
 - `service-worker.js` and `manifest.webmanifest` support installation and offline assets. Images, icons, and optional menu music live in the root.
 - `highscores.php` exposes the API; `highscores-lib.php` handles validation and file storage; `admin.php` provides CLI moderation.
+- `score-console.php` provides password-protected web moderation, disabled until
+  configured. `highscores-admin-lib.php` shares backups/mutations with the CLI.
+  See `ADMIN.md`; keep password hashes and runtime state out of Git.
 - `tests/` contains browser regression scripts. `output/` holds generated screenshots and JSON reports. `progress.md` records findings and validation.
 - `highscores-data/` holds mutable scores, locks, rate-limit data, and secrets.
 
@@ -54,6 +57,10 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   hash. `node tests/android-cdp-relay.mjs` optionally scopes CDP to test-created
   tabs when existing Chrome targets block initialization; see FEATHER.md.
 - `php -l highscores-lib.php`: check PHP syntax; repeat for other changed PHP files.
+- `node tests/admin-web.mjs`: isolated real-PHP CLI/HTTP/security checks and four
+  responsive browser layouts without JavaScript. Requires PHP (`DINO_PHP`) and
+  Playwright (`DINO_PLAYWRIGHT`); accepts `DINO_BROWSER=webkit`. Own temporary
+  data/config/session directories and PHP server; never contacts the live API.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
 - Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.
   Keep the game in one self-contained HTML, with no required sibling assets for

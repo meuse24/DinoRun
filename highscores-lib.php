@@ -73,6 +73,10 @@ function dino_config(): array
         'rate_idle' => 600,
         'lock_timeout' => 3.0,
         'blocked_names' => [],
+        // Web moderation is disabled until a password_hash() value is set.
+        'admin_password_hash' => '',
+        // Development only: honored solely by PHP's loopback CLI server.
+        'admin_allow_local_http' => false,
     ];
     $file = __DIR__ . '/highscores.config.php';
     if (is_file($file)) {
