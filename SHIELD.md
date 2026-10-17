@@ -103,3 +103,12 @@ emulation setup correction; gameplay has no browser-specific workaround.
   waiting for the asynchronous media-query update; inspected both night images.
 - Reports/screenshots and aggregate: `output/shield/verification.json`. No
   required implementation tasks remain; a physical-phone run is optional.
+
+## Later physical-device check (2026-10-17)
+
+The readable source of build `2026-10-17.1` passes a controlled real-time shield
+pickup/collision check on Galaxy A53 / SM-A536B, Android 16, Chrome 155.0.8059.79:
+a cactus hit consumes the shield and leaves the round running; the subsequent
+bird hit is lethal. Screenshots inspected; no browser errors. This supplements
+the broader desktop behavior coverage above. See [ATTRACT.md](ATTRACT.md) for
+the exact artifact hash, device procedure and reports.

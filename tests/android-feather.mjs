@@ -14,6 +14,8 @@ const root = path.resolve(import.meta.dirname, '..');
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/feather'), 'device');
 const artifactFile = path.resolve(process.argv[2] || path.join(root, 'dino.html'));
 const artifactSha256 = createHash('sha256').update(fs.readFileSync(artifactFile)).digest('hex');
+const testUrl = process.env.DINO_ANDROID_URL || 'http://127.0.0.1:8877/dino.html';
+const testPort = new URL(testUrl).port;
 fs.mkdirSync(output, { recursive: true });
 const adb = (...args) => execFileSync('adb',
   [...(process.env.DINO_ANDROID_SERIAL ? ['-s', process.env.DINO_ANDROID_SERIAL] : []), ...args],
@@ -33,22 +35,31 @@ const metadata = {
 };
 const { chromium } = await import(process.env.DINO_PLAYWRIGHT
   ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
-let browser, page;
+let browser, page, savedRecords;
 let reverseRemoved = false;
 const errors = [], layouts = [];
 const state = () => page.evaluate(() => JSON.parse(window.render_game_to_text()));
 try {
-  browser = await chromium.connectOverCDP(process.env.DINO_CDP_URL || 'http://127.0.0.1:9223');
+  browser = await chromium.connectOverCDP(process.env.DINO_CDP_URL || 'http://127.0.0.1:9223', { noDefaults: true });
   metadata.browser = browser.version();
   page = await browser.contexts()[0].newPage();
+  await page.addInitScript(() => { window.__dinoTest = { highscoreApiUrl: null }; });
+  await page.route('**/highscores.php*', route => route.abort());
   await page.bringToFront();
   page.on('pageerror', e => errors.push(String(e)));
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-  await page.goto('http://127.0.0.1:8877/dino.html', { waitUntil: 'load' });
+  const verifyArtifact = async response => {
+    if (process.env.DINO_ANDROID_URL)
+      assert.equal(createHash('sha256').update(await response.body()).digest('hex'), artifactSha256);
+    else assert.equal(await page.evaluate(() => window.__dinoArtifactSha256), artifactSha256);
+  };
+  const initialResponse = await page.goto(testUrl, { waitUntil: 'load' });
   await page.waitForFunction(() => !!window.__dinoRunner);
+  savedRecords = await page.evaluate(() => Object.fromEntries(
+    ['chromium-dino-highscore', 'chromium-dino-highscore-relaxed'].map(key => [key, localStorage.getItem(key)])));
   assert.equal(await page.locator('#build-info').textContent(), 'Build ' + metadata.build);
   assert.equal(await page.evaluate(() => window.__dinoTest.highscoreApiUrl), null);
-  assert.equal(await page.evaluate(() => window.__dinoArtifactSha256), artifactSha256);
+  await verifyArtifact(initialResponse);
   assert.equal(await page.evaluate(() => !!window.__dinoTest.manualFrames), false);
   const cdp = await page.context().newCDPSession(page);
   const touch = async (locator, hold = 0) => {
@@ -182,18 +193,21 @@ try {
   await touch(page.locator('#play-again'));
   await page.waitForFunction(() => window.__dinoGame.playing);
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
-  await page.waitForFunction(async hash => {
+  await page.waitForFunction(async ({ hash, raw }) => {
     const response = await caches.match(location.href.split('#')[0]);
-    return !!response && (await response.text()).includes(hash);
-  }, artifactSha256);
+    if (!response) return false;
+    if (!raw) return (await response.text()).includes(hash);
+    const digest = await crypto.subtle.digest('SHA-256', await response.arrayBuffer());
+    return [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('') === hash;
+  }, { hash: artifactSha256, raw: !!process.env.DINO_ANDROID_URL });
   // Break only this test origin's USB bridge, leaving the phone's connectivity
   // and all other browser tabs alone. The actual service worker must reload it.
-  adb('reverse', '--remove', 'tcp:8877');
+  adb('reverse', '--remove', 'tcp:' + testPort);
   reverseRemoved = true;
-  await page.reload({ waitUntil: 'load' });
+  const offlineResponse = await page.reload({ waitUntil: 'load' });
   await page.waitForFunction(() => !!window.__dinoRunner);
   assert.equal(await page.evaluate(() => window.__dinoTest.highscoreApiUrl), null);
-  assert.equal(await page.evaluate(() => window.__dinoArtifactSha256), artifactSha256);
+  await verifyArtifact(offlineResponse);
   await touch(page.locator('#start-game'));
   await page.waitForFunction(() => window.__dinoGame.playing && !window.__dinoGame.countingDown);
   await page.waitForFunction(() => !window.__dinoGame.trex.jumping);
@@ -206,7 +220,7 @@ try {
   await touch(page.locator('#touch-jump'), 40);
   assert.equal((await state()).feather.charged, false, 'Air jump works after actual offline reload');
   await page.screenshot({ path: path.join(output, 'offline-air-jump.png') });
-  adb('reverse', 'tcp:8877', 'tcp:8877');
+  adb('reverse', 'tcp:' + testPort, 'tcp:' + testPort);
   reverseRemoved = false;
   assert.deepEqual(errors, []);
   const report = { metadata, layouts, help: 'passed', deathRestart: 'passed', automaticNameDialog: 'passed',
@@ -216,7 +230,12 @@ try {
   fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report, null, 2));
   console.log(`Physical-device checks passed: ${metadata.model}, Android ${metadata.android}, Chrome ${metadata.browser}`);
 } finally {
-  if (reverseRemoved) adb('reverse', 'tcp:8877', 'tcp:8877');
+  if (page && savedRecords) await page.evaluate(values => {
+    for (const [key, value] of Object.entries(values)) {
+      if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value);
+    }
+  }, savedRecords).catch(() => {});
+  if (reverseRemoved) adb('reverse', 'tcp:' + testPort, 'tcp:' + testPort);
   adb('shell', 'settings', original.rotation === 'null' ? 'delete' : 'put', 'system', 'user_rotation',
     ...(original.rotation === 'null' ? [] : [original.rotation]));
   adb('shell', 'settings', original.auto === 'null' ? 'delete' : 'put', 'system', 'accelerometer_rotation',

@@ -183,3 +183,45 @@ adb forward --remove tcp:9223
 Use DINO_PLAYWRIGHT as above if needed; DINO_ANDROID_SERIAL selects a device for
 the script. Match ADB bridges to that same device. The runner creates/closes its
 own tab and disconnects CDP, leaving other tabs open.
+
+### Existing local server and scoped CDP connection
+
+Both `android-feather.mjs` and `android-attract.mjs` accept `DINO_ANDROID_URL`
+(default `http://127.0.0.1:8877/dino.html`) and an optional HTML argument. With
+an existing server, they disable live scores before game initialization, block
+API requests and compare the HTTP response SHA-256 with the selected file.
+Match the USB reverse bridge to the URL's port; the offline feather check
+temporarily removes and restores that bridge. Do not run tests concurrently.
+
+For example, when `node dev-server.js` already runs on 8765:
+
+```powershell
+$env:DINO_ANDROID_URL = 'http://127.0.0.1:8765/dino.html'
+adb forward tcp:9223 localabstract:chrome_devtools_remote
+adb reverse tcp:8765 tcp:8765
+try {
+  node tests/android-attract.mjs
+  node tests/android-feather.mjs
+} finally {
+  adb reverse --remove tcp:8765
+  adb forward --remove tcp:9223
+}
+```
+
+If Playwright CDP initialization hangs while the phone's version endpoint still
+responds, existing Chrome tabs may prevent auto-attachment from completing.
+Start `node tests/android-cdp-relay.mjs` in another terminal with the same
+`DINO_PLAYWRIGHT` setting, then set
+`DINO_CDP_URL=http://127.0.0.1:9224` for the runners. The localhost-only relay
+attaches only to targets created by the test connection and leaves existing
+tabs alone. It uses Playwright's bundled WebSocket dependency. Optional settings:
+`DINO_CDP_UPSTREAM` (default `http://127.0.0.1:9223`) and
+`DINO_CDP_RELAY_PORT` (default `9224`). Stop the relay afterward.
+
+Build `2026-10-17.1` passed both runners on the physical Galaxy A53 using the
+existing 8765 server and this scoped relay. Portrait/landscape feather controls,
+help, restart, automatic name entry and offline reload/air jump passed, with no
+browser errors or live submissions. The source hash and separate attract/shield
+results are in [ATTRACT.md](ATTRACT.md). Initial task rotation settings were
+restored to auto=1/user_rotation=0, all own helpers/bridges were removed, and the
+existing 8765 server was kept running.

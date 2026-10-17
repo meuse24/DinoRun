@@ -171,9 +171,12 @@ Vergleichsszenen. Direktes Android-`file://`-Öffnen war nicht Teil des Handytes
 Der neue Schutzblasen-Build `2026-10-16.1` besteht 80 pixelgleiche
 Vergleichsszenen in Chromium/WebKit. Er wurde bisher mit Handyemulation geprüft;
 ein physischer Handytest der Schutzblase wurde nicht durchgeführt.
-Auch der neue Startbildschirm (`2026-10-17.1`) hat bisher Browser-/Handyemulations-
-tests sowie 96 pixelgleiche Vergleichsszenen; ein neuer physischer Handytest wurde nicht durchgeführt. Details stehen
-in `../ATTRACT.md`.
+Der neue Startbildschirm (`2026-10-17.1`) besteht Browser-/Handyemulationstests
+sowie 96 pixelgleiche Vergleichsszenen. Zusätzlich wurde die lesbare Quelldatei
+über den vorhandenen Server auf Port 8765 auf dem Galaxy A53 geprüft: Rotation,
+Start aus allen Ansichten, Schutzblase, Feder, Touchsteuerung, Neustart und
+Offline-Neuladen bestehen in Hoch- und Querformat. Die kompakte Datei wurde bei
+diesem neuen Handytest nicht direkt geladen. Details stehen in `../ATTRACT.md`.
 
 ## 6. Ausliefern
 

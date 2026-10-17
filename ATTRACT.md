@@ -72,8 +72,8 @@ fresh starts from each panel, keyboard/touch, reduced motion, mode changes, late
 responses, cache fallback and bounded requests. Reports include layout metrics.
 
 Source and delivery results are collected under `output/attract`. Screenshots
-are visually inspected. Emulation is separate from physical-device testing;
-this build has no new physical-phone verification or deployment.
+are visually inspected. Emulation and physical-device results are recorded
+separately. Nothing has been deployed.
 
 ## Verified result
 
@@ -92,3 +92,35 @@ this build has no new physical-phone verification or deployment.
   `9d37db43e1a8c96565a76a77869cd42a470bd551c7c1ff80150fd45d7fb64133`.
   Hash/reproducibility, inline/Node syntax and diff checks pass. Aggregate:
   `output/attract/verification.json`. No required implementation work remains.
+
+## Physical Galaxy A53 verification (2026-10-17)
+
+Build `2026-10-17.1` was tested through the existing server on port 8765:
+readable `dino.html`, SHA-256
+`1d39734816f5a6922908f1f535c52b0b226ed8185075f6f3cf2580d1820627fd`.
+Device: Samsung SM-A536B, Android 16, Chrome 155.0.8059.79. Trusted CDP touch
+input, actual OS rotation and the normal requestAnimationFrame loop were used;
+no viewport emulation or manual simulation stepping.
+
+- Automatic scores/demo/power-ups rotation, preview/settings pause and starts
+  from all three panels pass in portrait and landscape. START stays fixed,
+  visible and touchable, including the actual 637x234 browser viewport.
+- A controlled real-time pickup/collision fixture passes: the shield absorbs
+  a cactus hit and the next bird hit ends the round.
+- Feather pickup/air jump, duck press/release, pause, help, restart, automatic
+  name entry and service-worker offline reload/air jump pass. Offline testing
+  temporarily disconnects only the test origin's USB bridge. No browser errors
+  or live score submissions. Screenshots inspected.
+- Two four-second controlled samples measured 60.1/59.5 FPS. These samples do
+  not establish sustained-play performance. The compact artifact was not loaded
+  on the phone in this run; source/release equivalence is established above.
+- Own tabs/helpers/USB bridges were closed or removed; initial rotation settings
+  restored (auto=1, user_rotation=0). The existing 8765 server remains running.
+
+Run `tests/android-attract.mjs` and `tests/android-feather.mjs` with the USB setup
+in [FEATHER.md](FEATHER.md). Set `DINO_ANDROID_URL` to use an existing local
+server; the response must match the selected HTML's SHA-256. For Chrome profiles
+where direct CDP initialization hangs, use `tests/android-cdp-relay.mjs` as
+documented there. Reports: `output/attract/phone/verification.json`,
+`output/attract/phone/device/attract-report.json` and
+`output/attract/phone-regression/device/report.json`.

@@ -47,6 +47,11 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   controlled physical-Android checks over USB/CDP. Requires Chrome open and the
   ADB bridges documented in FEATHER.md. The runner restores rotation settings,
   closes its own tab and never uses the live score API.
+- `node tests/android-attract.mjs`: verify attract rotation, persistent START,
+  touch starts and shield collisions on physical Android. Both Android runners
+  accept `DINO_ANDROID_URL` for an existing local server and verify its artifact
+  hash. `node tests/android-cdp-relay.mjs` optionally scopes CDP to test-created
+  tabs when existing Chrome targets block initialization; see FEATHER.md.
 - `php -l highscores-lib.php`: check PHP syntax; repeat for other changed PHP files.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
 - Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.

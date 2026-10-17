@@ -98,8 +98,11 @@ Build `2026-10-17.1`, SHA-256:
 The new attract behavior passes five desktop/touch layouts in both engines,
 against source and release. All 48 UI/gameplay comparison scenes per engine
 (96 total) are pixel-identical. See [ATTRACT.md](ATTRACT.md) and
-`output/attract/verification.json` for the validation evidence. This build has
-no new physical-phone verification.
+`output/attract/verification.json` for the validation evidence. The readable
+source of this build also passes physical Galaxy A53 tests: attract rotation,
+touch starts, shield, feather, restart and offline reload in both orientations.
+This phone run used the source through the existing 8765 server, not the compact
+artifact. See `output/attract/phone/verification.json` and [ATTRACT.md](ATTRACT.md).
 
 ## Previous shield delivery verification
 
