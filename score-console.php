@@ -41,7 +41,7 @@ function dino_admin_csrf_field(): void
 
 function dino_admin_label(string $mode): string
 {
-    return $mode === 'all' ? 'Beide Ranglisten' : ($mode === 'normal' ? 'Normal' : 'Relaxed');
+    return $mode === 'all' ? 'Both lists' : ($mode === 'normal' ? 'Normal' : 'Relaxed');
 }
 
 $error = '';
@@ -82,7 +82,7 @@ try {
     $authenticated = dino_admin_authenticated($_SESSION, $hash, $now);
     if (!$authenticated && isset($_SESSION['admin_key'])) {
         $_SESSION = [];
-        $notice = 'Deine Sitzung ist abgelaufen. Bitte erneut anmelden.';
+        $notice = 'Your session has ended. Please sign in again.';
     }
     if ($authenticated) {
         $_SESSION['admin_seen'] = $now;
@@ -138,7 +138,7 @@ try {
             dino_admin_change_password($hash, dino_admin_field('current_password'),
                 dino_admin_field('new_password'), dino_admin_field('repeat_password'));
             $_SESSION = ['csrf' => bin2hex(random_bytes(32)),
-                'flash' => 'Passwort geändert. Bitte mit dem neuen Passwort anmelden.'];
+                'flash' => 'Password changed. Please sign in with your new password.'];
             dino_admin_redirect($mode);
         } elseif ($action === 'logout') {
             $_SESSION = [];
@@ -190,12 +190,12 @@ try {
                     throw new DinoHttpError(404, 'missing', 'Entry no longer exists.');
                 }
                 $backup = $removed[2];
-                $_SESSION['flash'] = 'Eintrag ' . $removed[1]['name'] . ' wurde gelöscht.';
+                $_SESSION['flash'] = 'Entry ' . $removed[1]['name'] . ' deleted.';
             } else {
                 $backup = dino_admin_reset($pending['target'], $pending['revision']);
-                $_SESSION['flash'] = dino_admin_label($pending['target']) . ' wurde zurückgesetzt.';
+                $_SESSION['flash'] = dino_admin_label($pending['target']) . ' reset.';
             }
-            $_SESSION['flash'] .= $backup !== '' ? ' Sicherung: ' . basename($backup) : '';
+            $_SESSION['flash'] .= $backup !== '' ? ' Backup: ' . basename($backup) : '';
             dino_admin_redirect($mode);
         } else {
             throw new DinoHttpError(400, 'input', 'Unknown action.');
@@ -212,40 +212,40 @@ try {
     foreach ($failure->headers as $name => $value) {
         header($name . ': ' . $value);
     }
-    $messages = ['disabled' => 'Diese Seite ist nicht verfügbar.',
-        'https' => 'Bitte öffne die Verwaltung über HTTPS.',
-        'password' => 'Die Anmeldung ist fehlgeschlagen.', 'login' => 'Bitte zuerst anmelden.',
-        'current_password' => 'Das bisherige Passwort ist nicht korrekt.',
-        'password_format' => 'Das neue Passwort darf nur Buchstaben (A–Z, a–z) und Zahlen (0–9) enthalten und muss 1 bis 72 Zeichen lang sein.',
-        'password_repeat' => 'Die neuen Passwörter stimmen nicht überein.',
-        'password_same' => 'Bitte wähle ein anderes Passwort als bisher.',
-        'rate' => 'Zu viele Anmeldeversuche. Bitte nach Ablauf der Wartezeit erneut versuchen.',
-        'csrf' => 'Diese Anfrage ist abgelaufen oder ungültig. Bitte die Seite neu laden.',
-        'confirmation' => 'Die Bestätigung fehlt oder ist abgelaufen. Bitte die Aktion erneut auswählen.',
-        'changed' => 'Die Rangliste hat sich inzwischen geändert. Bitte prüfe sie erneut.',
-        'missing' => 'Dieser Eintrag ist nicht mehr vorhanden.',
-        'storage' => 'Die Verwaltung ist momentan nicht verfügbar. Bitte später erneut versuchen.',
-        'busy' => 'Die Ranglisten werden gerade gespeichert. Bitte erneut versuchen.'];
-    $error = $messages[$failure->code_name] ?? 'Die Anfrage konnte nicht ausgeführt werden.';
+    $messages = ['disabled' => 'This page is not available.',
+        'https' => 'Please open this page with HTTPS.',
+        'password' => 'Sign-in failed. Please check your password.', 'login' => 'Please sign in first.',
+        'current_password' => 'The current password is not correct.',
+        'password_format' => 'Use 1 to 72 letters (A–Z, a–z) or numbers (0–9). No spaces or symbols.',
+        'password_repeat' => 'The new passwords do not match.',
+        'password_same' => 'Please choose a different password.',
+        'rate' => 'Too many sign-in attempts. Please wait and try again.',
+        'csrf' => 'Request expired or invalid. Reload the page and try again.',
+        'confirmation' => 'Confirmation is missing or has expired. Start the action again.',
+        'changed' => 'The score list has changed. Please check it again.',
+        'missing' => 'This entry is no longer in the list.',
+        'storage' => 'The admin page is not available right now. Please try again later.',
+        'busy' => 'The score lists are being saved. Please try again.'];
+    $error = $messages[$failure->code_name] ?? 'The request could not be completed.';
     $unavailable = in_array($failure->code_name, ['disabled', 'https', 'method'], true)
         || session_status() !== PHP_SESSION_ACTIVE;
     $confirmation = null;
 } catch (Throwable $failure) {
     http_response_code(503);
     error_log('Dino web moderation unavailable: ' . get_class($failure));
-    $error = 'Die Verwaltung ist momentan nicht verfügbar. Bitte später erneut versuchen.';
+    $error = 'The admin page is not available right now. Please try again later.';
     $unavailable = true;
     $confirmation = null;
 }
 ?>
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="color-scheme" content="light dark">
-  <title>Highscores verwalten · Dino Run</title>
+  <title>Manage highscores · Dino Run</title>
   <style nonce="<?= dino_admin_escape($nonce) ?>">
     :root { color-scheme: light; --bg:#edf7fd; --panel:#fffaf2; --ink:#173f69; --line:#173f692a; --muted:#476583; --danger:#982e20; --accent:#e67842; }
     * { box-sizing:border-box; }
@@ -296,88 +296,88 @@ try {
 </head>
 <body>
 <header><div class="header-inner">
-  <div><div class="brand">DINO <span>RUN</span></div><span class="eyebrow">Private Verwaltung</span></div>
+  <div><div class="brand">DINO <span>RUN</span></div><span class="eyebrow">Private admin</span></div>
   <?php if ($authenticated && !$unavailable): ?>
-  <nav class="account" aria-label="Verwaltung"><a class="button" href="?mode=<?= $mode ?>&amp;view=password">Passwort ändern</a><form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="action" value="logout"><button type="submit">Abmelden</button></form></nav>
+  <nav class="account" aria-label="Admin"><a class="button" href="?mode=<?= $mode ?>&amp;view=password">Change password</a><form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="action" value="logout"><button type="submit">Sign out</button></form></nav>
   <?php endif; ?>
 </div></header>
 <main>
   <?php if ($error !== ''): ?><p class="message error" role="alert"><?= dino_admin_escape($error) ?></p><?php endif; ?>
   <?php if ($notice !== '' && !$unavailable): ?><p class="message" role="status"><?= dino_admin_escape($notice) ?></p><?php endif; ?>
   <?php if ($unavailable): ?>
-    <section class="card login"><h1>Verwaltung nicht verfügbar</h1><p>Bitte prüfe die Adresse oder versuche es später erneut.</p></section>
+    <section class="card login"><h1>Admin page not available</h1><p>Please check the address or try again later.</p></section>
   <?php elseif (!$authenticated): ?>
     <section class="card login" aria-labelledby="login-title">
-      <span class="eyebrow">Nur für den Administrator</span><h1 id="login-title">Highscores verwalten</h1>
-      <p class="muted">Melde dich an, um Einträge zu prüfen und Ranglisten zu verwalten.</p>
+      <span class="eyebrow">Admin only</span><h1 id="login-title">Highscore admin</h1>
+      <p class="muted">Sign in to check scores and manage the lists.</p>
       <form method="post">
         <?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="login"><input type="hidden" name="mode" value="<?= $mode ?>">
         <input type="hidden" name="username" value="admin" autocomplete="username">
-        <label for="password">Administrator-Passwort</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024">
-        <button class="primary wide" type="submit">Anmelden</button>
+        <label for="password">Admin password</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="1024">
+        <button class="primary wide" type="submit">Sign in</button>
       </form>
-      <footer>Die Sitzung endet nach 20 Minuten ohne Aktivität.</footer>
+      <footer>You are signed out after 20 minutes of no activity.</footer>
     </section>
   <?php elseif ($passwordPage): ?>
     <section class="card login" aria-labelledby="password-title">
-      <span class="eyebrow">Administrator</span><h1 id="password-title">Passwort ändern</h1>
-      <p class="muted">Nach dem Speichern werden alle Sitzungen beendet. Melde dich anschließend mit dem neuen Passwort an.</p>
+      <span class="eyebrow">Admin</span><h1 id="password-title">Change password</h1>
+      <p class="muted">Saving signs you out on all devices. Then sign in with your new password.</p>
       <form method="post">
         <?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="change_password"><input type="hidden" name="mode" value="<?= $mode ?>">
         <input type="hidden" name="username" value="admin" autocomplete="username">
-        <label for="current-password">Bisheriges Passwort</label><input id="current-password" name="current_password" type="password" autocomplete="current-password" required maxlength="1024">
-        <p id="password-help" class="muted">1 bis 72 Zeichen. Erlaubt sind nur Buchstaben (A–Z, a–z) und Zahlen (0–9), keine Leerzeichen oder Sonderzeichen.</p>
-        <label for="new-password">Neues Passwort</label><input id="new-password" name="new_password" type="password" autocomplete="new-password" aria-describedby="password-help" required maxlength="72" pattern="[A-Za-z0-9]+">
-        <label for="repeat-password">Neues Passwort wiederholen</label><input id="repeat-password" name="repeat_password" type="password" autocomplete="new-password" required maxlength="72" pattern="[A-Za-z0-9]+">
-        <button class="primary wide" type="submit">Passwort speichern</button>
-        <div class="actions"><a class="button" href="?mode=<?= $mode ?>">Abbrechen</a></div>
+        <label for="current-password">Current password</label><input id="current-password" name="current_password" type="password" autocomplete="current-password" required maxlength="1024">
+        <p id="password-help" class="muted">Use 1 to 72 letters (A–Z, a–z) or numbers (0–9). No spaces or symbols.</p>
+        <label for="new-password">New password</label><input id="new-password" name="new_password" type="password" autocomplete="new-password" aria-describedby="password-help" required maxlength="72" pattern="[A-Za-z0-9]+">
+        <label for="repeat-password">Repeat new password</label><input id="repeat-password" name="repeat_password" type="password" autocomplete="new-password" required maxlength="72" pattern="[A-Za-z0-9]+">
+        <button class="primary wide" type="submit">Save password</button>
+        <div class="actions"><a class="button" href="?mode=<?= $mode ?>">Cancel</a></div>
       </form>
     </section>
   <?php elseif ($confirmation !== null): ?>
     <section class="card confirmation" aria-labelledby="confirm-title">
-      <span class="eyebrow">Bitte prüfen</span>
-      <h1 id="confirm-title"><?= $confirmation['action'] === 'remove' ? 'Eintrag löschen?' : 'Rangliste zurücksetzen?' ?></h1>
+      <span class="eyebrow">Please check</span>
+      <h1 id="confirm-title"><?= $confirmation['action'] === 'remove' ? 'Delete entry?' : 'Reset score list?' ?></h1>
       <?php if ($confirmation['action'] === 'remove'): $entry = $confirmation['entry']; ?>
-        <p>Dieser Eintrag wird aus der Rangliste <strong><?= dino_admin_label($mode) ?></strong> entfernt.</p>
-        <ul class="review-list"><li><span class="name"><?= dino_admin_escape($entry['name']) ?></span><span class="score"><?= (int) $entry['score'] ?> Punkte</span></li></ul>
+        <p>This entry will be removed from <strong><?= dino_admin_label($mode) ?></strong>.</p>
+        <ul class="review-list"><li><span class="name"><?= dino_admin_escape($entry['name']) ?></span><span class="score"><?= (int) $entry['score'] ?> points</span></li></ul>
       <?php else: ?>
-        <p>Alle Einträge im Bereich <strong><?= dino_admin_label($confirmation['target']) ?></strong> werden gelöscht.</p>
+        <p>All entries in <strong><?= dino_admin_label($confirmation['target']) ?></strong> will be deleted.</p>
         <?php foreach ($confirmation['target'] === 'all' ? array_keys(DINO_MAX_SPEED) : [$confirmation['target']] as $key): ?>
-        <h2><?= dino_admin_label($key) ?> · <?= count($store['lists'][$key]) ?> Einträge</h2>
-        <ul class="review-list"><?php foreach ($store['lists'][$key] as $entry): ?><li><span class="name"><?= dino_admin_escape($entry['name']) ?></span><span><?= (int) $entry['score'] ?> Punkte</span></li><?php endforeach; ?></ul>
+        <h2><?= dino_admin_label($key) ?> · <?= count($store['lists'][$key]) ?> entries</h2>
+        <ul class="review-list"><?php foreach ($store['lists'][$key] as $entry): ?><li><span class="name"><?= dino_admin_escape($entry['name']) ?></span><span><?= (int) $entry['score'] ?> points</span></li><?php endforeach; ?></ul>
         <?php endforeach; ?>
       <?php endif; ?>
-      <p class="muted">Vor dem Speichern wird automatisch eine Sicherung erstellt.</p>
+      <p class="muted">A backup is made before any scores are changed.</p>
       <form method="post">
         <?php dino_admin_csrf_field(); ?><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="action" value="<?= $confirmation['action'] ?>"><input type="hidden" name="confirmation" value="<?= $confirmation['token'] ?>">
-        <?php if ($confirmation['action'] === 'reset'): ?><label for="reset-word">Zur Bestätigung RESET eingeben</label><input id="reset-word" name="reset_word" type="text" required autocomplete="off" spellcheck="false" pattern="RESET"><?php endif; ?>
-        <label class="check"><input type="checkbox" name="confirmed" value="yes" required><span>Ich habe die Auswahl geprüft und möchte sie löschen.</span></label>
-        <div class="actions"><a class="button" href="?mode=<?= $mode ?>">Abbrechen</a><button class="danger-fill" type="submit">Jetzt endgültig löschen</button></div>
+        <?php if ($confirmation['action'] === 'reset'): ?><label for="reset-word">Type RESET to confirm</label><input id="reset-word" name="reset_word" type="text" required autocomplete="off" spellcheck="false" pattern="RESET"><?php endif; ?>
+        <label class="check"><input type="checkbox" name="confirmed" value="yes" required><span>I have checked the selection and want to delete it.</span></label>
+        <div class="actions"><a class="button" href="?mode=<?= $mode ?>">Cancel</a><button class="danger-fill" type="submit">Delete now</button></div>
       </form>
     </section>
   <?php else: ?>
-    <div class="topline"><div><span class="eyebrow">Highscores</span><h1>Ranglisten verwalten</h1><p class="muted">Prüfe die Top 10 und entferne einzelne Einträge.</p></div></div>
-    <nav class="tabs" aria-label="Spielmodus">
+    <div class="topline"><div><span class="eyebrow">Highscores</span><h1>Manage highscores</h1><p class="muted">Check the top 10 and remove entries.</p></div></div>
+    <nav class="tabs" aria-label="Game mode">
       <?php foreach (array_keys(DINO_MAX_SPEED) as $key): ?><a class="tab" href="?mode=<?= $key ?>"<?= $mode === $key ? ' aria-current="page"' : '' ?>><?= dino_admin_label($key) ?></a><?php endforeach; ?>
     </nav>
     <?php if ($store !== null): $entries = $store['lists'][$mode]; ?>
     <section class="card" aria-labelledby="list-title">
       <h2 id="list-title"><?= dino_admin_label($mode) ?></h2>
-      <div class="summary"><div><span class="eyebrow">Einträge</span><b><?= count($entries) ?> / 10</b></div><div><span class="eyebrow">Höchster Punktestand</span><b><?= count($entries) ? (int) $entries[0]['score'] : '—' ?></b></div></div>
-      <?php if (!$entries): ?><p class="empty">Hier sind noch keine Highscores gespeichert.</p><?php else: ?>
-      <table><caption class="eyebrow">Gespeicherte Online-Highscores · <?= dino_admin_label($mode) ?></caption><thead><tr><th scope="col">Platz</th><th scope="col">Name</th><th scope="col">Punkte</th><th scope="col">Zeitpunkt (UTC)</th><th scope="col">Aktion</th></tr></thead><tbody>
+      <div class="summary"><div><span class="eyebrow">Entries</span><b><?= count($entries) ?> / 10</b></div><div><span class="eyebrow">Top score</span><b><?= count($entries) ? (int) $entries[0]['score'] : '—' ?></b></div></div>
+      <?php if (!$entries): ?><p class="empty">No highscores saved yet.</p><?php else: ?>
+      <table><caption class="eyebrow">Online highscores · <?= dino_admin_label($mode) ?></caption><thead><tr><th scope="col">Rank</th><th scope="col">Name</th><th scope="col">Score</th><th scope="col">Time (UTC)</th><th scope="col">Action</th></tr></thead><tbody>
       <?php foreach ($entries as $index => $entry): ?><tr>
         <td><?= $index + 1 ?></td><td class="name"><?= dino_admin_escape($entry['name']) ?></td><td class="score"><?= (int) $entry['score'] ?></td>
         <td><time datetime="<?= dino_admin_escape($entry['achievedAt']) ?>"><?= dino_admin_escape(str_replace('T', ' ', substr($entry['achievedAt'], 0, 16))) ?> UTC</time></td>
-        <td><form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="confirm_remove"><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="id" value="<?= dino_admin_escape($entry['id']) ?>"><button class="danger" type="submit" aria-label="<?= dino_admin_escape($entry['name']) ?> löschen">Löschen</button></form></td>
+        <td><form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="confirm_remove"><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="id" value="<?= dino_admin_escape($entry['id']) ?>"><button class="danger" type="submit" aria-label="Delete <?= dino_admin_escape($entry['name']) ?>">Delete</button></form></td>
       </tr><?php endforeach; ?></tbody></table>
       <?php endif; ?>
     </section>
-    <section class="card maintenance" aria-labelledby="reset-title"><h2 id="reset-title">Ranglisten zurücksetzen</h2><p class="muted">Du prüfst die betroffenen Einträge vor dem Löschen. Die andere Rangliste bleibt beim Zurücksetzen eines einzelnen Modus erhalten.</p>
-      <div class="actions"><?php foreach ([$mode, 'all'] as $target): ?><form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="confirm_reset"><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="target" value="<?= $target ?>"><button class="danger" type="submit"><?= dino_admin_label($target) ?> zurücksetzen</button></form><?php endforeach; ?></div>
+    <section class="card maintenance" aria-labelledby="reset-title"><h2 id="reset-title">Reset score lists</h2><p class="muted">You can check the entries before deleting them. Resetting one mode keeps the other list.</p>
+      <div class="actions"><?php foreach ([$mode, 'all'] as $target): ?><form method="post"><?php dino_admin_csrf_field(); ?><input type="hidden" name="action" value="confirm_reset"><input type="hidden" name="mode" value="<?= $mode ?>"><input type="hidden" name="target" value="<?= $target ?>"><button class="danger" type="submit"><?= $target === 'all' ? 'Reset both lists' : 'Reset ' . dino_admin_label($target) ?></button></form><?php endforeach; ?></div>
     </section>
     <?php endif; ?>
-    <footer>Änderungen betreffen die gespeicherten Server-Ranglisten. Geräteinterne Browser-Rekorde bleiben erhalten. Sicherungen werden auf dem Server aufbewahrt.</footer>
+    <footer>Changes apply to online highscores. Local browser records stay the same. Backups are kept on the server.</footer>
   <?php endif; ?>
 </main>
 </body>

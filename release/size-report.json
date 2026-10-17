@@ -1,18 +1,18 @@
 {
-  "build": "2026-10-17.3",
+  "build": "2026-10-17.4",
   "source": {
     "file": "dino.html",
-    "bytes": 363566,
-    "sha256": "6c19e887bc5802815250b47008069969588650cf6b89c90ac902c0ce3203e876",
-    "gzipBytes": 86398,
-    "brotliBytes": 73231
+    "bytes": 363561,
+    "sha256": "1665e865e79981cc7efc0d7444aef329282226bf875be25f31396de300da941c",
+    "gzipBytes": 86393,
+    "brotliBytes": 73248
   },
   "release": {
     "file": "release/dino.html",
-    "bytes": 191146,
-    "sha256": "853372a4695e41bab2976cefeeb464cc82e6ba44e26c102ee66b0dea49d055e4",
-    "gzipBytes": 63272,
-    "brotliBytes": 55952
+    "bytes": 191141,
+    "sha256": "029e743a139f4ef6c00a94657023fa34fae59f6b23bf407286248dd0b9caeff5",
+    "gzipBytes": 63268,
+    "brotliBytes": 55949
   },
   "tools": {
     "terser": "5.51.2",
@@ -24,17 +24,17 @@
   "stages": [
     {
       "tool": "Terser",
-      "bytes": 221536
+      "bytes": 221531
     },
     {
       "tool": "CSSO",
-      "bytes": 197743
+      "bytes": 197738
     },
     {
       "tool": "HTMLMinifier-Terser",
-      "bytes": 191146
+      "bytes": 191141
     }
   ],
   "savedBytes": 172420,
-  "savedPercent": 47.42
+  "savedPercent": 47.43
 }

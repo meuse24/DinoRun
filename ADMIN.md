@@ -37,7 +37,7 @@ einzugeben. Die Oberfläche funktioniert auch auf dem Handy und ohne JavaScript.
    `DINO_HIGHSCORES_CONFIG` eingebunden werden; sie überschreibt lokale Werte.
 4. Die Verwaltung über **HTTPS** öffnen, zum Beispiel unter
    `https://DEINE-DOMAIN/apps/dino/score-console.php`. Das Passwort eingeben.
-   Im Spiel führt **Settings → Debug log → Highscores verwalten** zur Verwaltung
+   Im Spiel führt **Settings → Debug log → Manage highscores** zur Verwaltung
    auf `https://meuse24.info/apps/dino/score-console.php` in einem neuen Tab.
    Bei einer anderen Domain oder einem umbenannten PHP-Endpunkt den Link in
    `dino.html` anpassen und die Auslieferungsdatei neu bauen. Die Formulare und
@@ -61,8 +61,9 @@ Für ein Update einer bereits eingerichteten Verwaltung nur `score-console.php`
 und `highscores-admin-lib.php` gemeinsam hochladen. Private Konfiguration und
 Datenverzeichnis beibehalten; keine neue Ersteinrichtung notwendig.
 
-Nach der Anmeldung oben **Passwort ändern** auswählen. Bisheriges Passwort,
-neues Passwort und Wiederholung eingeben, dann **Passwort speichern** drücken.
+Die Oberfläche verwendet einfaches Englisch. Nach der Anmeldung oben
+**Change password** auswählen. **Current password**, **New password** und
+**Repeat new password** eingeben, dann **Save password** drücken.
 Das neue Passwort darf 1 bis 72 Zeichen lang sein. Erlaubt sind ausschließlich
 Buchstaben `A–Z`, `a–z` und Zahlen `0–9`; reine Buchstaben- oder Zahlenfolgen
 sind ebenfalls möglich. Leerzeichen, Umlaute und Sonderzeichen sind nicht erlaubt.
