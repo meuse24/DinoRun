@@ -531,3 +531,14 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Screenshots inspected, no page/console errors. Landscape approach caught a normal fading Settings exit; later scenes are clear. Warning-phase30-frame samples each median16.7ms/p95=16.8ms/no>33ms; no sustained game-performance claim. Report and PNGs output/rock-boss/physical/device/.
 - Restored all preview-origin storage and rotation(auto1/user0); runner closed only its own tab. Verified helper process command lines before stopping own preview/relay; removed only own8877 reverse and9223 forward. Existing Chrome tabs and8765 preview preserved. Follow-up harness guards custom-server artifact hash, disables live scores before load and keeps rotation cleanup robust if page close fails.
 - BOSS.md/RELEASE.md/AGENTS.md updated with physical result and repeat command. No outstanding boss implementation or physical-test TODOs.
+
+
+## 2026-10-19: Debug rock training
+
+- User requested a Debug switch for continuous rock practice. Applied develop-web-game skill; baseline saved output/rock-training/baseline.html. Session-only switch applies next run, following existing mode selection; no forced loss of an active round.
+- RockBoss training reserves spawning continuously (including the inter-wave idle frame), skips long eligibility/cooldowns but retains warning/clearance timing. Training runs at fixed selected-mode pace, with no ordinary hazards or power-up spawns. Training flag remains in DOM-free simulation; debug UI lives in Runner.
+- Training excludes personal records, highscore qualification/name entry and session stats; result/footer label the practice round. Reload resets the Debug switch. BUILD2026-10-19.1/cachev22. Tests/build/documentation pending.
+
+- Completed: source training tests pass Chromium and WebKit in three layouts each; release passes Chromium in three layouts and all eight existing boss checks. Three actual-input waves per layout, no unexpected spawns, fixed pace, records/stats isolated, next-round switching and reload reset verified. Architecture11, lifecycle7 and installed skill client pass; screenshots/state inspected under output/rock-training. Fixed a test-only hidden-role lookup after reload by selecting the hidden switch by ID.
+- Built release2026-10-19.1 (232101 bytes, SHA256 1e7c5ce55873aecc6011f77748e08046aff41103a7ec4499793f57824c1339d6), updated size documentation and test commands. New training checks are desktop/touch emulation, not physical Android. Existing physical boss verification remains documented separately.
+- Final validation: WebKit release training also passes all three layouts; Chromium source/release comparison passes all64 scenes pixel-identically. Documentation complete, no remaining implementation TODOs.

@@ -1272,7 +1272,8 @@
         outline: 3px solid #e67842;
         outline-offset: 3px;
       }
-      #test-report p {
+      #test-report p,
+      #rock-training-help {
         font:
           14px/1.45 system-ui,
           sans-serif;
@@ -1313,7 +1314,8 @@
         outline: 3px solid #e67842;
         outline-offset: 3px;
       }
-      #log-toggle {
+      #log-toggle,
+      #rock-training-toggle {
         width: 100%;
       }
       #log-actions {
@@ -2602,6 +2604,11 @@
           </div>
           <details id="debug-log">
             <summary>Debug log</summary>
+            <button id="rock-training-toggle" type="button" role="switch" aria-checked="false" aria-describedby="rock-training-help">
+              Rock training
+            </button>
+            <p id="rock-training-help">Only rocks at a fixed pace. Starts next run; no highscores.
+              Resets on reload.</p>
             <a id="highscore-admin-link" href="https://meuse24.info/apps/dino/score-console.php" target="_blank" rel="noopener noreferrer">Manage highscores (new tab)</a>
             <section id="test-report" aria-labelledby="log-toggle">
               <button id="log-toggle" type="button" role="switch" aria-checked="false">
@@ -3295,7 +3302,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.12';
+        const BUILD = '2026-10-19.1';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -5512,22 +5519,23 @@
 
         // Rare corridor encounter. Timing is independent of the shared gameplay RNG.
         class RockBoss {
-          constructor(enabled = true, world = { width: BASE_W }) {
+          constructor(enabled = true, world = { width: BASE_W }, training = false) {
+            this.training = !!training;
             this.enabled = enabled;
             this.world = world;
             this.reset();
           }
           reset() {
             this.phase = 'idle';
-            this.remaining = ROCK_BOSS.firstSpawnMs;
+            this.remaining = this.training ? 0 : ROCK_BOSS.firstSpawnMs;
             this.completed = 0;
             this.rock = null;
           }
           get reserved() {
-            return this.enabled && this.phase !== 'idle';
+            return this.training || (this.enabled && this.phase !== 'idle');
           }
           update(dt, speed, corridorClear) {
-            if (!this.enabled) return;
+            if (!this.enabled && !this.training) return;
             if (this.phase === 'idle') {
               this.remaining -= dt;
               if (this.remaining > TIME_EPSILON) return;
@@ -5561,7 +5569,7 @@
               this.remaining = Math.max(0, this.remaining - dt);
               if (this.remaining <= TIME_EPSILON) {
                 this.phase = 'idle';
-                this.remaining = ROCK_BOSS.respawnMs + (this.completed % 3) * 7000;
+                this.remaining = this.training ? 0 : ROCK_BOSS.respawnMs + (this.completed % 3) * 7000;
               }
             }
           }
@@ -5584,6 +5592,7 @@
             featherEnabled = true,
             shieldEnabled = true,
             bossEnabled = true,
+            rockTraining = false,
             width = BASE_W,
           } = {}) {
             this.world = { width: BASE_W };
@@ -5594,7 +5603,7 @@
             this.turbo = new ChiliTurbo(this.rng, this.world);
             this.feather = new JumpFeather(featherEnabled, this.world);
             this.shield = new ShieldBubble(shieldEnabled, this.world);
-            this.boss = new RockBoss(bossEnabled, this.world);
+            this.boss = new RockBoss(bossEnabled, this.world, rockTraining);
             this.meter = new DistanceMeter();
             this.listeners = new Set();
             this.state = 'attract';
@@ -5630,6 +5639,15 @@
             this.mode = mode;
             this.config = GAME_MODES[mode];
             this.speed = this.config.speed;
+            return true;
+          }
+          get rockTraining() {
+            return this.boss.training;
+          }
+          setRockTraining(enabled) {
+            if (this.playing) return false;
+            this.boss.training = !!enabled;
+            this.boss.reset();
             return true;
           }
           get playing() {
@@ -5785,7 +5803,7 @@
               blinkRemaining: 0,
             });
             this.trex.setDuck(false);
-            this.highScore = Math.max(this.highScore, this.score);
+            if (!this.rockTraining) this.highScore = Math.max(this.highScore, this.score);
             this.emit('crash', {
               score: this.score,
             });
@@ -5875,7 +5893,8 @@
               else {
                 this.distance += travelSpeed;
                 this.score = Math.floor(this.distance * POINTS_PER_PX);
-                this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
+                if (!this.rockTraining)
+                  this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
                 this.horizon.update(
                   dt,
                   travelSpeed,
@@ -5927,7 +5946,7 @@
                   } else if (rock.x + rock.width < this.trex.x) this.clearBoss(true);
                 }
                 if (
-                  !this.crashed &&
+                  !this.crashed && !this.rockTraining &&
                   !this.recordCelebrated &&
                   this.recordAtStart > 0 &&
                   this.score > this.recordAtStart
@@ -5937,7 +5956,7 @@
                     score: this.score,
                   });
                 }
-                this.highScore = Math.max(this.highScore, this.score);
+                if (!this.rockTraining) this.highScore = Math.max(this.highScore, this.score);
               }
             }
             this.meter.update(dt, this.score);
@@ -6127,8 +6146,8 @@
             ctx.restore();
           }
           drawBossNotice(boss) {
-            if (boss.phase !== 'warning' && boss.phase !== 'active' && boss.phase !== 'cleared') return;
-            const ctx = this.ctx, active = boss.phase === 'active';
+            if (!boss.training && boss.phase !== 'warning' && boss.phase !== 'active' && boss.phase !== 'cleared') return;
+            const ctx = this.ctx, active = boss.phase === 'active' || boss.phase === 'idle' || boss.phase === 'clearing';
             ctx.save();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -6136,7 +6155,7 @@
             if (active) {
               ctx.font = '800 9px system-ui, sans-serif';
               ctx.fillStyle = '#fff0bd';
-              ctx.fillText('SHORT JUMP THROUGH', x, GROUND_Y + 17);
+              ctx.fillText(boss.training ? 'ROCK TRAINING · SHORT JUMPS' : 'SHORT JUMP THROUGH', x, GROUND_Y + 17);
             } else {
               ctx.fillStyle = '#173f69';
               roundedRect(ctx, x - 113, 48, 226, 41, 10);
@@ -8247,11 +8266,13 @@
           updateResult(game) {
             this.text(this.score, formatText('{score} points', { score: game.score }));
             const feedback =
-              game.score > game.recordAtStart
-                ? 'New personal best!'
-                : game.recordAtStart > 0
-                  ? formatText('Your best: {score}', { score: game.highScore })
-                  : '';
+              game.rockTraining
+                ? 'Rock training · no highscores'
+                : game.score > game.recordAtStart
+                  ? 'New personal best!'
+                  : game.recordAtStart > 0
+                    ? formatText('Your best: {score}', { score: game.highScore })
+                    : '';
             this.text(this.feedback, feedback);
             this.feedback.hidden = !feedback;
           }
@@ -8767,6 +8788,10 @@
               (entries.length < HIGHSCORE_LIST_SIZE || score > entries.at(-1).score);
           }
           roundEnded(game, input = 'keyboard', device = 'desktop') {
+            if (game.rockTraining) {
+              this.roundLeft();
+              return;
+            }
             const round = game.score > 0
               ? Object.freeze({
                   id: newEntryId(),
@@ -9836,6 +9861,13 @@
           }
           initializePreferences() {
             this.gamePreferences = new GamePreferences();
+            this.rockTrainingRequested = false;
+            const trainingToggle = document.getElementById('rock-training-toggle');
+            trainingToggle.addEventListener('click', () => {
+              this.rockTrainingRequested = !this.rockTrainingRequested;
+              trainingToggle.setAttribute('aria-checked', String(this.rockTrainingRequested));
+              this.report.record('rock-training', this.rockTrainingRequested ? 'next run: on' : 'next run: off');
+            });
             this.modeSelect = document.getElementById('mode-select');
             this.modeSelect.value = this.gamePreferences.mode;
             this.modeSelect.addEventListener('change', () => {
@@ -9892,13 +9924,16 @@
             return this.gamePreferences.highScore(mode);
           }
           saveHighScore() {
+            if (this.game.rockTraining) return;
             this.gamePreferences.saveHighScore(this.game.mode, this.game.highScore);
           }
           prepareRound() {
-            if (this.modeSelect.value === this.game.mode) return;
-            this.saveHighScore();
-            this.game.setMode(this.modeSelect.value);
-            this.game.highScore = this.readHighScore();
+            if (this.modeSelect.value !== this.game.mode) {
+              this.saveHighScore();
+              this.game.setMode(this.modeSelect.value);
+              this.game.highScore = this.readHighScore();
+            }
+            this.game.setRockTraining(this.rockTrainingRequested);
           }
           announce(text) {
             clearTimeout(this.announcementTimer);
@@ -9994,7 +10029,7 @@
           handleEvent(event) {
             const game = this.game,
               effects = this.renderer.effects;
-            this.stats.record(event);
+            if (!game.rockTraining) this.stats.record(event);
             // Frequent events stay out of the report; it only keeps the round lifecycle.
             if (!UNLOGGED_EVENTS.has(event.type)) {
               if (event.type === 'crash') this.report.breakSample();
@@ -10291,7 +10326,7 @@
           const game = runner.game;
           return JSON.stringify({
             coordinates: 'logical canvas pixels; origin top left, x right, y down',
-            state: game.state, paused: runner.paused, mode: game.mode,
+            state: game.state, paused: runner.paused, mode: game.mode, rockTraining: game.rockTraining,
             audio: { enabled: runner.sound.enabled, musicVolume: runner.music.volume,
               effectsVolume: runner.sound.volume, track: runner.music.track },
             attract: game.state === 'attract' ? {
