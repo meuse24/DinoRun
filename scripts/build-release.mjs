@@ -82,10 +82,20 @@ const panel = html.slice(panelStart.index, panelEnd);
 const protectedPanel = await minifyHtml(panel, { ...markupOptions, collapseWhitespace: false });
 const startMarker = '<!--dino-round-start-->', endMarker = '<!--dino-round-end-->';
 html = html.slice(0, panelStart.index) + startMarker + protectedPanel + endMarker + html.slice(panelEnd);
+// The new transformed death overlay has the same WebKit whitespace sensitivity
+// as the menu (glyph-edge differences despite equal geometry/computed styles).
+// Its children are headings/paragraphs only, with no nested div to balance.
+const overlay = /<div\b[^>]*\bid=["']?game-over-overlay["']?[^>]*>[\s\S]*?<\/div>/i.exec(html);
+assert(overlay, 'Expected the game-over overlay');
+const overlayStart = '<!--dino-overlay-start-->', overlayEnd = '<!--dino-overlay-end-->';
+html = html.replace(overlay[0], overlayStart +
+  await minifyHtml(overlay[0], { ...markupOptions, collapseWhitespace: false }) + overlayEnd);
 html = await minifyHtml(html, { ...markupOptions,
-  ignoreCustomFragments: [/<!--dino-round-start-->[\s\S]*?<!--dino-round-end-->/g],
+  ignoreCustomFragments: [/<!--dino-round-start-->[\s\S]*?<!--dino-round-end-->/g,
+    /<!--dino-overlay-start-->[\s\S]*?<!--dino-overlay-end-->/g],
 });
 html = html.replace(startMarker, '').replace(endMarker, '');
+html = html.replace(overlayStart, '').replace(overlayEnd, '');
 html = html.trim() + '\n';
 stages.push({ tool: 'HTMLMinifier-Terser', bytes: bytes(html) });
 

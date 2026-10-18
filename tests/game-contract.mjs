@@ -93,13 +93,15 @@ try {
     await page.addInitScript(({ blocked }) => {
       let seed = 937;
       window.__contractRequests = 0;
+      window.__contractSubmissions = 0;
       window.__dinoTest = {
         manualFrames: true,
         random: () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296),
         now: () => 1000,
         highscoreApiUrl: null,
-        highscoreFetch: async () => {
+        highscoreFetch: async (url, options) => {
           window.__contractRequests++;
+          if(options?.method==='POST')window.__contractSubmissions++;
           throw new TypeError('Simulated unavailable network');
         },
       };
@@ -207,18 +209,16 @@ try {
       view.letters = [...'TEST'];
       return view.save();
     });
-    assert.equal(await page.evaluate(() => window.__contractRequests), 1);
+    assert.equal(await page.evaluate(() => window.__contractSubmissions), 1);
     assert.equal(await page.evaluate(() => window.__dinoRunner.highscoreController.store.local('normal')[0].score), 12);
-    assert.equal(await page.evaluate(() => window.__dinoRunner.highscores.source), 'local');
-    await page.locator('#scores-close').click();
-    await page.waitForFunction(() => !window.__dinoRunner.paused);
-    assert.equal(await page.locator('#play-again').evaluate(button => {
+    await page.waitForFunction(() => window.__dinoGame.state === 'attract' && !window.__dinoRunner.paused);
+    assert.equal(await page.locator('#start-game').evaluate(button => {
       const rect = button.getBoundingClientRect();
       return !!document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
-        ?.closest('#play-again');
-    }), true, 'The transparent touch-controls grid must not cover the restart button');
+        ?.closest('#start-game');
+    }), true, 'The transparent touch-controls grid must not cover Start after Game over');
     const simulationTime = await page.evaluate(() => window.__dinoGame.simulationTime);
-    await page.locator('#play-again').click();
+    await page.locator('#start-game').click();
     const restarted = await state(page);
     assert.equal(restarted.state, 'playing');
     assert.equal(restarted.mode, 'relaxed');

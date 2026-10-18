@@ -56,8 +56,7 @@ try{
       await new Promise(resolve=>navigator.serviceWorker.addEventListener('controllerchange',resolve,{once:true}));
   });
   await page.waitForFunction(async tracks=>{
-    const cache=await caches.open('dino-run-v11');
-    return (await Promise.all(tracks.map(name=>cache.match(name)))).every(Boolean);
+    return (await Promise.all(tracks.map(name=>caches.match(name)))).every(Boolean);
   },tracks);
   const inspect=()=>page.evaluate(()=>{
     const music=window.__dinoRunner.music, audio=music.audio;

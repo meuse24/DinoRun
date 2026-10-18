@@ -21,7 +21,8 @@ The locally installed, exactly pinned development tools run in this order:
    explicit tag boundaries and SVG attribute case. Whitespace nodes inside the
    transformed round menu are retained for pixel-identical WebKit painting; its
    attributes are still minified. The menu boundary uses balanced section tags
-   so nested attract slides are protected as a complete element. JS/CSS are not
+   so nested attract slides are protected as a complete element. The transformed
+   Game over overlay also retains its layout-sensitive whitespace. JS/CSS are not
    minified again.
 
 Official documentation: [Terser](https://github.com/terser/terser),
@@ -30,19 +31,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-18.1)
+## Size (UTF-8 bytes, build 2026-10-18.2)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 370,338 |
-| After Terser | 226,289 |
-| After CSSO | 202,027 |
-| Final HTML | 195,138 |
+| Readable source | 368,901 |
+| After Terser | 224,579 |
+| After CSSO | 200,991 |
+| Final HTML | 194,091 |
 
-Saved: **175,200 bytes (47.31%)**, before transport compression. The optional
+Saved: **174,810 bytes (47.39%)**, before transport compression. The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-64,281 bytes; Brotli quality 11 gives 56,804 bytes. These are measurements only;
+64,090 bytes; Brotli quality 11 gives 56,663 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -71,12 +72,14 @@ node tests/game-contract.mjs release/dino.html
 node tests/jump-feather.mjs release/dino.html
 node tests/shield-bubble.mjs release/dino.html
 node tests/attract-screen.mjs release/dino.html
+node tests/game-over-flow.mjs release/dino.html
 ```
 
 `tests/release.mjs` checks hashes/reproducibility and compares both DOM UI and
 gameplay against the readable source: start/attract demo/power-ups, settings, help, feather gameplay,
 shield pickup/protection/duck/pop,
-automatic name entry and game over in four desktop/mobile layouts. The lifecycle
+automatic name entry, the brief Game over overlay and return to attract in four
+desktop/mobile layouts. The lifecycle
 suite audits named client/PHP constants in the readable source and exercises the
 selected delivery artifact in the browser, including standalone file/offline and
 hosted service-worker fallback. Live highscore submission is disabled.

@@ -226,28 +226,8 @@
         will-change: contents;
       }
 
-      .over-actions {
-        position: absolute;
-        display: flex;
-        gap: 3%;
-        z-index: 1;
-      }
 
-      .over-actions button {
-        border: 0;
-        border-radius: 24px;
-        background: #294f70;
-        color: white;
-        font: 800 clamp(8px, 1.8vw, 22px) monospace;
-        cursor: pointer;
-        flex: 1;
-        min-width: 0;
-        padding: 0 4px;
-      }
 
-      .over-actions button:first-child {
-        flex: 1.8;
-      }
 
 
       button:focus-visible {
@@ -792,25 +772,6 @@
       #mode-select {
         max-width: 100%;
       }
-      .over-actions button {
-        border: 1px solid #ffffff38;
-        box-shadow: 0 3px 0 #142e49;
-        transition:
-          filter 0.15s,
-          transform 0.15s;
-      }
-      .over-actions button:first-child {
-        background: #173f69;
-        border-color: #ffd257;
-      }
-      .over-actions button:hover {
-        filter: brightness(1.2);
-        transform: translateY(-1px);
-      }
-      .over-actions button:active {
-        transform: translateY(2px);
-        box-shadow: none;
-      }
       #debug-log {
         margin-top: 24px;
         border-top: 1px solid var(--menu-line);
@@ -915,9 +876,6 @@
       }
       @media (prefers-reduced-motion: reduce) {
         #settings button,
-        .over-actions button {
-          transition: none;
-        }
       }
 
       #mobile-hud {
@@ -1095,32 +1053,23 @@
         box-shadow: 0 2px 0 var(--menu-shadow);
         font-size: calc(14 * var(--menu-unit));
       }
-      #round-panel .over-actions {
-        position: static;
-        display: flex;
-        gap: 10px;
-        margin: 12px 0 0;
+      #game-over-overlay {
+        position: absolute;
+        z-index: 2;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: max-content;
+        max-width: 90%;
+        padding: 10px 24px;
+        border-radius: 18px;
+        background: #173f69e8;
+        color: #fff;
+        text-align: center;
+        pointer-events: none;
       }
-      #round-panel #play-again {
-        flex: 1;
-      }
-      #round-score {
-        font:
-          900 calc(32 * var(--menu-unit)) / 1 system-ui,
-          sans-serif;
-        color: var(--menu-ink);
-      }
-      #round-result {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        justify-content: center;
-        gap: 4px 10px;
-      }
-      #round-panel #round-feedback {
-        margin: 0;
-        font-weight: 700;
-      }
+      #game-over-overlay h2 { margin: 0; font-size: clamp(26px, 5cqw, 52px); }
+      #game-over-overlay p { margin: 4px 0 0; font: 700 clamp(12px, 2cqw, 18px)/1.3 monospace; }
       #round-panel.night {
         --menu-ink: #dce9ff;
         --menu-panel: #0b1637eb;
@@ -1211,27 +1160,9 @@
           max-width: calc((100dvh - var(--top-space) - var(--footer-space) - 76px) * 2.7272727);
         }
       }
-      /* The game-over card fades in after the death scene. */
-      #round-panel.reveal {
-        animation: panel-reveal 0.4s ease-out both;
-      }
-      @keyframes panel-reveal {
-        from {
-          opacity: 0;
-          scale: 0.94;
-        }
-      }
       @media (prefers-reduced-motion: reduce) {
         #stage.idle #round-panel h1 {
           animation: none;
-        }
-        #round-panel.reveal {
-          animation-name: panel-fade;
-        }
-        @keyframes panel-fade {
-          from {
-            opacity: 0;
-          }
         }
       }
       /* Highscores: panel shortcuts and a full-screen dialog in the Settings style. */
@@ -1855,7 +1786,6 @@
         #round-panel .attract-powerup p { font-size: clamp(11px, 1.2cqw, 15px); }
         .attract-demo-label { display: none; }
         #attract-demo .attract-heading, #attract-demo .attract-demo-caption { text-align: center; }
-        #stage.idle #install-game { top: auto; bottom: 8px; right: 128px; min-height: 32px; }
       }
       @media (max-height: 300px) and (orientation: landscape) {
         #round-panel .attract-heading h2 { font-size: 18px; margin-bottom: 4px; }
@@ -1958,20 +1888,12 @@
             </button>
             </div>
           </div>
-          <div id="result-view" hidden>
-            <h2 class="menu-title" lang="en">Game over</h2>
-            <div id="round-result">
-              <span id="round-score"></span>
-              <p id="round-feedback"></p>
-            </div>
-            <div id="over-actions" class="over-actions" hidden>
-              <button id="play-again" class="action-button" type="button">
-                <svg class="action-icon play-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 2.8a1.5 1.5 0 0 1 2.3-1.3l15 9.2a1.5 1.5 0 0 1 0 2.6l-15 9.2A1.5 1.5 0 0 1 5 21.2Z" /></svg>
-                <span class="action-label">Play again</span>
-              </button>
-            </div>
-          </div>
         </section>
+        <div id="game-over-overlay" hidden>
+          <h2 class="menu-title" lang="en">Game over</h2>
+          <p id="round-score"></p>
+          <p id="round-feedback"></p>
+        </div>
         <div id="coach" role="status" aria-live="polite" hidden></div>
         <div id="touch-controls" data-game-ui role="group" aria-label="Game controls">
           <button id="touch-jump" type="button" aria-label="Jump" hidden>
@@ -2681,7 +2603,8 @@
                       <li>The game gets faster. Don't crash!</li>
                     </ul>
                     <p>L = level · HI = best · SC = score</p>
-                    <p>The start screen shows scores, a demo and power-ups. Press START to play.</p>
+                    <p>The start screen shows scores, a demo and power-ups. Press START to play.
+                      After Game over, enter your name if asked, then return here. Use the power button to end your session.</p>
                   </section>
                   <section class="card">
                     <h2>Power-ups</h2>
@@ -2751,8 +2674,7 @@
           GROUND_Y = 190;
         const PORTRAIT_W = 420;
         const TIME_EPSILON = 1e-7;
-        // Death scene: hit-stop, knock-back and landing, dizzy stars and a rising ghost; the
-        // game-over card follows. A new press may skip the rest after DEATH_SKIP_MS.
+        // The Game over overlay accompanies the death scene for 2.6 seconds.
         const DEATH_HIT_MS = 120,
           DEATH_KNOCKBACK = 6,
           DEATH_FALL_MS = 900,
@@ -2772,7 +2694,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.1';
+        const BUILD = '2026-10-18.2';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -5049,9 +4971,13 @@
           }
           // A new session returns to the start screen without beginning a round.
           newSession() {
-            this.state = 'attract';
             this.simulationTime = 0;
             this.attractTime = 0;
+            this.returnToAttract();
+          }
+          // Returning after a round keeps the session clock and accumulated statistics.
+          returnToAttract() {
+            this.state = 'attract';
             this.resetRound();
           }
           beginRound(countdown = 0) {
@@ -6988,14 +6914,12 @@
 
         class SessionView {
           constructor() {
-            this.actions = document.getElementById('over-actions');
             this.dialog = document.getElementById('goodbye');
             this.list = document.getElementById('session-stats');
             this.panel = document.getElementById('round-panel');
             this.stage = document.getElementById('stage');
             this.startView = document.getElementById('start-view');
-            this.resultView = document.getElementById('result-view');
-            this.retryButton = document.getElementById('play-again');
+            this.gameOverOverlay = document.getElementById('game-over-overlay');
             this.quitButton = document.getElementById('quit-game');
             this.score = document.getElementById('round-score');
             this.feedback = document.getElementById('round-feedback');
@@ -7010,9 +6934,6 @@
             this.seen = new Set();
             this.hintUntil = 0;
             this.dialog.addEventListener('cancel', (event) => event.preventDefault());
-          }
-          showActions(show) {
-            this.actions.hidden = !show;
           }
           text(element, value) {
             if (element.textContent !== value) element.textContent = value;
@@ -7068,22 +6989,14 @@
           }
           updateRoundPanel(game, night) {
             const idle = game.state === 'attract';
-            const hidden = game.playing || game.inDeathScene;
-            if (this.panel.hidden && !hidden && game.crashed) {
-              this.panel.classList.remove('reveal');
-              void this.panel.offsetWidth;
-              this.panel.classList.add('reveal');
-            } else if (!game.crashed) this.panel.classList.remove('reveal');
-            this.panel.hidden = hidden;
+            this.panel.hidden = !idle;
             this.startView.hidden = !idle;
-            this.resultView.hidden = !game.crashed;
-            this.showActions(game.crashed);
-            this.quitButton.hidden = !game.crashed || game.inDeathScene;
-            this.retryButton.disabled = !game.canRestart();
+            this.gameOverOverlay.hidden = !game.inDeathScene;
+            this.quitButton.hidden = !idle;
             this.panel.classList.toggle('night', night);
             this.panel.classList.toggle('day', !night);
             this.stage.classList.toggle('idle', idle);
-            this.stage.classList.toggle('controls-raised', hidden);
+            this.stage.classList.toggle('controls-raised', !idle);
           }
           updateResult(game) {
             this.text(this.score, formatText('{score} points', { score: game.score }));
@@ -7622,6 +7535,7 @@
             this.round = null;
             this.saved = null;
             this.saving = false;
+            this.qualifying = false;
             if (!round) return;
             const online = this.online[round.mode];
             const onlineEntries = online.state === 'ok'
@@ -7638,18 +7552,21 @@
             }
             // The online list may have changed since it was last viewed. Check it before
             // ruling out a score that does not qualify on this device.
+            this.qualifying = true;
             this.api.list(round.mode).then(
               (data) => {
                 if (this.pendingRound !== round) return;
+                this.qualifying = false;
                 this.store.cacheOnline(round.mode, data.entries);
                 if (!this.qualifiesForTop10(data.entries, round.score)) return;
                 this.round = round;
                 this.onEntryReady();
               },
-              () => {},
+              () => { if (this.pendingRound === round) this.qualifying = false; },
             );
           }
           roundLeft() {
+            this.qualifying = false;
             this.pendingRound = null;
             this.round = null;
             this.saved = null;
@@ -7805,6 +7722,11 @@
                 this.show(this.mode, button.dataset.source);
               });
             this.dialog.addEventListener('close', () => this.onClose());
+            this.dialog.addEventListener('cancel', (event) => {
+              if (!this.runner.game.crashed) return;
+              event.preventDefault();
+              this.close();
+            });
             // A returning connection reloads a failed online list, only while it is shown.
             window.addEventListener('online', () => {
               if (this.dialog.open && this.source === 'online') this.controller.loadOnline(this.mode, true);
@@ -7847,14 +7769,18 @@
           }
           close() {
             this.dialog.close();
+            // Complete synchronously so a frame before the queued close event
+            // cannot reopen this round's name entry.
+            if (this.runner.game.crashed) this.runner.returnToAttract();
           }
           onClose() {
             // Ignore the queued close event of a dialog that raiseModalDialogs() reopened.
             if (this.dialog.open) return;
+            if (this.runner.game.crashed) this.runner.returnToAttract();
             this.runner.updatePause();
             this.runner.resize();
             this.runner.draw(1);
-            const target = [this.opener, document.getElementById('play-again'), this.defaultOpener].find(
+            const target = [this.opener, this.defaultOpener].find(
               (el) => el && !el.hidden && el.offsetParent !== null,
             );
             (target || gameEl).focus({ preventScroll: true });
@@ -7908,6 +7834,11 @@
               return;
             }
             if (!result) return;
+            if (this.runner.game.crashed && this.dialog.open) {
+              this.runner.announce(this.resultText(result.online, result.localRank));
+              this.close();
+              return;
+            }
             this.runner.draw(1);
             this.highlight = result.round.id;
             this.notice = this.resultText(result.online, result.localRank);
@@ -8412,12 +8343,6 @@
               gameEl.focus({ preventScroll: true });
             });
             document.getElementById('quit-game').addEventListener('click', () => runner.quit());
-            document.getElementById('play-again').addEventListener('click', () => {
-              runner.restart();
-              gameEl.focus({
-                preventScroll: true,
-              });
-            });
             document.getElementById('new-session').addEventListener('click', () => runner.newSession());
           }
           bindGuide() {
@@ -8524,10 +8449,7 @@
             this.gamepad = new GamepadController(this);
             this.report = new TestReport(this);
             this.highscoreController = new HighscoreController({
-              onEntryReady: () => {
-                if (this.game.crashed && !this.game.inDeathScene)
-                  this.highscores.openEntry(document.getElementById('play-again'));
-              },
+              onEntryReady: () => this.finishRound(),
               onRecord: (detail) => this.report.record('highscore', detail),
             });
             this.highscores = new HighscoreView(this, this.highscoreController);
@@ -8663,12 +8585,8 @@
             return this.game.start(this.fullscreenCountdown());
           }
           restart() {
-            if (!this.canInput()) return false;
-            // During the death scene a new press only skips to the game-over card.
-            if (this.game.inDeathScene) {
-              this.game.skipDeathScene();
-              return false;
-            }
+            // A finished round always completes its overlay/name-entry flow first.
+            if (!this.canInput() || this.crashed) return false;
             this.prepareRound();
             return this.game.restart(this.fullscreenCountdown());
           }
@@ -8721,7 +8639,6 @@
                 this.sessionView.hintUntil = 0;
                 this.duckSources.clear();
                 this.game.duck(false);
-                this.sessionView.showActions(false);
                 effects.reset();
                 this.lastTime = null;
                 pageEl.classList.add('running');
@@ -8763,14 +8680,13 @@
                 this.updateMusic();
                 this.input.reset();
                 this.duckSources.clear();
-                this.sessionView.showActions(true);
                 this.sound.death();
                 effects.burst(game.trex.x + 28, game.trex.y + 25, 20, 'impact');
                 pageEl.classList.remove('running');
                 this.saveHighScore();
                 this.highscoreController.roundEnded(game, this.mainInput(), detectDevice());
                 this.announce(
-                  formatText('Game over. Score {score}. Tap or press Space to restart.', event),
+                  formatText('Game over. Score {score}.', event),
                 );
                 break;
               case 'deathLand':
@@ -8778,8 +8694,6 @@
                 break;
               case 'deathSceneEnd':
                 // Menu music waits for the end of the death scene.
-                if (this.highscoreController.round)
-                  this.highscores.openEntry(document.getElementById('play-again'));
                 this.updateMusic();
                 break;
               case 'record':
@@ -8853,10 +8767,36 @@
               preventScroll: true,
             });
           }
+          finishRound() {
+            if (!this.game.crashed || this.game.inDeathScene || this.ended ||
+                this.highscores.dialog.open || this.highscoreController.qualifying) return;
+            if (this.highscoreController.round && !this.highscoreController.saved) {
+              this.highscores.openEntry(document.getElementById('start-game'));
+              return;
+            }
+            this.returnToAttract();
+          }
+          returnToAttract() {
+            if (!this.game.crashed || this.ended) return;
+            this.highscoreController.roundLeft();
+            this.game.returnToAttract();
+            this.input.reset();
+            this.duckSources.clear();
+            this.renderer.effects.reset();
+            this.sound.stopDeath();
+            this.attract.reset();
+            this.lastTime = null;
+            this.resize();
+            this.updatePause();
+            this.updateMusic(true);
+            this.draw(1);
+            document.getElementById('start-game').focus({ preventScroll: true });
+          }
           update(dt) {
             if (this.paused) return;
             this.attract.sync();
             const alpha = this.game.advance(dt);
+            this.finishRound();
             if (this.game.state === 'attract' && Number.isFinite(dt))
               this.attract.advance(clamp(dt, 0, STEP * MAX_STEPS));
             return alpha;

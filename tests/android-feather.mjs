@@ -167,14 +167,13 @@ try {
   await page.waitForFunction(() => !window.__dinoRunner.paused);
   await page.evaluate(() => { const g = window.__dinoGame; g.score = 0; g.gameOver(); });
   assert.equal((await state()).feather.charged, false);
-  await page.waitForFunction(() => window.__dinoGame.canRestart());
-  await page.locator('#play-again').waitFor({ state: 'visible' });
-  await page.waitForFunction(() => !document.getElementById('play-again').disabled && window.__dinoRunner.canInput());
-  assert.equal(await page.locator('#play-again').evaluate(button => {
+  await page.waitForFunction(() => window.__dinoGame.state === 'attract' && window.__dinoRunner.canInput());
+  await page.locator('#start-game').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#start-game').evaluate(button => {
     const rect = button.getBoundingClientRect();
-    return !!document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest('#play-again');
+    return !!document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)?.closest('#start-game');
   }), true, 'Restart must receive touches in the real short landscape viewport');
-  await touch(page.locator('#play-again'));
+  await touch(page.locator('#start-game'));
   // Android synthesizes the button's click asynchronously after touchEnd.
   await page.waitForFunction(() => window.__dinoGame.playing);
   assert.equal((await state()).state, 'playing');
@@ -189,8 +188,8 @@ try {
   assert.equal(await page.locator('#scores-entry-view').isVisible(), true);
   await page.screenshot({ path: path.join(output, 'automatic-name.png') });
   await touch(page.locator('#entry-cancel'));
-  await page.waitForFunction(() => !window.__dinoRunner.paused);
-  await touch(page.locator('#play-again'));
+  await page.waitForFunction(() => window.__dinoGame.state === 'attract' && !window.__dinoRunner.paused);
+  await touch(page.locator('#start-game'));
   await page.waitForFunction(() => window.__dinoGame.playing);
   await page.waitForFunction(() => !!navigator.serviceWorker.controller);
   await page.waitForFunction(async ({ hash, raw }) => {

@@ -172,14 +172,18 @@ for (const [name, viewport] of [
       await snapshot('shield-pop');
       await page.evaluate(() => {
         const g = window.__dinoGame; g.score = 12; g.gameTime = 4000; g.gameOver();
+        window.__dinoRunner.draw(1);
       });
+      assert.equal(await page.locator('#game-over-overlay').isVisible(), true);
+      await snapshot('game-over-overlay');
       await advance(160);
       await page.waitForFunction(() => document.getElementById('scores').open);
       await snapshot('automatic-name');
       await page.locator('#entry-cancel').click();
       await page.waitForFunction(() => !window.__dinoRunner.paused);
       await page.evaluate(() => window.__dinoRunner.draw(1));
-      await snapshot('game-over');
+      assert.equal(await page.evaluate(() => window.__dinoGame.state), 'attract');
+      await snapshot('returned-attract');
       assert.deepEqual(errors, [], `${name}/${version}: browser errors`);
       await context.close();
     }
