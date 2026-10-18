@@ -635,8 +635,10 @@ nur eigene Tabs, Vorschau, Relay und Bridges beendet. Berichte:
   Chromium-Latenz liegt innerhalb eines Frames.
 - WebKit meldet für `::backdrop` den Pseudo-Element-Namen `''`; der Test
   normalisiert das.
-- Firefox (B ohne `overlay`) wurde nicht per Playwright geprüft. Die einmalige
-  manuelle Prüfung steht noch aus.
+- Firefox 158.0 (Desktop, B ohne `overlay`) einmal manuell geprüft, nicht per
+  Playwright: Release `2026-10-18.4` über die sichere Vorschau (8877, ohne
+  Live-API). Settings, Namenseingabe (Abbrechen und Speichern), Goodbye mit
+  New session und Hilfe hin und zurück liefen einwandfrei.
 
 **Testanpassungen:** Bestehende Tests schalten die Übergänge per
 Init-Skript ab, außer bei `DINO_TRANSITIONS=1`. Die beiden
