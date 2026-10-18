@@ -1976,6 +1976,75 @@
         }
       }
     </style>
+    <style id="heading-motion-styles">
+      /* Small arcade gestures, independent of panel transforms and input.
+         Only the logo loops; finite motion-heading-* joins ElementMotion cleanup. */
+      .heading-ink {
+        display: inline-block;
+        transform-origin: 50% 85%;
+      }
+      .brand-float { display: inline-block; }
+      @keyframes motion-heading-hop {
+        0% { transform: translateY(7px) scale(0.96, 1.04); }
+        48% { transform: translateY(-4px) scale(1.02, 0.98); }
+        76% { transform: translateY(1px) scale(0.99, 1.01); }
+        100% { transform: none; }
+      }
+      @keyframes motion-heading-step {
+        0% { opacity: 0.6; transform: translate(-8px, 3px) rotate(-2deg); }
+        70% { opacity: 1; transform: translateX(1px) rotate(0.4deg); }
+        100% { transform: none; }
+      }
+      @keyframes motion-heading-land {
+        0% { transform: translateY(-10px) scale(0.96, 1.06); }
+        50% { transform: translateY(2px) scale(1.04, 0.93); }
+        76% { transform: translateY(-2px) scale(0.99, 1.02); }
+        100% { transform: none; }
+      }
+      @keyframes motion-heading-wave {
+        0% { transform: rotate(-3deg) translateY(4px); }
+        45% { transform: rotate(2deg) translateY(-2px); }
+        75% { transform: rotate(-0.6deg); }
+        100% { transform: none; }
+      }
+      @keyframes heading-logo-float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-2px); }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        :root.motion #round-panel[data-enter] .title-word {
+          animation: motion-heading-hop 280ms ease-out both;
+        }
+        :root.motion #round-panel[data-enter] .title-word:last-child { animation-delay: 40ms; }
+        :root.motion .attract-slide[data-enter] .heading-ink {
+          animation: motion-heading-step 240ms ease-out 60ms both;
+        }
+        :root.motion dialog[open] .heading-ink,
+        :root.motion.help-page.help-active .menu-title .heading-ink {
+          animation: motion-heading-step 300ms ease-out 40ms both;
+        }
+        :root.motion #goodbye[open] .heading-ink {
+          animation-name: motion-heading-wave;
+          animation-duration: 360ms;
+        }
+        :root.motion #game-over-overlay[data-enter='death'] .heading-ink {
+          animation: motion-heading-land 320ms ease-out var(--t5-delay) both;
+        }
+        :root.motion #stage.game-paused #game-over-overlay .heading-ink {
+          animation-play-state: paused;
+        }
+        :root.motion #stage.idle #round-panel:not([hidden]) .brand-float {
+          animation: heading-logo-float 4.8s ease-in-out infinite;
+        }
+        :root.motion #stage.game-paused .brand-float,
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) .brand-float {
+          animation-play-state: paused !important;
+        }
+      }
+      /* Dialog raises are technical reopens, not another heading entrance. */
+      dialog.no-motion .heading-ink,
+      dialog[data-raised] .heading-ink { animation: none !important; }
+    </style>
     <style id="menu-shell-styles">
       :root {
         --menu-header-bg: #c9e9ff;
@@ -2303,15 +2372,15 @@
         <section id="round-panel" class="day" data-game-ui aria-label="Dino Run">
           <div id="start-view">
             <h1 class="menu-title">
-              <svg class="brand-logo" width="40" height="20" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 72" role="img" aria-labelledby="m24-logo-title">
+              <span class="brand-float"><svg class="brand-logo" width="40" height="20" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 72" role="img" aria-labelledby="m24-logo-title">
                 <title id="m24-logo-title">m24</title>
                 <rect x="1" y="1" width="142" height="70" rx="20" fill="#173f69"/>
                 <path d="M17 49V29h8v3c3-5 10-5 14 0 5-6 16-4 16 5v12h-8V38c0-5-7-5-7 0v11h-8V38c0-5-7-5-7 0v11z" fill="#fff"/>
                 <path d="M64 29c0-12 27-13 27 1 0 7-9 10-17 15h18v7H63v-7c12-8 20-11 20-15 0-5-11-5-11 0z" fill="#e67842"/>
                 <path d="M114 21h10v19h6v7h-6v6h-8v-6H98v-7zm2 9-10 10h10z" fill="#e67842"/>
                 <path d="M19 59h106" stroke="#ffd257" stroke-width="3" stroke-linecap="round"/>
-              </svg>
-              DINO RUN
+              </svg></span>
+              <span class="heading-ink title-word">DINO</span> <span class="heading-ink title-word">RUN</span>
             </h1>
             <button id="install-game" class="action-button" type="button" hidden>
               <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 16V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v11M3 20h18M12 6v9m-3-3 3 3 3-3" /></svg>
@@ -2319,7 +2388,7 @@
             </button>
             <div id="attract-content" role="region" aria-roledescription="carousel" aria-label="Dino Run preview" aria-live="off">
               <section id="attract-scores" class="attract-slide" aria-labelledby="attract-scores-title">
-                <div class="attract-heading"><span class="attract-kicker">THE LEADERBOARD</span><h2 id="attract-scores-title">Highscores</h2></div>
+                <div class="attract-heading"><span class="attract-kicker">THE LEADERBOARD</span><h2 id="attract-scores-title"><span class="heading-ink">Highscores</span></h2></div>
                 <div class="attract-scoreboard">
                   <p id="attract-score-source"></p>
                   <ol id="attract-score-list" aria-label="Highscores"></ol>
@@ -2328,12 +2397,12 @@
                 </div>
               </section>
               <section id="attract-demo" class="attract-slide" aria-labelledby="attract-demo-title" hidden>
-                <div class="attract-heading"><span class="attract-kicker">WATCH &amp; LEARN</span><h2 id="attract-demo-title">Run. Jump. Repeat.</h2></div>
+                <div class="attract-heading"><span class="attract-kicker">WATCH &amp; LEARN</span><h2 id="attract-demo-title"><span class="heading-ink">Run. Jump. Repeat.</span></h2></div>
                 <p class="attract-demo-caption">Jump over cacti. Duck under birds.</p>
                 <span class="attract-demo-label">DEMO · YOUR RUN STARTS BELOW</span>
               </section>
               <section id="attract-powerups" class="attract-slide" aria-labelledby="attract-powerups-title" hidden>
-                <div class="attract-heading"><span class="attract-kicker">A LITTLE EXTRA HELP</span><h2 id="attract-powerups-title">Power up your run</h2></div>
+                <div class="attract-heading"><span class="attract-kicker">A LITTLE EXTRA HELP</span><h2 id="attract-powerups-title"><span class="heading-ink">Power up your run</span></h2></div>
                 <div class="attract-powerups">
                   <article class="attract-powerup">
                     <svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="18" fill="#173f69" stroke="#ffd257"/><path d="M-5-7C10-11 12 8-9 12Q0 5-5-7" fill="#f04432" stroke="#ffb59a"/><path d="M0-7Q-2-13 3-14" fill="none" stroke="#45b86f" stroke-width="3"/></svg>
@@ -2365,7 +2434,7 @@
           </div>
         </section>
         <div id="game-over-overlay" hidden>
-          <h2 class="menu-title" lang="en">Game over</h2>
+          <h2 class="menu-title" lang="en"><span class="heading-ink">Game over</span></h2>
           <p id="round-score"></p>
           <p id="round-feedback"></p>
         </div>
@@ -2429,7 +2498,7 @@
       <div class="settings-content menu-frame">
         <header class="menu-header">
           <div>
-            <h1 class="menu-title" id="settings-title">Settings</h1>
+            <h1 class="menu-title" id="settings-title"><span class="heading-ink">Settings</span></h1>
           </div>
           <button id="settings-close" class="menu-back" type="button" aria-label="Back" title="Back" autofocus>
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg>
@@ -2517,7 +2586,7 @@
       <div class="menu-frame">
         <header class="menu-header">
           <div>
-            <h1 class="menu-title" id="scores-title">Highscores</h1>
+            <h1 class="menu-title" id="scores-title"><span class="heading-ink">Highscores</span></h1>
           </div>
           <button id="scores-close" class="menu-back" type="button" aria-label="Back" title="Back">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg>
@@ -2563,7 +2632,7 @@
       </div>
     </dialog>
     <dialog id="goodbye" aria-labelledby="bye-title">
-      <h2 id="bye-title">Bye-bye, Dino! 👋</h2>
+      <h2 id="bye-title"><span class="heading-ink">Bye-bye, Dino! 👋</span></h2>
       <dl id="session-stats"></dl>
       <button id="new-session" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM9 21v-7h6v7" /></svg>
@@ -2571,7 +2640,7 @@
       </button>
     </dialog>
     <dialog id="install-help" aria-labelledby="install-title">
-      <h2 id="install-title">Install Dino Run</h2>
+      <h2 id="install-title"><span class="heading-ink">Install Dino Run</span></h2>
       <p id="install-instructions"></p>
       <button id="install-close" type="button">Close</button>
     </dialog>
@@ -3020,7 +3089,7 @@
           <div class="wrap menu-frame">
             <header class="menu-header">
               <div>
-                <h1 class="menu-title">Help</h1>
+                <h1 class="menu-title"><span class="heading-ink">Help</span></h1>
               </div>
               <button class="back menu-back" type="button" data-help-back aria-label="Back" title="Back">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg>
@@ -3169,7 +3238,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.5';
+        const BUILD = '2026-10-18.6';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -8477,7 +8546,7 @@
             this.runner = runner;
             this.controller = controller;
             this.dialog = document.getElementById('scores');
-            this.title = document.getElementById('scores-title');
+            this.title = document.querySelector('#scores-title .heading-ink');
             this.listView = document.getElementById('scores-list-view');
             this.entryView = document.getElementById('scores-entry-view');
             this.status = document.getElementById('scores-status');
@@ -9267,7 +9336,8 @@
                 .getElementById('info-document')
                 .innerHTML.replace(
                   '</style>',
-                  '</style>' + document.getElementById('menu-shell-styles').outerHTML,
+                  '</style>' + document.getElementById('menu-shell-styles').outerHTML +
+                    document.getElementById('heading-motion-styles').outerHTML,
                 ) +
               '</html>';
             const infoView = (this.infoView = document.getElementById('info-view'));
@@ -9281,6 +9351,7 @@
               landscapeFullscreen.sync();
             });
             infoView.addEventListener('load', () => {
+              this.syncGuideHeading();
               // Events inside the guide do not bubble into the parent window.
               for (const event of ['focus', 'blur'])
                 infoView.contentWindow?.addEventListener(event, () => runner.updateMusic());
@@ -9332,6 +9403,11 @@
             else runner.presenter.commit();
             this.shown = true;
           }
+          syncGuideHeading() {
+            const root = this.infoView.contentDocument?.documentElement;
+            root?.classList.toggle('motion', motionEnabled);
+            root?.classList.toggle('help-active', !this.infoView.hidden);
+          }
           // Part of presenter.commit().
           applyView() {
             if (!this.viewChanged) return;
@@ -9339,6 +9415,7 @@
             const runner = this.runner;
             const showingInfo = location.hash === '#info';
             this.infoView.hidden = !showingInfo;
+            this.syncGuideHeading();
             pageEl.hidden = showingInfo;
             document.title = showingInfo ? 'Help · m24 Dino Run' : 'Dino Run';
             if (!showingInfo) {

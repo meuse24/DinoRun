@@ -711,13 +711,20 @@ try {
       const enters = await page.evaluate(() => window.__enters);
       const load = enters.find(e => e.id === 'round-panel' && e.value === 'load');
       assert(load, 'T1 entrance recorded: ' + JSON.stringify(enters));
-      for (const name of ['motion-rise-in', 'motion-dim-in']) assert(load.names.includes(name), name);
+      for (const name of ['motion-rise-in', 'motion-dim-in', 'motion-heading-hop']) assert(load.names.includes(name), name);
       await page.evaluate(() => window.__dinoRunner.motion.enter(document.getElementById('round-panel'), 'load'));
       await hold(0);
       const start = await page.evaluate(() => Number(getComputedStyle(document.getElementById('start-game')).opacity));
       assert(start >= 0.59 && start <= 0.61, 'START begins at 0.6, got ' + start);
       await hold(0.5);
       await page.screenshot({ path: path.join(output, `${layout}-t1-mid.png`) });
+      // The only looping heading gesture follows the same Pause control as the demo.
+      await tap('#attract-pause');
+      assert.equal(await page.locator('.brand-float').evaluate(el =>
+        getComputedStyle(el).animationPlayState), 'paused');
+      await tap('#attract-pause');
+      assert.equal(await page.locator('.brand-float').evaluate(el =>
+        getComputedStyle(el).animationPlayState), 'running');
       await startAndReturn('#start-game');
     });
 
@@ -742,7 +749,7 @@ try {
         assert.equal(state.entering?.kind, direction);
         assert.equal(state.entering.inert, false);
         assert.deepEqual((await motion('.attract-slide')).map(a => a.name).sort(),
-          ['motion-shift-in', 'motion-shift-out']);
+          ['motion-heading-step', 'motion-shift-in', 'motion-shift-out']);
         await page.screenshot({ path: path.join(output, `${layout}-t2-${direction}-mid.png`) });
         await hold(null);
         await page.evaluate(() => window.__dinoTest.transitionDone());
