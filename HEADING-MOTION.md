@@ -175,3 +175,14 @@ zugängliche Heading-Namen, Pause, Reduced Motion, Hilfe und unveränderte
 Glyph-Knoten bei wiederholten Präsentations-Updates. Normaler sichtbarer
 Edge-Lauf als Video aufgenommen, Screenshots angesehen. Vorschau:
 output/heading-wave/title-wave.gif. Keine physische Geräteprüfung für .9.
+
+## Kräftigere Welle (Build 2026-10-18.10)
+
+Auf Wunsch mehr Wellenform: Glyph-Hub von ±1,5 auf ±3,5 px,
+Neigung von ±0,3 auf ±1 Grad und Versatz von 90 auf 200 ms erhöht.
+Die größere Phasendifferenz bildet einen klareren Bogen über der Zeile;
+Atmen und Zyklus bleiben gleich. Ausschließlich CSS-Parameter angepasst.
+Cache dino-run-v19, Release neu gebaut. Skill-Client und vier gezielte
+Source/Release-Flows in Chromium/WebKit bestanden; normaler sichtbarer
+Edge-Lauf aufgenommen und Screenshots kontrolliert. Neue Vorschau:
+output/heading-wave-strong/title-wave.gif.

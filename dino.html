@@ -2018,8 +2018,8 @@
         50% { transform: translateY(-4px) scale(1.06); }
       }
       @keyframes heading-ripple {
-        0%, 100% { transform: translateY(1.5px) rotate(0.3deg); }
-        50% { transform: translateY(-1.5px) rotate(-0.3deg); }
+        0%, 100% { transform: translateY(3.5px) rotate(1deg); }
+        50% { transform: translateY(-3.5px) rotate(-1deg); }
       }
       @media (prefers-reduced-motion: no-preference) {
         :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-breath,
@@ -2029,7 +2029,7 @@
         :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-wave-char,
         :root.motion.help-page.help-active .menu-title .heading-wave-char {
           display: inline-block;
-          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -90ms) infinite;
+          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -200ms) infinite;
         }
         :root.motion #round-panel[data-enter] .title-word {
           animation: motion-heading-hop 280ms ease-out both;
@@ -2073,7 +2073,7 @@
           animation: heading-breathe 3.2s ease-in-out infinite !important;
         }
         :root.motion dialog[open][data-raised]:not(.no-motion) .heading-wave-char {
-          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -90ms) infinite !important;
+          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -200ms) infinite !important;
         }
       }
     </style>
@@ -3272,7 +3272,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.9';
+        const BUILD = '2026-10-18.10';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
