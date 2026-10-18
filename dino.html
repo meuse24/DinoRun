@@ -155,6 +155,34 @@
         display: none !important;
       }
 
+      /* Screen transitions (TRANSITIONS.md). Every timing lives here. The root class
+         `motion` enables them; tests may turn it off for deterministic screenshots. */
+      :root {
+        --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+        --ease-in: cubic-bezier(0.4, 0, 1, 1);
+        --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+        --motion-reduced: 120ms;
+        --motion-scale: 1;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        /* Movement collapses to zero; what remains is a short fade. */
+        :root {
+          --motion-scale: 0;
+        }
+      }
+      /* raiseModalDialogs() reopens a dialog technically: never animate that. */
+      dialog.no-motion,
+      dialog.no-motion::backdrop {
+        transition: none !important;
+        animation: none !important;
+      }
+      /* View Transitions (mechanism C) are only used while the game is paused. */
+      ::view-transition-group(*),
+      ::view-transition-old(*),
+      ::view-transition-new(*) {
+        animation: none;
+      }
+
       #info-view {
         position: fixed;
         inset: 0;
@@ -2878,10 +2906,23 @@
           }
         }
 
+        // The coordinator's View Transition controller; set once the Runner exists.
+        let screenTransition = null;
+        // Turns a dialog's own open/close animation off until two frames have rendered.
+        function suppressDialogMotion(dialog) {
+          dialog.classList.add('no-motion');
+          clearTimeout(dialog.motionTimer);
+          const release = () => dialog.classList.remove('no-motion');
+          requestAnimationFrame(() => requestAnimationFrame(release));
+          // Hidden pages pause rAF; never leave a dialog without motion for good.
+          dialog.motionTimer = setTimeout(release, 1000);
+        }
+
         // Fullscreen enhancement (game input never depends on it).
         // WebKit stacks an element entering fullscreen above already open modal dialogs: Settings
         // became invisible but stayed modal. Reopening moves the dialog back on top.
         function raiseModalDialogs() {
+          screenTransition?.skip('raise');
           for (const dialog of document.querySelectorAll('dialog[open]')) {
             try {
               if (!dialog.matches(':modal')) continue;
@@ -2890,6 +2931,7 @@
             }
             const focused = document.activeElement,
               scroll = dialog.scrollTop;
+            suppressDialogMotion(dialog);
             dialog.close();
             dialog.showModal();
             dialog.scrollTop = scroll;
@@ -6914,6 +6956,252 @@
           },
         };
 
+        // Screen transitions (TRANSITIONS.md): presentation only. Game state, timers and
+        // input change synchronously; these helpers only decide how the DOM follows.
+        const motionEnabled = testHooks.transitions !== false;
+        if (motionEnabled) document.documentElement.classList.add('motion');
+        const isMotionAnimation = (animation) =>
+          String(animation.animationName || animation.id || '').startsWith('motion-');
+
+        // Mechanism A: keyframes on the real elements, so hit-testing never changes.
+        // A leaving element stays visible but inert until its animations end.
+        class ElementMotion {
+          constructor(enabled = motionEnabled) {
+            this.enabled = enabled;
+            this.leaving = new Map();
+            // Reflow must never be animated: finish everything at its end state.
+            for (const [target, event] of [
+              [window, 'resize'],
+              [window, 'orientationchange'],
+              [document, 'fullscreenchange'],
+              [document, 'webkitfullscreenchange'],
+            ])
+              target.addEventListener(event, () => this.finishAll());
+          }
+          get idle() {
+            return this.leaving.size === 0;
+          }
+          isLeaving(el) {
+            return this.leaving.has(el);
+          }
+          animations(el) {
+            return el.getAnimations({ subtree: true }).filter(isMotionAnimation);
+          }
+          // Plays the `data-enter` keyframes from the start; the element is usable at once.
+          enter(el, kind) {
+            this.cancelLeave(el);
+            if (!this.enabled) return;
+            if (el.dataset.enter) {
+              el.removeAttribute('data-enter');
+              // A style flush restarts the keyframes when the same kind repeats.
+              getComputedStyle(el).animationName;
+            }
+            el.dataset.enter = kind;
+            const animations = this.animations(el);
+            Promise.all(animations.map((a) => a.finished)).then(
+              () => {
+                if (el.dataset.enter === kind) el.removeAttribute('data-enter');
+              },
+              () => {},
+            );
+          }
+          // Keeps el visible while `data-leaving` keyframes play, then calls done().
+          leave(el, kind, done = () => {}, maxMs = 400) {
+            if (this.leaving.has(el)) return;
+            el.removeAttribute('data-enter');
+            if (!this.enabled || el.hidden) {
+              done();
+              return;
+            }
+            const leave = { kind, done, timer: 0 };
+            this.leaving.set(el, leave);
+            el.dataset.leaving = kind;
+            el.inert = true;
+            const animations = this.animations(el);
+            const finish = () => this.endLeave(el, leave, true);
+            if (!animations.length) {
+              finish();
+              return;
+            }
+            // Safety: no animation end (hidden tab, removed node) still ends the exit.
+            leave.timer = setTimeout(finish, maxMs + 100);
+            Promise.all(animations.map((a) => a.finished)).then(finish, () => {});
+          }
+          endLeave(el, leave, complete) {
+            if (this.leaving.get(el) !== leave) return;
+            this.leaving.delete(el);
+            clearTimeout(leave.timer);
+            el.removeAttribute('data-leaving');
+            el.inert = false;
+            if (complete) leave.done();
+          }
+          // State reversed during an exit: stop it without calling its completion.
+          cancelLeave(el) {
+            const leave = this.leaving.get(el);
+            if (!leave) return;
+            for (const animation of this.animations(el)) animation.cancel();
+            this.endLeave(el, leave, false);
+          }
+          // Completes an exit at once, as if its animation had ended.
+          finishLeave(el) {
+            const leave = this.leaving.get(el);
+            if (leave) this.endLeave(el, leave, true);
+          }
+          finishAll() {
+            for (const [el, leave] of [...this.leaving]) this.endLeave(el, leave, true);
+            for (const animation of document.getAnimations())
+              if (isMotionAnimation(animation)) animation.finish();
+          }
+        }
+
+        // Mechanism C: document View Transitions, only while the game is paused (T7a, T9,
+        // T11). Callers change the logical state and request(); the update callback is
+        // always presenter.commit(), which applies the newest state and never requests.
+        const TRANSITION_PRIORITY = {
+          entry: 3,
+          forward: 2,
+          back: 2,
+          'help-forward': 1,
+          'help-back': 1,
+        };
+        class ScreenTransition {
+          constructor(presenter, report, enabled = motionEnabled) {
+            this.presenter = presenter;
+            this.report = report;
+            this.level =
+              typeof document.startViewTransition !== 'function'
+                ? 'none'
+                : typeof ViewTransition === 'function' && 'types' in ViewTransition.prototype
+                  ? 'full'
+                  : 'basic';
+            this.enabled = enabled && this.level !== 'none';
+            this.current = null;
+            this.queued = null;
+            // External events end a transition at once; never updatePause/resize/commit.
+            for (const [target, event] of [
+              [window, 'resize'],
+              [window, 'orientationchange'],
+              [screen.orientation, 'change'],
+              [document, 'fullscreenchange'],
+              [document, 'webkitfullscreenchange'],
+              [window, 'blur'],
+            ])
+              target?.addEventListener?.(event, () => this.skip(event));
+            document.addEventListener('visibilitychange', () => {
+              if (document.hidden) this.skip('hidden');
+            });
+            // During a document transition taps reach only the root. That tap is lost,
+            // but ending the transition lets the next one reach its target at once.
+            document.addEventListener(
+              'pointerdown',
+              (e) => {
+                if (this.current && e.target === document.documentElement) this.skip('input');
+              },
+              true,
+            );
+          }
+          // True from request() until the update callback has applied the state.
+          get pending() {
+            return !!this.queued || (!!this.current && !this.current.committed);
+          }
+          get idle() {
+            return !this.queued && !this.current;
+          }
+          request(type) {
+            if (this.presenter.committing) return;
+            if (!this.enabled || document.hidden) {
+              this.presenter.commit();
+              return;
+            }
+            const current = this.current;
+            if (current && !current.committed) {
+              // The pending callback applies the newest state. A different type must not
+              // animate: skipping still runs the callback, just without animation.
+              if (current.type !== type) this.skip('type');
+              return;
+            }
+            if (current) this.skip('replaced');
+            if (!this.queued) queueMicrotask(() => this.start());
+            if (!this.queued || TRANSITION_PRIORITY[type] > TRANSITION_PRIORITY[this.queued])
+              this.queued = type;
+          }
+          start() {
+            const type = this.queued;
+            this.queued = null;
+            if (!type) return;
+            const root = document.documentElement;
+            const transition = { type, committed: false, vt: null };
+            const update = () => {
+              transition.committed = true;
+              this.presenter.commit();
+            };
+            if (this.level === 'basic') root.dataset.vt = type;
+            try {
+              transition.vt =
+                this.level === 'full'
+                  ? document.startViewTransition({ update, types: [type] })
+                  : document.startViewTransition(update);
+            } catch (error) {
+              this.log('start', error);
+              if (root.dataset.vt === type) root.removeAttribute('data-vt');
+              update();
+              return;
+            }
+            this.current = transition;
+            this.report?.record('transition', type);
+            transition.vt.ready.catch((error) => this.log('ready', error));
+            transition.vt.finished
+              .catch((error) => this.log('finished', error))
+              .finally(() => {
+                // Only the owner cleans up: a newer transition keeps its own state.
+                if (this.current !== transition) return;
+                this.current = null;
+                if (this.level === 'basic') root.removeAttribute('data-vt');
+              });
+          }
+          skip(reason) {
+            if (!this.current) return;
+            this.report?.record('transition', 'skip ' + this.current.type + ' (' + reason + ')');
+            this.current.vt.skipTransition();
+          }
+          log(stage, error) {
+            // Skipped transitions reject `ready` by design; record, do not report errors.
+            this.report?.record('transition', stage + ' ' + (error?.name || error));
+          }
+        }
+
+        // Applies the presentation that View Transitions animate. Idempotent: it always
+        // produces the newest state, so a stale callback after a skip does no harm.
+        class ScreenPresenter {
+          constructor(runner) {
+            this.runner = runner;
+            this.committing = false;
+            this.focusTarget = null;
+          }
+          // The last registration wins; focus moves once the target is visible.
+          focusAfterApply(el) {
+            this.focusTarget = el;
+          }
+          commit() {
+            if (this.committing) return;
+            const runner = this.runner;
+            this.committing = true;
+            try {
+              runner.highscores.apply();
+              runner.page?.applyView();
+              if (!pageEl.hidden) runner.draw(1);
+            } finally {
+              this.committing = false;
+            }
+            const target = this.focusTarget;
+            this.focusTarget = null;
+            if (!target) return;
+            const visible =
+              target.isConnected && target.getClientRects().length > 0 && !target.closest('[inert]');
+            (visible ? target : gameEl).focus({ preventScroll: true });
+          }
+        }
+
         class SessionView {
           constructor() {
             this.dialog = document.getElementById('goodbye');
@@ -6993,7 +7281,8 @@
             const idle = game.state === 'attract';
             this.panel.hidden = !idle;
             this.startView.hidden = !idle;
-            this.gameOverOverlay.hidden = !game.inDeathScene;
+            // A pending View Transition still captures the old screen; commit() applies it.
+            if (!this.transition?.pending) this.gameOverOverlay.hidden = !game.inDeathScene;
             this.quitButton.hidden = !idle;
             this.panel.classList.toggle('night', night);
             this.panel.classList.toggle('day', !night);
@@ -7675,6 +7964,12 @@
             this.source = 'online';
             this.highlight = null;
             this.notice = '';
+            // Opening may wait for a View Transition: isOpen is the intent, set at once.
+            // Each opening has its own generation, so stale close events are ignored.
+            this.isOpen = false;
+            this.generation = 0;
+            this.shownGeneration = 0;
+            this.view = 'list';
             this.letters = [...controller.store.lastName];
             controller.onChange = () => {
               this.setSaving(controller.saving);
@@ -7724,8 +8019,8 @@
                 this.show(this.mode, button.dataset.source);
               });
             this.dialog.addEventListener('close', () => this.onClose());
+            // Every Escape takes the same path as Back, including a pending opening.
             this.dialog.addEventListener('cancel', (event) => {
-              if (!this.runner.game.crashed) return;
               event.preventDefault();
               this.close();
             });
@@ -7740,15 +8035,14 @@
             this.highlight = null;
             this.showList();
             this.show(this.runner.modeSelect.value, this.source);
+            this.runner.presenter.focusAfterApply(document.getElementById('scores-close'));
             this.showModal();
-            document.getElementById('scores-close').focus();
           }
-          openEntry(opener = this.defaultOpener) {
+          // `morph` names the transition from the visible Game over result (T7a).
+          openEntry(opener = this.defaultOpener, morph = false) {
             if (!this.controller.round || this.controller.saved) return;
             this.opener = opener;
-            this.listView.hidden = true;
-            this.entryView.hidden = false;
-            this.title.textContent = 'Highscores';
+            this.view = 'entry';
             this.entryResult.textContent = formatText('{score} points · {mode}', {
               score: this.controller.round.score,
               mode: MODE_NAMES[this.controller.round.mode],
@@ -7757,27 +8051,59 @@
             this.renderLetters();
             // Reopening during a running save keeps the lock.
             this.setSaving(this.controller.saving);
-            this.showModal();
-            this.dialog.querySelector('#name-picker button').focus();
+            this.runner.presenter.focusAfterApply(this.dialog.querySelector('#name-picker button'));
+            this.showModal(morph ? 'entry' : null);
           }
-          showModal() {
-            if (!this.dialog.open) this.dialog.showModal();
+          // Without a type the dialog opens synchronously with its own CSS animation.
+          showModal(type = null) {
+            const wasOpen = this.isOpen;
+            if (!wasOpen) this.generation++;
+            this.isOpen = true;
+            if (wasOpen && this.dialog.open) this.runner.transition.request(this.viewType());
+            else if (type) this.runner.transition.request(type);
+            else this.runner.presenter.commit();
+            // After the request: the pause redraw must not apply the pending screen early.
             this.runner.updatePause();
           }
           showList() {
-            this.entryView.hidden = true;
-            this.listView.hidden = false;
+            this.view = 'list';
+            if (this.isOpen && this.dialog.open) this.runner.transition.request(this.viewType());
+            else this.runner.presenter.commit();
+          }
+          viewType() {
+            return this.view === 'entry' ? 'forward' : 'back';
+          }
+          // Part of presenter.commit(): applies the requested view and opening.
+          apply() {
+            this.listView.hidden = this.view !== 'list';
+            this.entryView.hidden = this.view !== 'entry';
             this.title.textContent = 'Highscores';
+            if (this.isOpen && !this.dialog.open) {
+              this.shownGeneration = this.generation;
+              this.dialog.showModal();
+            }
           }
           close() {
+            const wasOpen = this.dialog.open;
+            this.isOpen = false;
             this.dialog.close();
             // Complete synchronously so a frame before the queued close event
             // cannot reopen this round's name entry.
             if (this.runner.game.crashed) this.runner.returnToAttract();
+            // An opening that never reached the screen has no close event.
+            if (!wasOpen) this.closed();
           }
           onClose() {
-            // Ignore the queued close event of a dialog that raiseModalDialogs() reopened.
-            if (this.dialog.open) return;
+            // Ignore the queued close event of a dialog that raiseModalDialogs() reopened,
+            // or of an older instance while a new opening is pending.
+            if (this.dialog.open || this.shownGeneration !== this.generation) return;
+            // A browser close without close() (for example a close watcher) ends it too.
+            this.isOpen = false;
+            this.closed();
+          }
+          closed() {
+            const presenter = this.runner.presenter;
+            if (this.dialog.contains(presenter.focusTarget)) presenter.focusAfterApply(null);
             if (this.runner.game.crashed) this.runner.returnToAttract();
             this.runner.updatePause();
             this.runner.resize();
@@ -7844,9 +8170,10 @@
             this.runner.draw(1);
             this.highlight = result.round.id;
             this.notice = this.resultText(result.online, result.localRank);
-            this.showList();
             this.show(result.round.mode, result.online.data ? 'online' : 'local', false);
-            if (this.dialog.open) document.getElementById('scores-close').focus();
+            if (this.dialog.open)
+              this.runner.presenter.focusAfterApply(document.getElementById('scores-close'));
+            this.showList();
           }
           async retry() {
             if (!this.controller.canResend || this.controller.saving) return;
@@ -8028,7 +8355,7 @@
             return [
               [runner.ended, 'goodbye'],
               [document.getElementById('settings').open, 'settings'],
-              [document.getElementById('scores').open, 'highscores'],
+              [!!runner.highscores?.isOpen || document.getElementById('scores').open, 'highscores'],
               [document.getElementById('install-help').open, 'install help'],
               [document.hidden, 'hidden'],
               [location.hash === '#info', 'help'],
@@ -8046,6 +8373,7 @@
               !pageEl.hidden &&
               !document.hidden &&
               location.hash !== '#info' &&
+              !runner.highscores?.isOpen &&
               !document.querySelector('dialog[open]')
             );
           }
@@ -8241,6 +8569,7 @@
         class GamePage {
           constructor(runner) {
             this.runner = runner;
+            runner.page = this;
             this.bindSettingsEvents();
             this.bindAudioActivation();
             this.bindSettingsDialog();
@@ -8401,23 +8730,37 @@
 
             window.addEventListener('hashchange', () => this.showView());
           }
+          // The hash is the logical view: pause and input follow it at once, while the
+          // page/guide switch may wait for a View Transition (T11).
           showView() {
             const runner = this.runner;
-            const infoView = this.infoView;
-            const returning = !infoView.hidden;
             const showingInfo = location.hash === '#info';
-            infoView.hidden = !showingInfo;
-            pageEl.hidden = showingInfo;
+            const switching = !this.infoView.hidden === !showingInfo;
+            this.viewChanged = true;
             runner.updatePause();
             runner.duck(false);
+            if (!showingInfo)
+              runner.presenter.focusAfterApply(
+                !this.infoView.hidden ? document.getElementById('info-link') : gameEl,
+              );
+            if (switching && this.shown) runner.transition.request(showingInfo ? 'help-forward' : 'help-back');
+            else runner.presenter.commit();
+            this.shown = true;
+          }
+          // Part of presenter.commit().
+          applyView() {
+            if (!this.viewChanged) return;
+            this.viewChanged = false;
+            const runner = this.runner;
+            const showingInfo = location.hash === '#info';
+            this.infoView.hidden = !showingInfo;
+            pageEl.hidden = showingInfo;
             document.title = showingInfo ? 'Help · m24 Dino Run' : 'Dino Run';
             if (!showingInfo) {
               // Fullscreen can end while the guide hides the game. Measure after unhiding.
               runner.resize();
-              runner.draw(1);
-              (returning ? document.getElementById('info-link') : gameEl).focus({
-                preventScroll: true,
-              });
+              // The frame loop stops while the page is hidden; restart it once visible.
+              if (!runner.paused) runner.requestFrame();
             }
           }
         }
@@ -8450,6 +8793,10 @@
             this.input = new InputController(this);
             this.gamepad = new GamepadController(this);
             this.report = new TestReport(this);
+            this.motion = new ElementMotion();
+            this.presenter = new ScreenPresenter(this);
+            this.transition = screenTransition = new ScreenTransition(this.presenter, this.report);
+            this.sessionView.transition = this.transition;
             this.highscoreController = new HighscoreController({
               onEntryReady: () => this.finishRound(),
               onRecord: (detail) => this.report.record('highscore', detail),
@@ -8770,10 +9117,13 @@
             });
           }
           finishRound() {
+            const highscores = this.highscores;
             if (!this.game.crashed || this.game.inDeathScene || this.ended ||
-                this.highscores.dialog.open || this.highscoreController.qualifying) return;
+                highscores.isOpen || highscores.dialog.open || this.highscoreController.qualifying) return;
             if (this.highscoreController.round && !this.highscoreController.saved) {
-              this.highscores.openEntry(document.getElementById('start-game'));
+              // While the Game over result is still on screen, its score morphs into the entry.
+              const morph = !this.sessionView.gameOverOverlay.hidden;
+              highscores.openEntry(document.getElementById('start-game'), morph);
               return;
             }
             this.returnToAttract();
@@ -8905,6 +9255,26 @@
             deathTimeMs: game.trex.deathTime,
           });
         };
+        // Resolves once no View Transition, exit or motion animation is running.
+        if (window.__dinoTest)
+          window.__dinoTest.transitionDone = () =>
+            new Promise((resolve) => {
+              const check = () => {
+                const busy =
+                  !runner.transition.idle ||
+                  !runner.motion.idle ||
+                  document
+                    .getAnimations()
+                    .some(
+                      (a) =>
+                        a.playState === 'running' &&
+                        a.effect?.getComputedTiming().iterations !== Infinity,
+                    );
+                if (busy) requestAnimationFrame(check);
+                else resolve();
+              };
+              check();
+            });
         // Deterministic test stepping is opt-in; normal play retains its rAF loop.
         if (testHooks.manualFrames)
           window.advanceTime = (ms) => runner.draw(runner.update(ms) ?? 1);
