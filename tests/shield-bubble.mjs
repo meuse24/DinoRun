@@ -318,7 +318,7 @@ try {
 
     await page.locator('#info-link').click();
     const help = page.frameLocator('#info-view').locator('#shield-bubble-help');
-    assert.match(await help.innerText(), /survive one cactus or bird hit/);
+    assert.match(await help.innerText(), /survive one cactus, bird or boss hit/);
     assert.match(await help.innerText(), /hold only one shield/);
     await help.scrollIntoViewIfNeeded();
     await page.screenshot({ path: path.join(output, `${name}-help.png`) });

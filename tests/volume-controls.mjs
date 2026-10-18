@@ -194,7 +194,7 @@ try {
             sound.enabled=true; sound.volume=100; sound.stepTimer=0; sound.stepSide=0;
             sound.switchClick(true); sound.updateSteps(1000,13,true); sound.crash();
             sound.countdown(false); sound.countdown(true); sound.shield(); sound.shield(true);
-            sound.death(); sound.celebrate(); sound.play();
+            sound.death(); sound.celebrate(); sound.play(); sound.boss(); sound.boss(true);
             if(muted){sound.enabled=false;sound.updateButton();}else sound.setVolume(level);
             const data=(await offline.startRendering()).getChannelData(0);
             let energy=0;for(let i=1000;i<data.length;i++)energy+=data[i]*data[i];

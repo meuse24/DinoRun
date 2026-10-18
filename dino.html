@@ -3203,6 +3203,9 @@
                     <p>L = level · HI = best · SC = score</p>
                     <p>The start screen shows scores, a demo and power-ups. Press START to play.
                       After Game over, enter your name if asked, then return here. Use the power button to end your session.</p>
+                    <p id="rock-boss-help"><strong>Stone Jaw:</strong> a rare rock boss. Wait for the
+                      warning, then make a short jump through its glowing opening. The ceiling and
+                      ledge hurt. Chili cannot burn stone; a shield saves one mistake.</p>
                   </section>
                   <section class="card">
                     <h2>Power-ups</h2>
@@ -3212,7 +3215,7 @@
                       air. You can hold only one feather. It shows behind your dino.
                     </p>
                     <p id="shield-bubble-help">
-                      <strong>Shield bubble:</strong> collect it to survive one cactus or bird hit.
+                      <strong>Shield bubble:</strong> collect it to survive one cactus, bird or boss hit.
                       It stays around your dino until it pops. You can hold only one shield.
                     </p>
                   </section>
@@ -3292,7 +3295,16 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.11';
+        const BUILD = '2026-10-18.12';
+        const ROCK_BOSS = Object.freeze({
+          firstSpawnMs: 36000,
+          respawnMs: 44000,
+          warningMs: 1800,
+          clearMs: 1400,
+          top: 28,
+          openingTop: 78,
+          openingBottom: 166,
+        });
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -4132,6 +4144,29 @@
               tone.onended = () => { tone.disconnect(); gain.disconnect(); };
               tone.start(t);
               tone.stop(t + duration + 0.01);
+            } catch (e) {}
+          }
+          boss(clear = false) {
+            const audio = this.context;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
+            try {
+              const notes = clear ? [196, 293.66, 392] : [100, 82, 65];
+              notes.forEach((frequency, i) => {
+                const t = audio.currentTime + i * (clear ? 0.09 : 0.18),
+                  duration = clear ? 0.22 : 0.3,
+                  tone = audio.createOscillator(), gain = audio.createGain();
+                tone.type = clear ? 'triangle' : 'sine';
+                tone.frequency.setValueAtTime(frequency, t);
+                tone.frequency.exponentialRampToValueAtTime(frequency * (clear ? 1.01 : 0.45), t + duration);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(clear ? 0.09 : 0.18, t + 0.008);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+                tone.connect(gain);
+                gain.connect(this.output);
+                tone.onended = () => { tone.disconnect(); gain.disconnect(); };
+                tone.start(t);
+                tone.stop(t + duration + 0.01);
+              });
             } catch (e) {}
           }
           death() {
@@ -5168,6 +5203,7 @@
               const spark = kind === 'spark',
                 feather = kind === 'feather',
                 shield = kind === 'shield',
+                rock = kind === 'rock',
                 confetti = kind === 'confetti',
                 impact = kind === 'impact',
                 trail = kind === 'trail' || spark,
@@ -5211,11 +5247,13 @@
                     ? FEATHER_COLORS[this.rng.int(0, 2)]
                     : shield
                       ? SHIELD_COLORS[this.rng.int(0, 2)]
-                      : confetti
-                        ? CONFETTI_COLORS[this.rng.int(0, 4)]
-                        : impact
-                          ? '#e99558'
-                          : '#d9b080',
+                      : rock
+                        ? ['#657889', '#afbbc0', '#ffd257'][this.rng.int(0, 2)]
+                        : confetti
+                          ? CONFETTI_COLORS[this.rng.int(0, 4)]
+                          : impact
+                            ? '#e99558'
+                            : '#d9b080',
                 confetti,
                 angle: this.rng.range(0, 6.28),
                 spin: this.rng.range(-7, 7),
@@ -5284,7 +5322,7 @@
               type: 'turbo',
             });
           }
-          update(dt, trex, speed, obstacles, shieldPickup = null) {
+          update(dt, trex, speed, obstacles, shieldPickup = null, spawnBlocked = false) {
             this.events.length = 0;
             if (this.remaining > 0) {
               this.remaining = Math.max(0, this.remaining - dt);
@@ -5323,7 +5361,7 @@
               };
               if (intersects(player, swept)) this.activate(trex);
               else if (this.pickup.x < -20) this.pickup = null;
-            } else if (!this.remaining) {
+            } else if (!this.remaining && !spawnBlocked) {
               this.spawnTimer -= dt;
               if (this.spawnTimer <= 0) {
                 const spawnX = this.world.width + 24;
@@ -5365,7 +5403,7 @@
             this.charged = false;
             this.spawnTimer = FEATHER.respawnMs;
           }
-          update(dt, trex, travelSpeed, obstacles, chiliPickup, shieldPickup = null) {
+          update(dt, trex, travelSpeed, obstacles, chiliPickup, shieldPickup = null, spawnBlocked = false) {
             if (!this.enabled || this.charged) return false;
             if (this.pickup) {
               const oldX = this.pickup.x;
@@ -5395,6 +5433,7 @@
               }
               return false;
             }
+            if (spawnBlocked) return false;
             this.spawnTimer -= dt;
             if (this.spawnTimer <= 0) {
               const x = this.world.width + 24;
@@ -5430,7 +5469,7 @@
             this.spawnTimer = SHIELD.respawnMs;
             return true;
           }
-          update(dt, trex, travelSpeed, obstacles, chiliPickup, featherPickup) {
+          update(dt, trex, travelSpeed, obstacles, chiliPickup, featherPickup, spawnBlocked = false) {
             this.popRemaining = Math.max(0, this.popRemaining - dt);
             if (!this.enabled || this.charged) return false;
             if (this.pickup) {
@@ -5456,6 +5495,7 @@
               }
               return false;
             }
+            if (spawnBlocked) return false;
             this.spawnTimer -= dt;
             if (this.spawnTimer <= 0) {
               const x = this.world.width + 24;
@@ -5470,6 +5510,69 @@
           }
         }
 
+        // Rare corridor encounter. Timing is independent of the shared gameplay RNG.
+        class RockBoss {
+          constructor(enabled = true, world = { width: BASE_W }) {
+            this.enabled = enabled;
+            this.world = world;
+            this.reset();
+          }
+          reset() {
+            this.phase = 'idle';
+            this.remaining = ROCK_BOSS.firstSpawnMs;
+            this.completed = 0;
+            this.rock = null;
+          }
+          get reserved() {
+            return this.enabled && this.phase !== 'idle';
+          }
+          update(dt, speed, corridorClear) {
+            if (!this.enabled) return;
+            if (this.phase === 'idle') {
+              this.remaining -= dt;
+              if (this.remaining > TIME_EPSILON) return;
+              this.phase = 'clearing';
+            }
+            if (this.phase === 'clearing') {
+              // Existing hazards still move normally; never erase a player's obstacle.
+              if (!corridorClear) return;
+              this.phase = 'warning';
+              this.remaining = ROCK_BOSS.warningMs;
+              return 'bossWarning';
+            }
+            if (this.phase === 'warning') {
+              this.remaining = Math.max(0, this.remaining - dt);
+              if (this.remaining > TIME_EPSILON) return;
+              // Thickness grows with speed, preserving short-jump clearance time.
+              const passageWidth = Math.round(clamp(speed * 8, 32, 104)), width = passageWidth + 48;
+              this.rock = {
+                type: { name: 'rockBoss', clusterStep: 0 }, size: 1,
+                x: this.world.width + 12, y: ROCK_BOSS.top, width, height: GROUND_Y - ROCK_BOSS.top,
+                collisionBoxes: [
+                  new CollisionBox(0, 0, width, ROCK_BOSS.openingTop - ROCK_BOSS.top),
+                  new CollisionBox(24, ROCK_BOSS.openingBottom - ROCK_BOSS.top, passageWidth, GROUND_Y - ROCK_BOSS.openingBottom),
+                ],
+              };
+              this.phase = 'active';
+              return 'bossEnter';
+            }
+            if (this.phase === 'active') this.rock.x -= ((speed * FPS) / 1000) * dt;
+            if (this.phase === 'cleared') {
+              this.remaining = Math.max(0, this.remaining - dt);
+              if (this.remaining <= TIME_EPSILON) {
+                this.phase = 'idle';
+                this.remaining = ROCK_BOSS.respawnMs + (this.completed % 3) * 7000;
+              }
+            }
+          }
+          finish() {
+            this.rock = null;
+            this.completed++;
+            this.phase = 'cleared';
+            this.remaining = ROCK_BOSS.clearMs;
+          }
+        }
+
         // Simulation: fixed-step rules and events, with no DOM, canvas or audio access.
         class Game {
           constructor({
@@ -5480,6 +5583,7 @@
             mode = 'normal',
             featherEnabled = true,
             shieldEnabled = true,
+            bossEnabled = true,
             width = BASE_W,
           } = {}) {
             this.world = { width: BASE_W };
@@ -5490,6 +5594,7 @@
             this.turbo = new ChiliTurbo(this.rng, this.world);
             this.feather = new JumpFeather(featherEnabled, this.world);
             this.shield = new ShieldBubble(shieldEnabled, this.world);
+            this.boss = new RockBoss(bossEnabled, this.world);
             this.meter = new DistanceMeter();
             this.listeners = new Set();
             this.state = 'attract';
@@ -5565,6 +5670,7 @@
               this.turbo.reset();
               this.feather.reset();
               this.shield.reset();
+              this.boss.reset();
               this.recordAtStart = this.highScore;
               this.recordCelebrated = false;
               this.crashObstacle = null;
@@ -5631,6 +5737,7 @@
             this.turbo.reset();
             this.feather.reset();
             this.shield.reset();
+            this.boss.reset();
             this.meter.reset();
             this.capturePrevious();
           }
@@ -5690,6 +5797,7 @@
             };
             capture(this.trex);
             for (const o of this.horizon.obstacles) capture(o);
+            if (this.boss.rock) capture(this.boss.rock);
             for (const c of this.horizon.clouds) capture(c);
             if (this.turbo.pickup) capture(this.turbo.pickup);
             if (this.feather.pickup) capture(this.feather.pickup);
@@ -5744,12 +5852,20 @@
               for (let mark = 0; mark <= this.countdown && this.countdown > 0; mark += COUNTDOWN_STEP_MS)
                 if ((mark ? before + TIME_EPSILON < mark : before === 0) && this.gameTime + TIME_EPSILON >= mark)
                   this.emit('countdown', { value: (this.countdown - mark) / COUNTDOWN_STEP_MS });
+              if (this.gameTime + TIME_EPSILON >= this.clearTime) {
+                const bossEvent = this.boss.update(dt, this.speed * this.turbo.multiplier,
+                  !this.horizon.obstacles.length && !this.turbo.pickup && !this.feather.pickup
+                    && !this.shield.pickup && this.turbo.remaining <= 0
+                    && Math.abs(this.trex.x - TREX_START_X) <= 1);
+                if (bossEvent) this.emit(bossEvent);
+              }
               for (const event of this.turbo.update(
                 dt,
                 this.trex,
                 this.speed,
                 this.horizon.obstacles,
                 this.shield.pickup,
+                this.boss.reserved,
               ))
                 this.emit(event.type, event);
               const travelSpeed = this.speed * this.turbo.multiplier;
@@ -5767,14 +5883,15 @@
                   this.speed,
                   this.config.gapMultiplier,
                   // Keep a clear corridor behind visible collectibles too.
-                  (!!this.feather.pickup && this.feather.pickup.x > this.world.width + 10 - FEATHER.spawnGap)
+                  this.boss.reserved
+                    || (!!this.feather.pickup && this.feather.pickup.x > this.world.width + 10 - FEATHER.spawnGap)
                     || (!!this.shield.pickup && this.shield.pickup.x > this.world.width + 10 - SHIELD.spawnGap),
                 );
                 if (this.feather.update(
-                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.shield.pickup,
+                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.shield.pickup, this.boss.reserved,
                 )) this.emit('feather');
                 if (this.shield.update(
-                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.feather.pickup,
+                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.feather.pickup, this.boss.reserved,
                 )) this.emit('shield');
                 this.night = Math.floor(this.score / 700) % 2 === 1;
                 this.nightAlpha += clamp(
@@ -5800,6 +5917,15 @@
                     break;
                   }
                 }
+                const rock = this.boss.rock;
+                if (!this.crashed && rock) {
+                  if (boxesCollide(this.trex, rock)) {
+                    if (this.shield.consume()) {
+                      this.emit('shieldPop', { obstacle: 'rockBoss' });
+                      this.clearBoss(false);
+                    } else this.gameOver(rock);
+                  } else if (rock.x + rock.width < this.trex.x) this.clearBoss(true);
+                }
                 if (
                   !this.crashed &&
                   !this.recordCelebrated &&
@@ -5820,6 +5946,11 @@
               played: wasPlaying,
               landed: wasJumping && !this.trex.jumping && !this.crashed,
             });
+          }
+          clearBoss(clean) {
+            const rock = this.boss.rock;
+            this.boss.finish();
+            this.emit('bossClear', { clean, x: rock.x + rock.width / 2, y: GROUND_Y - 20 });
           }
         }
 
@@ -5903,6 +6034,7 @@
               game.nightAlpha,
               this.lerp(game.previous.sceneryDistance, game.sceneryDistance),
             );
+            if (game.boss.rock) this.drawRockBoss(this.view(game.boss.rock));
             this.drawTrex(trex);
             if (game.playing) this.drawShield(trex, game.shield);
             if (game.playing && game.feather.charged)
@@ -5925,7 +6057,101 @@
               this.drawRecord(this.effects);
               if (!this.compactHud) this.drawTurboMeter(this.turboView);
               if (game.countingDown) this.drawCountdown(game);
+              this.drawBossNotice(game.boss);
             }
+          }
+          drawRockBoss(rock) {
+            const ctx = this.ctx, w = rock.width, h = rock.height, top = ROCK_BOSS.openingTop - rock.y,
+              bottom = ROCK_BOSS.openingBottom - rock.y;
+            if (this.rockPathWidth !== w) {
+              // One cached vector at the current thickness; no raster or filter passes.
+              this.rockPath = new Path2D(`M 16 0 L ${w - 20} 0 L ${w - 4} 14 L ${w} 35
+                L ${w - 8} 53 L ${w - 23} ${top + 6} L ${w - 20} ${h - 19} L ${w - 29} ${h}
+                L 29 ${h} L 20 ${h - 15} L 23 ${top + 6} L 5 52 L 0 30 L 4 13 Z`);
+              this.rockPath.rect(30, top, w - 60, bottom - top);
+              this.rockPathWidth = w;
+            }
+            ctx.save();
+            ctx.fillStyle = '#173f6935';
+            ctx.beginPath();
+            ctx.ellipse(rock.x + w / 2, GROUND_Y + 2, w * 0.53, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.translate(rock.x, rock.y);
+            ctx.fillStyle = '#697e8d';
+            ctx.fill(this.rockPath, 'evenodd');
+            ctx.strokeStyle = '#233e54';
+            ctx.lineWidth = 2;
+            ctx.stroke(this.rockPath);
+            ctx.fillStyle = '#a4b6bd';
+            ctx.beginPath();
+            ctx.moveTo(16, 0); ctx.lineTo(24, 9); ctx.lineTo(16, 38); ctx.lineTo(30, top);
+            ctx.lineTo(30, bottom); ctx.lineTo(39, h - 12); ctx.lineTo(29, h); ctx.lineTo(20, h - 15);
+            ctx.lineTo(23, top + 6); ctx.lineTo(5, 52); ctx.lineTo(0, 30); ctx.lineTo(4, 13); ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#415666';
+            ctx.beginPath();
+            ctx.moveTo(w - 20, 0); ctx.lineTo(w - 4, 14); ctx.lineTo(w, 35); ctx.lineTo(w - 8, 53);
+            ctx.lineTo(w - 23, top + 6); ctx.lineTo(w - 20, h - 19); ctx.lineTo(w - 29, h);
+            ctx.lineTo(w - 39, h - 12); ctx.lineTo(w - 30, bottom); ctx.lineTo(w - 30, top);
+            ctx.lineTo(w - 16, 38); ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = '#ffd25712';
+            ctx.fillRect(30, top, w - 60, bottom - top);
+            ctx.strokeStyle = '#ffd257';
+            ctx.lineWidth = 2.5;
+            ctx.globalAlpha = this.game.trex.reducedMotion.matches ? 0.9 : 0.85 + Math.sin(this.game.gameTime / 180) * 0.12;
+            ctx.strokeRect(30, top, w - 60, bottom - top);
+            ctx.globalAlpha = 1;
+            // Heavy brows and fissures turn the boulder into a stone-jawed boss.
+            ctx.fillStyle = '#233e54';
+            roundedRect(ctx, 20, 24, w - 40, 17, 4); ctx.fill();
+            ctx.fillStyle = '#ffd257';
+            ctx.fillRect(25, 29, w / 2 - 32, 6); ctx.fillRect(w / 2 + 7, 29, w / 2 - 32, 6);
+            ctx.strokeStyle = '#233e54';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(20, 18); ctx.lineTo(w / 2 - 8, 26);
+            ctx.moveTo(w - 20, 18); ctx.lineTo(w / 2 + 8, 26);
+            ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2 - 5, 10); ctx.lineTo(w / 2 + 1, 18);
+            ctx.moveTo(34, bottom + 7); ctx.lineTo(44, h - 10); ctx.lineTo(38, h);
+            ctx.moveTo(w - 34, bottom + 7); ctx.lineTo(w - 44, h - 10); ctx.lineTo(w - 38, h);
+            ctx.stroke();
+            // Static chevrons make the passage readable without flashing.
+            ctx.strokeStyle = '#ffe9a4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (const y of [top + 37, top + 48]) {
+              ctx.moveTo(w / 2 - 9, y); ctx.lineTo(w / 2, y - 8); ctx.lineTo(w / 2 + 9, y);
+            }
+            ctx.stroke();
+            ctx.restore();
+          }
+          drawBossNotice(boss) {
+            if (boss.phase !== 'warning' && boss.phase !== 'active' && boss.phase !== 'cleared') return;
+            const ctx = this.ctx, active = boss.phase === 'active';
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const x = this.world.width / 2;
+            if (active) {
+              ctx.font = '800 9px system-ui, sans-serif';
+              ctx.fillStyle = '#fff0bd';
+              ctx.fillText('SHORT JUMP THROUGH', x, GROUND_Y + 17);
+            } else {
+              ctx.fillStyle = '#173f69';
+              roundedRect(ctx, x - 113, 48, 226, 41, 10);
+              ctx.fill();
+              ctx.strokeStyle = boss.phase === 'cleared' ? '#91e6be' : '#ffd257';
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+              ctx.font = '900 14px system-ui, sans-serif';
+              ctx.fillStyle = boss.phase === 'cleared' ? '#91e6be' : '#ffd257';
+              ctx.fillText(boss.phase === 'cleared' ? 'BOSS CLEAR!' : 'STONE JAW', x, 61);
+              ctx.font = '700 9px system-ui, sans-serif';
+              ctx.fillStyle = '#fff';
+              ctx.fillText(boss.phase === 'cleared' ? 'KEEP RUNNING.' : 'SHORT JUMP THROUGH THE OPENING', x, 78);
+            }
+            ctx.restore();
           }
           // 3, 2, 1 pop in over a draining ring; GO! bursts out in orange and fades.
           drawCountdown(game) {
@@ -9134,7 +9360,7 @@
             this.demoSeed = 937;
             const random = () => ((this.demoSeed = (Math.imul(this.demoSeed, 1664525) + 1013904223) >>> 0) / 4294967296);
             this.demo = new Game({ random, cosmeticRandom: random,
-              width: runner.game.world.width, featherEnabled: false, shieldEnabled: false });
+              width: runner.game.world.width, featherEnabled: false, shieldEnabled: false, bossEnabled: false });
             this.demoRenderer = new Renderer(context, this.demo);
             this.demoRenderer.effects.rng = new RandomSource(random);
             this.demoRenderer.compactHud = true;
@@ -9142,7 +9368,7 @@
             // height without stretching artwork or resizing the real game.
             this.backdrop = new Game({ width: runner.game.world.width,
               random: () => 0.5, cosmeticRandom: () => 0.5,
-              featherEnabled: false, shieldEnabled: false });
+              featherEnabled: false, shieldEnabled: false, bossEnabled: false });
             this.backdropRenderer = new Renderer(context, this.backdrop);
             this.dots.forEach((button, i) => button.addEventListener('click', () => {
               this.select(i, i < this.index ? 'prev' : 'next');
@@ -9574,6 +9800,7 @@
               reducedMotion: this.browser.motionQuery.matches,
               featherEnabled: testHooks.featherEnabled !== false,
               shieldEnabled: testHooks.shieldEnabled !== false,
+              bossEnabled: testHooks.bossEnabled !== false,
               width: matchMedia('(max-width:600px) and (orientation:portrait)').matches
                 ? PORTRAIT_W : BASE_W,
             });
@@ -9819,6 +10046,18 @@
                 effects.burst(game.trex.x + 22, game.trex.y + 24, 18, 'shield');
                 this.sessionView.dismiss('shield');
                 this.announce('Shield popped. Hit survived. Avoid the next obstacle!');
+                break;
+              case 'bossWarning':
+                this.sound.boss();
+                this.announce('Stone Jaw! Make a short jump through the glowing opening.');
+                break;
+              case 'bossEnter':
+                effects.burst(game.world.width - 8, GROUND_Y - 4, 10, 'rock');
+                break;
+              case 'bossClear':
+                this.sound.boss(true);
+                effects.burst(clamp(event.x, 20, game.world.width - 20), event.y, 28, 'rock');
+                this.announce(event.clean ? 'Stone Jaw cleared! Keep running.' : 'Shield shattered Stone Jaw! Shield used.');
                 break;
               case 'countdown':
                 this.sound.countdown(event.value === 0);
@@ -10075,6 +10314,10 @@
             chili: { remainingMs: game.turbo.remaining, pickup: game.turbo.pickup },
             feather: { charged: game.feather.charged, pickup: game.feather.pickup },
             shield: { charged: game.shield.charged, pickup: game.shield.pickup, popRemainingMs: game.shield.popRemaining },
+            boss: { phase: game.boss.phase, remainingMs: game.boss.remaining, completed: game.boss.completed,
+              rock: game.boss.rock ? { x: game.boss.rock.x, y: game.boss.rock.y,
+                width: game.boss.rock.width, height: game.boss.rock.height,
+                openingTop: ROCK_BOSS.openingTop, openingBottom: ROCK_BOSS.openingBottom } : null },
             particles: runner.renderer.effects.particles.length,
             countdownMs: Math.max(0, game.countdown - game.gameTime),
             deathTimeMs: game.trex.deathTime,

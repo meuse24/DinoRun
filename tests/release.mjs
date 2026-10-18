@@ -173,6 +173,31 @@ for (const [name, viewport] of [
       });
       await snapshot('shield-pop');
       await page.evaluate(() => {
+        const g = window.__dinoGame;
+        g.turbo.stop(g.trex); g.feather.reset(); g.shield.reset();
+        g.turbo.spawnTimer = g.feather.spawnTimer = g.shield.spawnTimer = 1e9;
+        g.horizon.obstacles.length = 0;
+        g.trex.y = g.trex.groundY; g.trex.jumping = false; g.trex.velocity = 0;
+        g.boss.remaining = 0;
+      });
+      await advance(1);
+      assert.equal(await page.evaluate(() => window.__dinoGame.boss.phase), 'warning');
+      await snapshot('boss-warning');
+      await advance(108);
+      await page.evaluate(() => {
+        const g = window.__dinoGame;
+        g.boss.rock.x = g.world.width * 0.57;
+        g.capturePrevious(); window.__dinoRunner.draw(1);
+      });
+      await snapshot('boss-approach');
+      await page.evaluate(() => {
+        const g = window.__dinoGame;
+        g.shield.charged = true; g.boss.rock.x = g.trex.x - 18;
+      });
+      await advance(1);
+      assert.equal(await page.evaluate(() => window.__dinoGame.boss.completed), 1);
+      await snapshot('boss-clear');
+      await page.evaluate(() => {
         const g = window.__dinoGame; g.score = 12; g.gameTime = 4000; g.gameOver();
         window.__dinoRunner.draw(1);
       });

@@ -45,6 +45,10 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   cactus/bird/cluster protection, Chili/feather interaction, spawning, lifecycle,
   offline rendering and touch portrait/landscape. Accepts `DINO_BROWSER=webkit`;
   see `SHIELD.md` for the player contract and validation evidence.
+- `node tests/rock-boss.mjs [game.html]`: Stone Jaw scheduling/corridor safety,
+  jump-through trajectories, roof/ledge collisions, shield/Chili/feather, pause,
+  reset, rotation and keyboard/touch layouts. Accepts `DINO_BROWSER=webkit`;
+  see `BOSS.md` for the player contract and validation evidence.
 - `node tests/attract-screen.mjs [game.html]`: check the rotating score/demo/
   power-up preview, persistent Start target, isolated demo, online/local scores,
   pause, reduced motion and ten desktop/touch layouts, including full-width

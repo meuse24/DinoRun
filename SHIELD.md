@@ -18,6 +18,10 @@
   collection/pop sounds, live-region feedback and concise English help.
   Reduced motion keeps the static shell and suppresses bursts/expanding rings.
 
+Build 2026-10-18.12 also lets one shield charge shatter the Stone Jaw boss on
+contact. It removes that whole boss, preserving the existing single-hit rule.
+Chili cannot destroy stone. See [BOSS.md](BOSS.md) for the encounter contract.
+
 ## Implementation and verification sequence
 
 1. Save Git baseline 7530590; implement a DOM-free ShieldBubble component and
