@@ -62,9 +62,9 @@
   four layouts. The actual installed skill action client passes source and release;
   screenshots/state inspected. Extended volume suite includes both synthesized
   boss sounds, with real offline audio rendering, volume scaling and mute verified.
-- No physical-device result is claimed for this build: connected Galaxy S10e was
-  asleep/locked and unlocking was requested. Touch layouts above are emulation.
-  Evidence: output/rock-boss/final/ and output/rock-boss/release/.
+- The initial implementation checks above used emulated touch layouts; the
+  physical-device follow-up is recorded below. Browser evidence:
+  output/rock-boss/final/ and output/rock-boss/release/.
 
 Repeatable commands (set DINO_PLAYWRIGHT if Playwright is installed elsewhere):
 
@@ -96,3 +96,36 @@ The locator actionability check in mobile emulation initially misreported a
 stage interception; direct touchscreen input at the verified button center
 reached touch-jump and completed the encounter. The repeatable manual-frame
 suite also passes the regular locator-based Jump button action.
+
+## Physical Android follow-up (2026-10-19)
+
+Release build 2026-10-18.12 verified by SHA-256:
+`ad05658b85c3d1a7a6204ec4b564868edb85a8496831429b26c09d11afa28e6d`.
+Galaxy S10e SM-G970F, Android 12, Chrome 155.0.8059.81. Real 360x617 portrait
+and 673x280 landscape CSS viewports, normal rAF and trusted CDP touches.
+
+Seven scenarios in each orientation passed (14 total): clean short-jump passage
+at normal speeds 6 and 8.5 and relaxed speed 5.3; Settings pause and rotation
+while paused; missed jump/ledge collision with frozen death scene; held jump
+against the ceiling; exactly one shield charge shattering the boss; and page-local
+reduced motion suppressing debris. No game-code correction was needed.
+
+The fixture makes the boss eligible immediately, freezes acceleration at each
+selected speed and holds unrelated collectible spawning. Boss motion, jump
+physics, hitboxes, input handlers and death flow run normally. Online scores are
+disabled. The two 30-frame warning samples had median16.7ms, p95=16.8ms, no
+frame over33ms; these are short warning-phase samples, not a sustained gameplay
+benchmark. Screenshots inspected; no page or console errors. The landscape
+approach image catches the intended Settings exit fade; subsequent gameplay
+images are unobscured.
+
+Original rotation(auto1/user0) and the preview origin's storage restored; own
+test tab closed, scoped relay/preview stopped and own USB8877/9223 bridges
+removed. Existing Chrome tabs and the desktop8765 preview were retained.
+Evidence: `output/rock-boss/physical/device/android-rock-boss.json` and PNGs.
+
+Repeat with `node tests/android-rock-boss.mjs release/dino.html` after starting
+`node tests/android-preview.cjs release/dino.html`, the scoped CDP relay and USB
+bridges described in FEATHER.md. The runner defaults to relay9224; optional
+DINO_CDP_URL/DINO_ANDROID_URL/DINO_ANDROID_SERIAL select existing safe bridges,
+server and device. DINO_TEST_OUTPUT chooses the report directory.

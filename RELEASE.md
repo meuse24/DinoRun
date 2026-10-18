@@ -99,6 +99,18 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
+## Stone Jaw physical delivery verification
+
+Build `2026-10-18.12`, delivery SHA-256:
+`ad05658b85c3d1a7a6204ec4b564868edb85a8496831429b26c09d11afa28e6d`.
+Physical Galaxy S10e/SM-G970F, Android12, Chrome155.0.8059.81 passed 14 boss
+scenarios in portrait/landscape with normal rAF and trusted touch: clean passage
+at three selected speeds, pause/paused rotation, both collision bands, shield
+shatter and reduced motion. Eligibility/other pickups are controlled fixtures;
+no manual stepping or live score submissions. Screenshots inspected, no browser
+errors, rotation/storage restored and own helpers closed. See [BOSS.md](BOSS.md)
+and `output/rock-boss/physical/device/android-rock-boss.json`.
+
 ## Full-width attract delivery
 
 Build `2026-10-17.2`, SHA-256:

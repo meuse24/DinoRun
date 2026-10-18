@@ -62,6 +62,9 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   accept `DINO_ANDROID_URL` for an existing local server and verify its artifact
   hash. `node tests/android-cdp-relay.mjs` optionally scopes CDP to test-created
   tabs when existing Chrome targets block initialization; see FEATHER.md.
+- `node tests/android-rock-boss.mjs [game.html]`: physical Stone Jaw touch,
+  three approach speeds, pause/rotation, roof/ledge hits, shield and reduced motion.
+  Defaults to the safe preview on8877 and scoped relay9224; see `BOSS.md`.
 - `php -l highscores-lib.php`: check PHP syntax; repeat for other changed PHP files.
 - `node tests/admin-web.mjs`: isolated real-PHP CLI/HTTP/security checks and four
   responsive browser layouts without JavaScript. Requires PHP (`DINO_PHP`) and
