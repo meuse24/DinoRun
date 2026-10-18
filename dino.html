@@ -1978,10 +1978,11 @@
     </style>
     <style id="heading-motion-styles">
       /* Small arcade gestures, independent of panel transforms and input.
-         Only the logo loops; finite motion-heading-* joins ElementMotion cleanup. */
+         Idle breathing is separate from finite motion-heading-* cleanup. */
       .heading-ink {
         display: inline-block;
         transform-origin: 50% 85%;
+        --heading-breath: heading-breathe 4.8s ease-in-out infinite;
       }
       .brand-float { display: inline-block; }
       @keyframes motion-heading-hop {
@@ -1991,7 +1992,7 @@
         100% { transform: none; }
       }
       @keyframes motion-heading-step {
-        0% { opacity: 0.6; transform: translate(-8px, 3px) rotate(-2deg); }
+        0% { opacity: 0.6; transform: translate(-12px, 5px) rotate(-3deg); }
         70% { opacity: 1; transform: translateX(1px) rotate(0.4deg); }
         100% { transform: none; }
       }
@@ -2011,27 +2012,36 @@
         0%, 100% { transform: translateY(0); }
         50% { transform: translateY(-2px); }
       }
+      @keyframes heading-breathe {
+        0%, 100% { scale: 1; translate: 0 0; }
+        50% { scale: 1.025; translate: 0 -2px; }
+      }
       @media (prefers-reduced-motion: no-preference) {
-        :root.motion #round-panel[data-enter] .title-word {
-          animation: motion-heading-hop 280ms ease-out both;
+        :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-ink,
+        :root.motion.help-page.help-active .menu-title .heading-ink {
+          animation: var(--heading-breath);
         }
-        :root.motion #round-panel[data-enter] .title-word:last-child { animation-delay: 40ms; }
+        :root.motion #round-panel[data-enter] .title-word {
+          animation: motion-heading-hop 280ms ease-out both, var(--heading-breath);
+        }
+        :root.motion #round-panel[data-enter] .title-word:last-child { animation-delay: 40ms, 0ms; }
         :root.motion .attract-slide[data-enter] .heading-ink {
-          animation: motion-heading-step 240ms ease-out 60ms both;
+          animation: motion-heading-step 240ms ease-out 60ms both, var(--heading-breath);
         }
         :root.motion dialog[open] .heading-ink,
         :root.motion.help-page.help-active .menu-title .heading-ink {
-          animation: motion-heading-step 300ms ease-out 40ms both;
+          animation: motion-heading-step 380ms ease-out 40ms both, var(--heading-breath);
         }
         :root.motion #goodbye[open] .heading-ink {
-          animation-name: motion-heading-wave;
-          animation-duration: 360ms;
+          animation-name: motion-heading-wave, heading-breathe;
+          animation-duration: 360ms, 4.8s;
         }
         :root.motion #game-over-overlay[data-enter='death'] .heading-ink {
-          animation: motion-heading-land 320ms ease-out var(--t5-delay) both;
+          animation: motion-heading-land 320ms ease-out var(--t5-delay) both, var(--heading-breath);
         }
-        :root.motion #stage.game-paused #game-over-overlay .heading-ink {
-          animation-play-state: paused;
+        :root.motion #stage.game-paused .heading-ink,
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel .heading-ink {
+          animation-play-state: paused !important;
         }
         :root.motion #stage.idle #round-panel:not([hidden]) .brand-float {
           animation: heading-logo-float 4.8s ease-in-out infinite;
@@ -2043,6 +2053,7 @@
       }
       /* Dialog raises are technical reopens, not another heading entrance. */
       dialog.no-motion .heading-ink,
+      dialog[data-heading-pending] .heading-ink,
       dialog[data-raised] .heading-ink { animation: none !important; }
     </style>
     <style id="menu-shell-styles">
@@ -3238,7 +3249,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.6';
+        const BUILD = '2026-10-18.7';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -8678,6 +8689,17 @@
             this.title.textContent = 'Highscores';
             if (this.isOpen && !this.dialog.open) {
               this.shownGeneration = this.generation;
+              const vt = this.runner.transition.current?.vt;
+              this.dialog.toggleAttribute('data-heading-pending', !!vt);
+              if (vt) {
+                const generation = this.generation;
+                const revealHeading = () => {
+                  if (this.generation === generation)
+                    this.dialog.removeAttribute('data-heading-pending');
+                };
+                // Snapshots hide real-element motion; start after the sheet is visible.
+                vt.finished.then(revealHeading, revealHeading);
+              }
               // Inside a View Transition (T7a) the sheet animates there, not twice.
               if (this.runner.transition.current) suppressDialogMotion(this.dialog);
               this.dialog.showModal();
@@ -9405,8 +9427,18 @@
           }
           syncGuideHeading() {
             const root = this.infoView.contentDocument?.documentElement;
-            root?.classList.toggle('motion', motionEnabled);
-            root?.classList.toggle('help-active', !this.infoView.hidden);
+            if (!root) return;
+            const generation = this.headingGeneration = (this.headingGeneration || 0) + 1;
+            const vt = this.runner.transition.current?.vt;
+            root.classList.toggle('motion', motionEnabled);
+            root.classList.toggle('help-active', !this.infoView.hidden && !vt);
+            if (vt) {
+              const revealHeading = () => {
+                if (this.headingGeneration === generation && !this.infoView.hidden)
+                  root.classList.add('help-active');
+              };
+              vt.finished.then(revealHeading, revealHeading);
+            }
           }
           // Part of presenter.commit().
           applyView() {

@@ -145,6 +145,21 @@ try {
         assert.equal(sync.overlay, false);
         assert.equal(sync.active, 'name-picker');
       }
+      if (deferred) {
+        const heading = await page.evaluate(async () => {
+          await window.__dinoRunner.transition.current?.vt?.finished;
+          await Promise.resolve(); // The heading's own finished-handler may have subscribed later.
+          while (document.getElementById('scores').classList.contains('no-motion'))
+            await new Promise(requestAnimationFrame);
+          const el = document.querySelector('#scores-title .heading-ink');
+          const animation = el.getAnimations().find(a => a.animationName === 'motion-heading-step');
+          return { name: animation?.animationName, time: animation?.currentTime,
+            pending: el.closest('dialog').outerHTML.slice(0, 300),
+            names: el.getAnimations().map(a => a.animationName), css: getComputedStyle(el).animationName };
+        });
+        assert.equal(heading.name, 'motion-heading-step', JSON.stringify(heading));
+        assert(heading.time < 100, 'Name heading starts after the sheet snapshot, not behind it');
+      }
       await done(page);
       const after = await snap(page);
       assert.equal(after.open, true);
@@ -248,6 +263,17 @@ try {
       assert.equal(await page.evaluate(() => location.hash), '#info');
       assert.equal(forward.paused, true, 'The guide pauses at once');
       assert.equal(forward.page, deferred, 'The page stays in the old snapshot until commit');
+      if (deferred) {
+        const heading = await page.evaluate(async () => {
+          await window.__dinoRunner.transition.current?.vt?.finished;
+          await Promise.resolve();
+          const el = document.getElementById('info-view').contentDocument.querySelector('.heading-ink');
+          const animation = el.getAnimations().find(a => a.animationName === 'motion-heading-step');
+          return { name: animation?.animationName, time: animation?.currentTime };
+        });
+        assert.equal(heading.name, 'motion-heading-step');
+        assert(heading.time < 100, 'Help heading starts after the page snapshot');
+      }
       await done(page);
       const help = await snap(page);
       assert.equal(help.page, false);
@@ -718,9 +744,22 @@ try {
       assert(start >= 0.59 && start <= 0.61, 'START begins at 0.6, got ' + start);
       await hold(0.5);
       await page.screenshot({ path: path.join(output, `${layout}-t1-mid.png`) });
-      // The only looping heading gesture follows the same Pause control as the demo.
+      const breath = await page.locator('.title-word').first().evaluate(el => {
+        const animation = el.getAnimations().find(a => a.animationName === 'heading-breathe');
+        animation.pause(); animation.currentTime = 0;
+        const resting = getComputedStyle(el).scale;
+        animation.currentTime = 2400;
+        const peak = getComputedStyle(el).scale;
+        animation.play();
+        return { resting, peak };
+      });
+      assert.equal(Number(breath.resting), 1);
+      assert(Number(breath.peak) >= 1.024, 'The title keeps breathing after its entrance');
+      // All idle heading gestures follow the same Pause control as the demo.
       await tap('#attract-pause');
       assert.equal(await page.locator('.brand-float').evaluate(el =>
+        getComputedStyle(el).animationPlayState), 'paused');
+      assert.equal(await page.locator('.title-word').first().evaluate(el =>
         getComputedStyle(el).animationPlayState), 'paused');
       await tap('#attract-pause');
       assert.equal(await page.locator('.brand-float').evaluate(el =>
