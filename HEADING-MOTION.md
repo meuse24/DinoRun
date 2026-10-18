@@ -10,7 +10,7 @@
    der Abschied kippt kurz wie ein Winken.
 3. Technik: separate Schrift-Spans, CSS-Keyframes auf transform/opacity;
    bestehende Screen-Übergänge und Eingabe bleiben unabhängig. Keine neue
-   Animationsbibliothek, Canvas-Schleife, Buchstabenzerlegung oder Filter.
+   Animationsbibliothek, Canvas-Schleife oder Filter.
    Seit Build .7 atmen auch sichtbare Überschriften langsam; der
    Vorschau-Pausenschalter stoppt Titel und Logo gemeinsam.
 4. Barrierefreiheit: bei prefers-reduced-motion keine neuen Effekte.
@@ -150,3 +150,28 @@ Quelle sowie Game-over-Flow gegen Release mit aktiven Übergängen in drei
 Desktop/Touch-Layouts bestanden. Die normalen Edge-Zeitreihen und Screenshots
 wurden geprüft. Das ist Desktop-/Emulationsprüfung; für Build .8 wurde kein
 neuer physischer Telefonlauf durchgeführt. PWA-Cache: dino-run-v17.
+
+## Leichte Welle (Build 2026-10-18.9)
+
+Auf Nutzerwunsch überlagert eine kleine laufende Welle das bereits
+abgenommene Atmen. Die Buchstaben bewegen sich mit 90 ms Phasenversatz um
+höchstens 1,5 px nach oben/unten und kippen um höchstens 0,3 Grad. Der Zyklus
+bleibt bei 3,2 Sekunden; Scale und Hub der gesamten Überschrift bleiben wie
+in Build .8. Die Glyph-Spans werden einmal beim Einrichten erzeugt, bei
+Textwechseln nur bei geändertem Inhalt. Pro Frame läuft ausschließlich CSS.
+
+Der Titel behält seinen vollständigen zugänglichen Namen am h1/h2;
+dekorative Einzelbuchstaben sind aria-hidden. Leerzeichen bleiben Text.
+Hilfe bekommt dieselbe Vorbereitung in ihrem eingebetteten Dokument.
+Alle Pausen-, Sichtbarkeits-, Dialog- und Reduced-Motion-Regeln gelten auch
+für die Welle. Bei abgeschalteter Bewegung bleiben die Buchstaben inline.
+PWA-Cache: dino-run-v18.
+
+Chromium besteht alle 86 Übergangsprüfungen und 52 pixelgleichen
+Source/Release-Szenen; Skill-Client und Release-Game-over mit Übergängen
+bestehen. Vier gezielte Source/Release-Läufe in Chromium/WebKit prüfen
+unterschiedliche tatsächliche Buchstabenpositionen/Phasen, vollständige
+zugängliche Heading-Namen, Pause, Reduced Motion, Hilfe und unveränderte
+Glyph-Knoten bei wiederholten Präsentations-Updates. Normaler sichtbarer
+Edge-Lauf als Video aufgenommen, Screenshots angesehen. Vorschau:
+output/heading-wave/title-wave.gif. Keine physische Geräteprüfung für .9.

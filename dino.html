@@ -1984,6 +1984,7 @@
         transform-origin: 50% 85%;
       }
       .heading-breath { display: inline-block; transform-origin: 50% 85%; }
+      .heading-wave-char { transform-origin: 50% 80%; }
       .brand-float { display: inline-block; }
       @keyframes motion-heading-hop {
         0% { transform: translateY(7px) scale(0.96, 1.04); }
@@ -2016,10 +2017,19 @@
         0%, 100% { transform: none; }
         50% { transform: translateY(-4px) scale(1.06); }
       }
+      @keyframes heading-ripple {
+        0%, 100% { transform: translateY(1.5px) rotate(0.3deg); }
+        50% { transform: translateY(-1.5px) rotate(-0.3deg); }
+      }
       @media (prefers-reduced-motion: no-preference) {
         :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-breath,
         :root.motion.help-page.help-active .menu-title .heading-breath {
           animation: heading-breathe 3.2s ease-in-out infinite;
+        }
+        :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-wave-char,
+        :root.motion.help-page.help-active .menu-title .heading-wave-char {
+          display: inline-block;
+          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -90ms) infinite;
         }
         :root.motion #round-panel[data-enter] .title-word {
           animation: motion-heading-hop 280ms ease-out both;
@@ -2039,9 +2049,9 @@
         :root.motion #game-over-overlay[data-enter='death'] .heading-ink {
           animation: motion-heading-land 320ms ease-out var(--t5-delay) both;
         }
-        :root.motion #stage.heading-paused #round-panel :is(.heading-ink, .heading-breath),
-        :root.motion #stage.game-paused #game-over-overlay :is(.heading-ink, .heading-breath),
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel :is(.heading-ink, .heading-breath) {
+        :root.motion #stage.heading-paused #round-panel :is(.heading-ink, .heading-breath, .heading-wave-char),
+        :root.motion #stage.game-paused #game-over-overlay :is(.heading-ink, .heading-breath, .heading-wave-char),
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel :is(.heading-ink, .heading-breath, .heading-wave-char) {
           animation-play-state: paused !important;
         }
         :root.motion #stage.idle #round-panel:not([hidden]) .brand-float {
@@ -2056,11 +2066,14 @@
       dialog.no-motion .heading-ink,
       dialog[data-heading-pending] .heading-ink,
       dialog[data-raised] .heading-ink { animation: none !important; }
-      dialog[data-heading-pending] .heading-breath { animation: none !important; }
+      dialog[data-heading-pending] :is(.heading-breath, .heading-wave-char) { animation: none !important; }
       @media (prefers-reduced-motion: no-preference) {
         /* A technical raise keeps the entry settled; visible text may still breathe. */
         :root.motion dialog[open][data-raised]:not(.no-motion) .heading-breath {
           animation: heading-breathe 3.2s ease-in-out infinite !important;
+        }
+        :root.motion dialog[open][data-raised]:not(.no-motion) .heading-wave-char {
+          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -90ms) infinite !important;
         }
       }
     </style>
@@ -3259,7 +3272,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.8';
+        const BUILD = '2026-10-18.9';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -7505,6 +7518,36 @@
         // input change synchronously; these helpers only decide how the DOM follows.
         const motionEnabled = testHooks.transitions !== false;
         if (motionEnabled) document.documentElement.classList.add('motion');
+        // Set up the tiny text ripple once, never in the frame loop. The heading keeps
+        // its full accessible name; decorative glyphs do not become separate announcements.
+        function setHeadingText(element, text, offset = 0) {
+          if (element.dataset.waveText === text) return;
+          const heading = element.closest('h1, h2');
+          if (heading) heading.setAttribute('aria-label', element.classList.contains('title-word')
+            ? heading.textContent.replace(/\s+/g, ' ').trim() : text);
+          const fragment = element.ownerDocument.createDocumentFragment();
+          for (const [i, character] of [...text].entries()) {
+            if (/\s/.test(character)) {
+              fragment.append(character);
+              continue;
+            }
+            const glyph = element.ownerDocument.createElement('span');
+            glyph.className = 'heading-wave-char';
+            glyph.setAttribute('aria-hidden', 'true');
+            glyph.style.setProperty('--wave-i', offset + i);
+            glyph.textContent = character;
+            fragment.append(glyph);
+          }
+          element.replaceChildren(fragment);
+          element.dataset.waveText = text;
+        }
+        let titleWaveOffset = 0;
+        for (const element of document.querySelectorAll('.title-word, .heading-breath:not(.title-breath)')) {
+          const text = element.textContent;
+          const title = element.classList.contains('title-word');
+          setHeadingText(element, text, title ? titleWaveOffset : 0);
+          if (title) titleWaveOffset += [...text].length + 1;
+        }
         const isMotionAnimation = (animation) =>
           String(animation.animationName || animation.id || '').startsWith('motion-');
 
@@ -8696,7 +8739,7 @@
           apply() {
             this.listView.hidden = this.view !== 'list';
             this.entryView.hidden = this.view !== 'entry';
-            this.title.textContent = 'Highscores';
+            setHeadingText(this.title, 'Highscores');
             if (this.isOpen && !this.dialog.open) {
               this.shownGeneration = this.generation;
               const vt = this.runner.transition.current?.vt;
@@ -8840,7 +8883,7 @@
           show(mode, source, reload = true) {
             this.mode = mode;
             this.source = source;
-            if (!this.listView.hidden) this.title.textContent = 'Highscores';
+            if (!this.listView.hidden) setHeadingText(this.title, 'Highscores');
             for (const button of this.dialog.querySelectorAll('[data-source]'))
               button.setAttribute('aria-pressed', String(button.dataset.source === source));
             if (source === 'online' && reload) this.controller.loadOnline(mode);
@@ -9438,6 +9481,8 @@
           syncGuideHeading() {
             const root = this.infoView.contentDocument?.documentElement;
             if (!root) return;
+            const heading = this.infoView.contentDocument.querySelector('.heading-breath');
+            if (heading) setHeadingText(heading, heading.textContent);
             const generation = this.headingGeneration = (this.headingGeneration || 0) + 1;
             const vt = this.runner.transition.current?.vt;
             root.classList.toggle('motion', motionEnabled);
