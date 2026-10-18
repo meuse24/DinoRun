@@ -206,6 +206,11 @@
         --t9-delay: 0ms;
         --t11-exit: 220ms;
         --t11-enter: 280ms;
+        /* Polish: saved-row highlight, list staggers, in-round hint fades. */
+        --saved-highlight: 600ms;
+        --t3-stagger: 20ms;
+        --t12-stagger: 40ms;
+        --hint-fade: 150ms;
       }
       @media (prefers-reduced-motion: reduce) {
         /* Movement collapses to zero; what remains is a short fade or nothing. */
@@ -247,6 +252,9 @@
           --t9-enter: var(--motion-reduced);
           --t11-exit: var(--motion-reduced);
           --t11-enter: var(--motion-reduced);
+          --t3-stagger: 0ms;
+          --t12-stagger: 0ms;
+          --hint-fade: var(--motion-reduced);
         }
       }
       /* Mechanism A keyframes. `translate`/`scale` compose with existing transforms;
@@ -503,8 +511,31 @@
       :root.motion .attract-score-ghost[data-leaving] {
         animation: motion-fade-out var(--t3-fade) linear both;
       }
-      :root.motion #attract-score-list[data-enter='page'] {
-        animation: motion-fade-in var(--t3-fade) linear both;
+      :root.motion #attract-score-list[data-enter='page'] li {
+        animation: motion-fade-in var(--t3-fade) linear calc(var(--i, 0) * var(--t3-stagger)) both;
+      }
+      /* After saving, the new row lights up once on the highscore slide (replaces a morph,
+         which would need a document transition while START is usable). */
+      @keyframes motion-saved {
+        from {
+          background-color: #ffd257;
+        }
+      }
+      :root.motion #attract-score-list li[data-enter='saved'] {
+        animation: motion-saved var(--saved-highlight) var(--ease-out) both;
+      }
+      :root.motion #goodbye[open] .session-stat {
+        --rise: 8px;
+        animation: motion-rise-in var(--t12-enter) var(--ease-out) calc(min(var(--i, 0), 5) * var(--t12-stagger)) both;
+      }
+      /* In-round hints only fade in; hiding stays immediate. */
+      :root.motion :is(#coach, #hud-turbo) {
+        transition: opacity var(--hint-fade) var(--ease-out);
+      }
+      @starting-style {
+        :root.motion :is(#coach, #hud-turbo) {
+          opacity: 0;
+        }
       }
       /* raiseModalDialogs() reopens a dialog technically: never animate that. */
       dialog.no-motion,
@@ -7815,6 +7846,7 @@
             for (const [label, value] of stats.rows()) {
               const item = document.createElement('div');
               item.className = 'session-stat';
+              item.style.setProperty('--i', this.list.children.length);
               const term = document.createElement('dt');
               const description = document.createElement('dd');
               term.textContent = label;
@@ -8648,6 +8680,7 @@
             if (!result) return;
             if (this.runner.game.crashed && this.dialog.open) {
               this.runner.announce(this.resultText(result.online, result.localRank));
+              this.runner.attract.highlight = result.round.id;
               this.close();
               return;
             }
@@ -8972,6 +9005,8 @@
               const score = document.createElement('span');
               score.textContent = hudNumber(entry.score);
               row.append(rank, name, score);
+              row.style.setProperty('--i', i);
+              if (entry.id) row.dataset.id = entry.id;
               this.rows.append(row);
             }
             this.rows.hidden = entries.length === 0;
@@ -9056,6 +9091,14 @@
               this.scorePage = 0;
               this.renderScores();
               if (this.index === 0) this.loadScores();
+            }
+            // A just-saved entry lights up once, as soon as its row is on screen.
+            if (this.highlight && this.index === 0 && !this.runner.sessionView.panel.hidden) {
+              const row = [...this.rows.children].find((item) => item.dataset.id === this.highlight);
+              if (row) {
+                this.highlight = null;
+                this.runner.motion.enter(row, 'saved');
+              }
             }
             if (this.renderedPaused !== this.paused) {
               this.renderedPaused = this.paused;
@@ -9508,6 +9551,7 @@
             switch (event.type) {
               case 'start':
               case 'restart':
+                this.attract.highlight = null;
                 this.sound.stopDeath();
                 this.highscoreController.roundLeft();
                 this.inputUse = {};

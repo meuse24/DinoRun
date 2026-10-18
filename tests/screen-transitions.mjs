@@ -774,14 +774,16 @@ try {
           first: ghost.querySelector('.attract-rank').textContent,
           opacity: Number(getComputedStyle(ghost).opacity), top: ghost.getBoundingClientRect().top },
           list: { kind: list.dataset.enter, first: list.querySelector('.attract-rank').textContent,
-            opacity: Number(getComputedStyle(list).opacity), top: list.getBoundingClientRect().top } };
+            opacity: Number(getComputedStyle(list.firstElementChild).opacity), top: list.getBoundingClientRect().top,
+            delays: [...list.children].map(li => li.getAnimations()[0]?.effect.getTiming().delay) } };
       });
       assert.equal(state.ghost?.kind, 'page');
       assert.equal(state.ghost.hidden, 'true');
       assert.deepEqual([state.ghost.first, state.list.first], ['01', '06']);
       assert(Math.abs(state.ghost.top - state.list.top) <= 1, 'The copy covers the list');
       assert(state.ghost.opacity > 0.3 && state.ghost.opacity < 0.7, 'ghost ' + state.ghost.opacity);
-      assert(state.list.opacity > 0.3 && state.list.opacity < 0.7, 'list ' + state.list.opacity);
+      assert(state.list.opacity > 0.3 && state.list.opacity < 0.7, 'first row ' + state.list.opacity);
+      assert.deepEqual(state.list.delays, [0, 20, 40, 60, 80], 'Rows stagger by 20 ms');
       await page.screenshot({ path: path.join(output, `${layout}-t3-mid.png`) });
       await startAndReturn('#start-game');
       assert.equal(await page.locator('.attract-score-ghost').count(), 0);
@@ -1128,6 +1130,54 @@ try {
     });
 
     assert.deepEqual(errors, [], layout + ' dialog page errors');
+    await context.close();
+  }
+
+  // Phase 6 polish: saved-row highlight, goodbye stagger and in-round hint fades.
+  {
+    const { context, page, errors } = await openGame(browser, {});
+    await done(page);
+    await check('a saved score lights up once on the highscore slide', async () => {
+      const result = await page.evaluate(async () => {
+        const r = window.__dinoRunner, g = r.game;
+        r.highscoreController.api.submit = async () => { throw { kind: 'offline' }; };
+        g.start(0); g.score = 31; g.gameTime = 4000; g.gameOver();
+        for (let i = 0; g.inDeathScene && i < 400; i++) window.advanceTime(1000 / 60);
+        await window.__dinoTest.transitionDone();
+        await r.highscores.save();
+        const row = document.querySelector('#attract-score-list li[data-enter="saved"]');
+        return { state: g.state, row: row?.textContent ?? null,
+          animation: row?.getAnimations().map(a => a.animationName) ?? [], pending: r.attract.highlight };
+      });
+      assert.equal(result.state, 'attract');
+      assert.match(result.row, /00031/);
+      assert.deepEqual(result.animation, ['motion-saved']);
+      assert.equal(result.pending, null);
+      await done(page);
+    });
+    await check('goodbye statistics stagger by 40 ms up to six rows', async () => {
+      await page.locator('#quit-game').click();
+      const delays = await page.evaluate(() => [...document.querySelectorAll('#goodbye .session-stat')]
+        .map(item => item.getAnimations()[0]?.effect.getTiming().delay));
+      assert.deepEqual(delays, [0, 40, 80, 120, 160, 200, 200]);
+      await done(page);
+      await page.locator('#new-session').click();
+      await done(page);
+    });
+    await check('coach hints fade in while hiding stays immediate', async () => {
+      const result = await page.evaluate(() => {
+        const r = window.__dinoRunner, coach = document.getElementById('coach');
+        r.game.start(0);
+        for (let i = 0; coach.hidden && i < 60; i++) window.advanceTime(1000 / 60);
+        const shown = { hidden: coach.hidden, fades: coach.getAnimations().map(a => a.transitionProperty) };
+        r.game.gameOver(); window.advanceTime(1000 / 60);
+        return { shown, hiddenAfter: coach.hidden };
+      });
+      assert.equal(result.shown.hidden, false);
+      assert.deepEqual(result.shown.fades, ['opacity']);
+      assert.equal(result.hiddenAfter, true);
+    });
+    assert.deepEqual(errors, [], 'polish page errors');
     await context.close();
   }
 
