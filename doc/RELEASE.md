@@ -99,6 +99,27 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
+## Current delivery verification (2026-10-19.5)
+
+Reinstalled pinned tools with `npm ci` and rebuilt using `npm run build`.
+The result is byte-identical to the existing delivery: 233679 bytes, SHA-256
+`631ad37b2576a25c3262b4d971e3e110d9c922594e1296a200d6e271df0df0a5`.
+The generated artifact includes the larger rock opening, endless feedback,
+short training intervals, Exit control and regular selected-mode acceleration.
+
+All 64 Chromium source/release scenes compare pixel-identically.
+Chromium delivery passes all seven lifecycle/offline scenarios, six-wave
+training in three desktop/touch layouts (including acceleration/cap, result
+sounds, score isolation and Exit), and the installed skill action client.
+Screenshots and text state inspected. Artifacts: `output/release-final/`.
+WebKit also passes all seven lifecycle/offline scenarios on this delivery.
+The strict WebKit comparison did not complete: first run found one differing
+pixel in desktop attract-powerups; the unchanged repeat passed that scene but
+found 13 low-intensity differences (maximum10/255) at portrait demo text edges.
+Screenshots show no layout defect. Exact comparison tolerances were preserved;
+full WebKit pixel identity is not claimed. This verification uses browser
+emulation, not a physical phone.
+
 ## Previous rock training delivery verification (before endless feedback)
 
 Build `2026-10-19.1`, delivery SHA-256:

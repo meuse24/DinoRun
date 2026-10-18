@@ -584,3 +584,15 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 - Returned AGENTS.md to the repository root so future agents automatically discover repository-wide instructions. General project documentation remains in doc/.
 - Updated all root agent documentation references to doc/ paths and removed the obsolete relocation note. Verified referenced Markdown paths exist; no runtime change.
+
+
+## 2026-10-19: Final minified delivery verification
+
+- User requested a polished minified release and directed attention to release/. Applied develop-web-game skill. npm ci completed with zero reported dependency vulnerabilities; npm run build reproduces existing build2026-10-19.5 exactly, 442896->233679 bytes (47.24% saved). No game changes, build-number bump or deployment necessary. Delivery SHA256631ad37b2576a25c3262b4d971e3e110d9c922594e1296a200d6e271df0df0a5.
+- Chromium release lifecycle/offline7, training3 layouts/six waves including real DSP and acceleration/cap, installed skill client passed. Reviewed attract/training/skill screenshots and JSON state under output/release-final. No live highscore submission or physical-device test. Source/release full comparisons running.
+
+- Full Chromium comparison64 pixel-identical. First WebKit comparison stopped at desktop attract-powerups with one differing antialiased pixel (110,439), source(246,244,240) vs release(218,221,223); visually inspected. Repeating the unchanged full WebKit comparison; the same scene already passes on the second run. Tolerances remain unchanged.
+
+- Second WebKit strict comparison passed the initial scene but stopped at portrait/attract-demo: 13 pixels/max10 at text-edge bounds236,572..718,675 in1170x2532 image. Visually reviewed, no layout defect; no game change or weakened comparison tolerance. Full WebKit pixel equivalence is not claimed. Finishing WebKit standalone/offline contract check; no further visual retries.
+
+- Final WebKit release contract7 passed. Release is regenerated and ready at release/dino.html with unchanged exact artifact hash; verification evidence/known strict WebKit raster differences documented. No pending helper processes or implementation changes.
