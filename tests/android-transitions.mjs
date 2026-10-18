@@ -73,7 +73,9 @@ try {
     for (const transitions of [false, true]) {
     const label = transitions ? '' : 'Baseline';
     await page.evaluate(on => {
-      window.__dinoRunner.motion.enabled = on;
+      const r = window.__dinoRunner;
+      r.motion.enabled = on;
+      r.transition.enabled = on && r.transition.level !== 'none';
       document.documentElement.classList.toggle('motion', on);
     }, transitions);
     await page.evaluate(() => window.__dinoTest.transitionDone());
@@ -101,7 +103,21 @@ try {
     });
     await page.evaluate(() => window.__dinoTest.transitionDone());
     await page.screenshot({ path: path.join(output, `${layout}${label}-attract.png`) });
-    for (const name of ['t2', 't4', 't5', 't6']) {
+    // T7a: a qualifying score; frames from shortly before the death scene ends.
+    await touch('#start-game');
+    await page.waitForFunction(() => window.__dinoGame.playing && !window.__dinoGame.countingDown, null, { timeout: 10000 });
+    result.t7a = await page.evaluate(async () => {
+      const r = window.__dinoRunner, g = r.game;
+      g.recordAtStart = 0; g.score = 500; g.gameOver();
+      while (g.inDeathScene && g.trex.deathTime < 2400) await new Promise(f => requestAnimationFrame(f));
+      const deltas = await window.__record(900);
+      if (!r.highscores.isOpen) throw new Error('No name entry opened');
+      return deltas;
+    });
+    await page.evaluate(() => window.__dinoTest.transitionDone());
+    await page.screenshot({ path: path.join(output, `${layout}${label}-entry.png`) });
+    await page.evaluate(() => { window.__dinoRunner.highscores.close(); return window.__dinoTest.transitionDone(); });
+    for (const name of ['t2', 't4', 't5', 't6', 't7a']) {
       const deltas = result[name];
       result[name + label] = { frames: deltas.length, over33: deltas.filter(d => d > 33).length,
         median: percentile(deltas, 0.5), max: Math.max(...deltas),
@@ -109,7 +125,7 @@ try {
       if (!transitions) delete result[name];
     }
     }
-    result.failures = ['t2', 't4', 't5', 't6'].filter(name => result[name].over33 > 2);
+    result.failures = ['t2', 't4', 't5', 't6', 't7a'].filter(name => result[name].over33 > 2);
     // Latency: START touch to the first frame with the jump pose, transitions on/off.
     for (const transitions of [true, false]) {
       await page.evaluate(on => {

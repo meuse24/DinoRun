@@ -197,6 +197,15 @@
         --t14-enter: 240ms;
         --t14-exit: 160ms;
         --dialog-backdrop: 200ms;
+        /* View Transitions: T7a score morph, T9 dialog views, T11 Help. */
+        --t7-root: 200ms;
+        --t7-morph: 320ms;
+        --t7-sheet: 260ms;
+        --t9-exit: 160ms;
+        --t9-enter: 220ms;
+        --t9-delay: 0ms;
+        --t11-exit: 220ms;
+        --t11-enter: 280ms;
       }
       @media (prefers-reduced-motion: reduce) {
         /* Movement collapses to zero; what remains is a short fade or nothing. */
@@ -231,6 +240,13 @@
           --t14-enter: var(--motion-reduced);
           --t14-exit: var(--motion-reduced);
           --dialog-backdrop: var(--motion-reduced);
+          --t7-root: var(--motion-reduced);
+          --t7-morph: var(--motion-reduced);
+          --t7-sheet: var(--motion-reduced);
+          --t9-exit: var(--motion-reduced);
+          --t9-enter: var(--motion-reduced);
+          --t11-exit: var(--motion-reduced);
+          --t11-enter: var(--motion-reduced);
         }
       }
       /* Mechanism A keyframes. `translate`/`scale` compose with existing transforms;
@@ -249,6 +265,19 @@
         from {
           opacity: 0;
           translate: 0 calc(var(--rise, 16px) * var(--motion-scale));
+        }
+      }
+      /* T11: the covered page recedes partly instead of disappearing. */
+      @keyframes motion-push-out {
+        to {
+          opacity: 0.6;
+          translate: calc(var(--shift) * var(--motion-scale)) 0;
+        }
+      }
+      @keyframes motion-push-in {
+        from {
+          opacity: 0.6;
+          translate: calc(var(--shift) * var(--motion-scale)) 0;
         }
       }
       /* Horizontal slide steps; --shift carries the direction of the index change. */
@@ -483,11 +512,84 @@
         transition: none !important;
         animation: none !important;
       }
-      /* View Transitions (mechanism C) are only used while the game is paused. */
-      ::view-transition-group(*),
-      ::view-transition-old(*),
-      ::view-transition-new(*) {
+      /* View Transitions (mechanism C) run only while the game is paused. Names exist
+         only for their own type, so the world and menus always stay in root, under the
+         backdrop; root is styled per type, never left to the browser default. */
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry']) #round-score,
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry']) #scores[open] #entry-result {
+        view-transition-name: result;
+      }
+      /* Only the open dialog: a closing one may still render during its exit. */
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry']) #scores[open] {
+        view-transition-name: sheet;
+      }
+      :is(:is(:root:active-view-transition-type(forward), :root[data-vt='forward']), :is(:root:active-view-transition-type(back), :root[data-vt='back'])) #scores[open] #scores-body {
+        view-transition-name: scores-body;
+      }
+      /* T7a: the score morphs into the name entry while the sheet rises. */
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry'])::view-transition-old(root) {
+        animation: motion-fade-out var(--t7-root) var(--ease-in) both;
+      }
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry'])::view-transition-new(root) {
+        animation: motion-fade-in var(--t7-root) var(--ease-out) both;
+      }
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry'])::view-transition-group(result) {
+        animation-duration: var(--t7-morph);
+        animation-timing-function: var(--ease-out);
+      }
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry'])::view-transition-group(sheet) {
         animation: none;
+      }
+      :is(:root:active-view-transition-type(entry), :root[data-vt='entry'])::view-transition-new(sheet) {
+        --rise: 24px;
+        animation: motion-rise-in var(--t7-sheet) var(--ease-out) both;
+      }
+      /* T9: list and name entry step sideways inside the open dialog. */
+      :is(:is(:root:active-view-transition-type(forward), :root[data-vt='forward']), :is(:root:active-view-transition-type(back), :root[data-vt='back']))::view-transition-old(root),
+      :is(:is(:root:active-view-transition-type(forward), :root[data-vt='forward']), :is(:root:active-view-transition-type(back), :root[data-vt='back']))::view-transition-new(root),
+      :is(:is(:root:active-view-transition-type(forward), :root[data-vt='forward']), :is(:root:active-view-transition-type(back), :root[data-vt='back']))::view-transition-group(scores-body) {
+        animation: none;
+      }
+      :is(:is(:root:active-view-transition-type(forward), :root[data-vt='forward']), :is(:root:active-view-transition-type(back), :root[data-vt='back']))::view-transition-old(scores-body) {
+        animation: motion-shift-out var(--t9-exit) var(--ease-in) both;
+      }
+      :is(:is(:root:active-view-transition-type(forward), :root[data-vt='forward']), :is(:root:active-view-transition-type(back), :root[data-vt='back']))::view-transition-new(scores-body) {
+        animation: motion-shift-in var(--t9-enter) var(--ease-out) var(--t9-delay) both;
+      }
+      :is(:root:active-view-transition-type(forward), :root[data-vt='forward'])::view-transition-old(scores-body),
+      :is(:root:active-view-transition-type(back), :root[data-vt='back'])::view-transition-new(scores-body) {
+        --shift: -20px;
+      }
+      :is(:root:active-view-transition-type(forward), :root[data-vt='forward'])::view-transition-new(scores-body),
+      :is(:root:active-view-transition-type(back), :root[data-vt='back'])::view-transition-old(scores-body) {
+        --shift: 20px;
+      }
+      /* T11: Help pushes in from the right; Back returns it the same way. */
+      :is(:is(:root:active-view-transition-type(help-forward), :root[data-vt='help-forward']), :is(:root:active-view-transition-type(help-back), :root[data-vt='help-back']))::view-transition-group(root) {
+        animation: none;
+      }
+      :is(:root:active-view-transition-type(help-forward), :root[data-vt='help-forward'])::view-transition-old(root) {
+        --shift: -24px;
+        animation: motion-push-out var(--t11-enter) var(--ease-out) both;
+      }
+      :is(:root:active-view-transition-type(help-forward), :root[data-vt='help-forward'])::view-transition-new(root) {
+        --shift: 48px;
+        animation: motion-shift-in var(--t11-enter) var(--ease-out) both;
+      }
+      :is(:root:active-view-transition-type(help-back), :root[data-vt='help-back'])::view-transition-old(root) {
+        --shift: 48px;
+        z-index: 1;
+        animation: motion-shift-out var(--t11-exit) var(--ease-in) both;
+      }
+      :is(:root:active-view-transition-type(help-back), :root[data-vt='help-back'])::view-transition-new(root) {
+        --shift: -24px;
+        animation: motion-push-in var(--t11-exit) var(--ease-in) both;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        /* Only crossfades remain; the score does not travel. */
+        ::view-transition-group(*) {
+          animation: none !important;
+        }
       }
 
       #info-view {
@@ -7630,6 +7732,8 @@
                     if (!this.overlayShown) overlay.hidden = true;
                   });
               }
+              // A commit needs the final state, also for a result still fading out (T5b).
+              if (!animate) motion.finishLeave(overlay);
               overlay.hidden = !shown && !motion.isLeaving(overlay);
             }
             this.quitButton.hidden = !idle;
@@ -8458,6 +8562,8 @@
             this.title.textContent = 'Highscores';
             if (this.isOpen && !this.dialog.open) {
               this.shownGeneration = this.generation;
+              // Inside a View Transition (T7a) the sheet animates there, not twice.
+              if (this.runner.transition.current) suppressDialogMotion(this.dialog);
               this.dialog.showModal();
             }
           }
@@ -9553,6 +9659,8 @@
           }
           returnToAttract() {
             if (!this.game.crashed || this.ended) return;
+            // START becomes usable again: a running document transition would capture taps.
+            this.transition.skip('attract');
             this.highscoreController.roundLeft();
             this.game.returnToAttract();
             this.input.reset();

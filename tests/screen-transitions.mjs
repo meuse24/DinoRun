@@ -791,6 +791,171 @@ try {
     await context.close();
   }
 
+  // Mechanism C with real animations: T7a score morph, T9 dialog views, T11 Help.
+  for (const level of ['full', 'basic']) {
+    const { context, page, errors } = await openGame(browser, { level });
+    await page.evaluate(() => {
+      // Pseudo-element animations of the running View Transition, optionally held.
+      window.__vt = (fraction) => {
+        const list = document.getAnimations()
+          .filter(a => String(a.effect?.pseudoElement || '').startsWith('::view-transition'));
+        if (fraction !== undefined) for (const a of list) {
+          a.pause(); a.currentTime = a.effect.getComputedTiming().endTime * fraction;
+        }
+        return [...new Set(list.map(a => a.effect.pseudoElement))].sort();
+      };
+      // Starts a crash/death-scene end and resolves once the transition animates.
+      window.__entryReady = async (score) => {
+        const r = window.__dinoRunner, g = r.game;
+        g.start(0); g.score = score; g.gameTime = 4000; g.gameOver();
+        for (let i = 0; g.inDeathScene && i < 400; i++) window.advanceTime(1000 / 60);
+        await null;
+        await r.transition.current.vt.ready;
+        return { type: r.transition.current.type,
+          dialogMotion: r.highscores.dialog.getAnimations().length,
+          noMotion: r.highscores.dialog.classList.contains('no-motion') };
+      };
+    });
+    const vt = fraction => page.evaluate(fraction => window.__vt(fraction), fraction);
+    const release = () => page.evaluate(() => {
+      const t = window.__dinoRunner.transition.current;
+      for (const a of document.getAnimations()) if (a.playState === 'paused') a.play();
+      return t?.vt.finished;
+    });
+
+    await check(`${level}: T7a the score morphs into the rising name sheet`, async () => {
+      const ready = await page.evaluate(() => window.__entryReady(21));
+      assert.equal(ready.type, 'entry');
+      assert.equal(ready.noMotion, true, 'The dialog own animation is off during T7a');
+      assert.equal(ready.dialogMotion, 0);
+      const names = await vt(0.5);
+      for (const name of ['::view-transition-group(result)', '::view-transition-new(sheet)',
+        '::view-transition-old(root)', '::view-transition-new(root)'])
+        assert(names.includes(name), name + ' in ' + names);
+      await page.screenshot({ path: path.join(output, `${level}-t7a-mid.png`) });
+      await release();
+      await done(page);
+      const after = await snap(page);
+      assert.deepEqual([after.open, after.overlay, after.current, after.vt, after.active],
+        [true, false, null, null, 'name-picker']);
+      assert.deepEqual(await vt(), []);
+    });
+
+    await check(`${level}: T9 the dialog body steps forward and back`, async () => {
+      for (const [view, type] of [['list', 'back'], ['entry', 'forward']]) {
+        const names = await page.evaluate(async view => {
+          const h = window.__dinoRunner.highscores;
+          if (view === 'list') h.showList(); else h.showModal();
+          await null;
+          await window.__dinoRunner.transition.current.vt.ready;
+          return { type: window.__dinoRunner.transition.current.type, names: window.__vt(0.5) };
+        }, view);
+        assert.equal(names.type, type);
+        assert(names.names.includes('::view-transition-old(scores-body)'), names.names);
+        assert(names.names.includes('::view-transition-new(scores-body)'), names.names);
+        await page.screenshot({ path: path.join(output, `${level}-t9-${type}-mid.png`) });
+        await release();
+        await done(page);
+        if (view === 'list') await page.evaluate(() => { window.__dinoRunner.highscores.view = 'entry'; });
+      }
+    });
+
+    await check(`${level}: Escape during the morph returns at once and START works`, async () => {
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => window.__dinoGame.state === 'attract');
+      await done(page);
+      await page.evaluate(() => window.__entryReady(22));
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => window.__dinoRunner.transition.current === null);
+      const box = await page.locator('#start-game').boundingBox();
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      assert.equal((await snap(page)).state, 'playing', 'START is not captured after Escape');
+      await page.evaluate(() => {
+        const r = window.__dinoRunner;
+        r.game.score = 0; r.game.gameOver(); r.returnToAttract();
+        return window.__dinoTest.transitionDone();
+      });
+    });
+
+    await check(`${level}: a new T7a while the previous dialog still exits`, async () => {
+      await page.evaluate(() => window.__entryReady(23));
+      await release();
+      await done(page);
+      await page.keyboard.press('Escape');
+      const result = await page.evaluate(async () => {
+        const exiting = getComputedStyle(document.getElementById('scores')).display !== 'none';
+        await window.__entryReady(24);
+        return { exiting, names: window.__vt() };
+      });
+      report.overlappingEntry = { ...report.overlappingEntry, [level]: result };
+      assert(result.names.includes('::view-transition-group(result)'), result.names);
+      await release();
+      await done(page);
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => window.__dinoGame.state === 'attract' && !window.__dinoRunner.paused);
+      await done(page);
+    });
+
+    await check(`${level}: a late qualification during the T5b exit still morphs cleanly`, async () => {
+      const result = await page.evaluate(async () => {
+        const r = window.__dinoRunner, g = r.game, c = r.highscoreController;
+        const local = c.store.local, cached = c.store.cachedOnline, list = c.api.list;
+        c.store.local = () => Array.from({ length: 10 }, () => ({ score: 100 }));
+        c.store.cachedOnline = () => null;
+        c.online.normal = { state: 'idle' };
+        let qualify;
+        c.api.list = () => new Promise(resolve => { qualify = resolve; });
+        g.start(0); g.recordAtStart = 100; g.score = 12; g.gameTime = 4000; g.gameOver();
+        for (let i = 0; g.inDeathScene && i < 400; i++) window.advanceTime(1000 / 60);
+        const overlay = document.getElementById('game-over-overlay');
+        const leaving = overlay.dataset.leaving ?? null;
+        qualify({ entries: [] });
+        await null; await null; await null;
+        const type = r.transition.current?.type ?? null;
+        const ready = await r.transition.current?.vt.ready.then(() => 'ready', e => e.name);
+        const state = { leaving, type, ready, overlayHidden: overlay.hidden };
+        Object.assign(c.store, { local, cachedOnline: cached });
+        c.api.list = list;
+        return state;
+      });
+      assert.deepEqual(result, { leaving: 'wait', type: 'entry', ready: 'ready', overlayHidden: true });
+      await release();
+      await done(page);
+      await page.keyboard.press('Escape');
+      await page.waitForFunction(() => window.__dinoGame.state === 'attract' && !window.__dinoRunner.paused);
+      await done(page);
+    });
+
+    await check(`${level}: T11 Help pushes in and returns`, async () => {
+      const forward = await page.evaluate(async () => {
+        document.getElementById('info-link').click();
+        await null;
+        await window.__dinoRunner.transition.current.vt.ready;
+        return { type: window.__dinoRunner.transition.current.type, names: window.__vt(0.5) };
+      });
+      assert.equal(forward.type, 'help-forward');
+      assert(forward.names.includes('::view-transition-old(root)'), forward.names);
+      assert(forward.names.includes('::view-transition-new(root)'), forward.names);
+      // Shows whether the engine captured the guide iframe in the new snapshot.
+      await page.screenshot({ path: path.join(output, `${level}-t11-forward-mid.png`) });
+      await release();
+      await done(page);
+      await page.evaluate(() => history.back());
+      await page.waitForFunction(() => window.__dinoRunner.transition.current?.type === 'help-back');
+      await page.evaluate(() => window.__dinoRunner.transition.current.vt.ready);
+      await vt(0.5);
+      await page.screenshot({ path: path.join(output, `${level}-t11-back-mid.png`) });
+      await release();
+      await page.waitForFunction(() => location.hash !== '#info' && !window.__dinoRunner.paused);
+      await done(page);
+      assert.deepEqual(await vt(), []);
+      assert.equal((await snap(page)).page, true);
+    });
+
+    assert.deepEqual(errors, [], level + ' View Transition page errors');
+    await context.close();
+  }
+
   // Mechanism B: native dialog transitions (T7b, T8, T10, T12, T13, T14).
   for (const layout of ['desktop', 'portrait']) {
     const touch = layout === 'portrait';
