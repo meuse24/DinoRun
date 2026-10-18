@@ -1,7 +1,8 @@
 # Plan: Weiche Screen-Übergänge (View Transition API und CSS)
 
 Status: **Umgesetzt** in Build `2026-10-18.5` (`dino.html`, PWA-Cache
-`dino-run-v14`), Branch `feat/screen-transitions`, Phasen 1–7. Der Plan
+`dino-run-v14`), Phasen 1–7, entwickelt auf `feat/screen-transitions` und
+per Fast-Forward nach `master` übernommen. Der Plan
 bezog sich auf Build `2026-10-18.3`; er legt fest, welche Übergänge wie
 animiert werden, mit welchem Mechanismus, wo sie technisch andocken und wie
 sie geprüft werden. Ergebnisse und Abweichungen: Abschnitt 8.1.
