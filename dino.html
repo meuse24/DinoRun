@@ -961,7 +961,7 @@
         color: var(--menu-ink);
         box-shadow: 0 6px 0 -2px var(--menu-shadow);
       }
-      #round-panel h1 img {
+      #round-panel h1 .brand-logo {
         width: calc(40 * var(--menu-unit));
         height: calc(20 * var(--menu-unit));
       }
@@ -1687,7 +1687,7 @@
         text-shadow: 0 3px 0 #ffffff80;
         letter-spacing: -0.04em;
       }
-      #stage.idle #round-panel h1 img { width: 52px; height: 26px; vertical-align: middle; }
+      #stage.idle #round-panel h1 .brand-logo { width: 52px; height: 26px; vertical-align: middle; }
       #attract-content { display: grid; align-items: center; min-height: 0; }
       .attract-slide { width: 100%; }
       #round-panel .attract-heading h2 { font: 900 clamp(24px, 3.2cqw, 36px)/1.15 system-ui, sans-serif; margin: 4px 0 14px; }
@@ -1744,7 +1744,7 @@
       @media (max-width: 600px) and (orientation: portrait) {
         #stage.idle #round-panel { padding: 12px 0 76px; }
         #stage.idle #round-panel h1 { font-size: clamp(30px, 9vw, 48px); }
-        #stage.idle #round-panel h1 img { width: 40px; height: 20px; }
+        #stage.idle #round-panel h1 .brand-logo { width: 40px; height: 20px; }
         .attract-powerups { grid-template-columns: 1fr; gap: 8px; }
         .attract-powerup { display: flex; align-items: center; gap: 14px; padding: 12px 16px; text-align: left; border-radius: 16px; }
         .attract-powerup svg { width: 44px; height: 44px; flex: none; }
@@ -1768,7 +1768,7 @@
         #stage.idle #round-panel { padding: 0; }
         #start-view { grid-template-columns: minmax(0, 1fr) minmax(200px, 30%); grid-template-rows: auto minmax(0, 1fr); gap: 6px 22px; }
         #stage.idle #round-panel h1 { font-size: clamp(30px, 3.4cqw, 48px); }
-        #stage.idle #round-panel h1 img { width: clamp(40px, 4cqw, 52px); height: auto; }
+        #stage.idle #round-panel h1 .brand-logo { width: clamp(40px, 4cqw, 52px); height: auto; }
         #attract-content { grid-column: 1; grid-row: 2; }
         #attract-footer { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 30%; min-width: 200px; padding-bottom: 48px; }
         #round-panel #start-game { min-height: clamp(60px, 6cqw, 80px); font-size: clamp(25px, 2.6cqw, 36px); }
@@ -1830,12 +1830,14 @@
         <section id="round-panel" class="day" data-game-ui aria-label="Dino Run">
           <div id="start-view">
             <h1 class="menu-title">
-              <img
-                width="40"
-                height="20"
-                alt="m24"
-                src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNDQgNzIiIHJvbGU9ImltZyIgYXJpYS1sYWJlbGxlZGJ5PSJ0aXRsZSI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+bTI0PC90aXRsZT4KICA8cmVjdCB4PSIxIiB5PSIxIiB3aWR0aD0iMTQyIiBoZWlnaHQ9IjcwIiByeD0iMjAiIGZpbGw9IiMxNzNmNjkiLz4KICA8cGF0aCBkPSJNMTcgNDlWMjloOHYzYzMtNSAxMC01IDE0IDAgNS02IDE2LTQgMTYgNXYxMmgtOFYzOGMwLTUtNy01LTcgMHYxMWgtOFYzOGMwLTUtNy01LTcgMHYxMXoiIGZpbGw9IiNmZmYiLz4KICA8cGF0aCBkPSJNNjQgMjljMC0xMiAyNy0xMyAyNyAxIDAgNy05IDEwLTE3IDE1aDE4djdINjN2LTdjMTItOCAyMC0xMSAyMC0xNSAwLTUtMTEtNS0xMSAweiIgZmlsbD0iI2U2Nzg0MiIvPgogIDxwYXRoIGQ9Ik0xMTQgMjFoMTB2MTloNnY3aC02djZoLTh2LTZIOTh2LTd6bTIgOS0xMCAxMGgxMHoiIGZpbGw9IiNlNjc4NDIiLz4KICA8cGF0aCBkPSJNMTkgNTloMTA2IiBzdHJva2U9IiNmZmQyNTciIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+Cjwvc3ZnPgo="
-              />
+              <svg class="brand-logo" width="40" height="20" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 72" role="img" aria-labelledby="m24-logo-title">
+                <title id="m24-logo-title">m24</title>
+                <rect x="1" y="1" width="142" height="70" rx="20" fill="#173f69"/>
+                <path d="M17 49V29h8v3c3-5 10-5 14 0 5-6 16-4 16 5v12h-8V38c0-5-7-5-7 0v11h-8V38c0-5-7-5-7 0v11z" fill="#fff"/>
+                <path d="M64 29c0-12 27-13 27 1 0 7-9 10-17 15h18v7H63v-7c12-8 20-11 20-15 0-5-11-5-11 0z" fill="#e67842"/>
+                <path d="M114 21h10v19h6v7h-6v6h-8v-6H98v-7zm2 9-10 10h10z" fill="#e67842"/>
+                <path d="M19 59h106" stroke="#ffd257" stroke-width="3" stroke-linecap="round"/>
+              </svg>
               DINO RUN
             </h1>
             <button id="install-game" class="action-button" type="button" hidden>
@@ -2694,7 +2696,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.2';
+        const BUILD = '2026-10-18.3';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
