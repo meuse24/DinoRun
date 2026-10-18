@@ -1,8 +1,8 @@
 # Repository Guidelines
 
 Project documentation lives in `doc/`. Commands and plain project paths below
-are relative to the repository root unless stated otherwise. This relocated
-file is documentation; it is no longer automatically loaded as root AGENTS.md.
+are relative to the repository root unless stated otherwise. Keep this file
+in the repository root so its instructions apply to the entire project.
 
 ## Project Structure & Module Organization
 
@@ -13,7 +13,7 @@ file is documentation; it is no longer automatically loaded as root AGENTS.md.
   configured. `highscores-admin-lib.php` shares backups/mutations with the CLI.
   Web password changes persist a guarded hash in `data_dir/admin-password.php`;
   replacing the configured bootstrap hash resets it and revokes sessions.
-  See `ADMIN.md`; keep password hashes and runtime state out of Git.
+  See `doc/ADMIN.md`; keep password hashes and runtime state out of Git.
 - `tests/` contains browser regression scripts. `output/` holds generated screenshots and JSON reports. `doc/progress.md` records findings and validation.
 - `highscores-data/` holds mutable scores, locks, rate-limit data, and secrets.
 
@@ -24,7 +24,7 @@ The readable game runs without a build step. Optional delivery tooling uses
 Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7.4+.
 
 - `npm ci` then `npm run build`: generate `release/dino.html` and its size/hash
-  report using Terser, CSSO and HTMLMinifier-Terser. See `RELEASE.md`. Keep the
+  report using Terser, CSSO and HTMLMinifier-Terser. See `doc/RELEASE.md`. Keep the
   source HTML readable; tools are development dependencies only.
 - `node tests/release.mjs`: compare source/release UI, rendering and state in
   desktop/mobile layouts; accepts `DINO_BROWSER=webkit`.
@@ -48,11 +48,11 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/shield-bubble.mjs [game.html]`: check shield collection, single-hit
   cactus/bird/cluster protection, Chili/feather interaction, spawning, lifecycle,
   offline rendering and touch portrait/landscape. Accepts `DINO_BROWSER=webkit`;
-  see `SHIELD.md` for the player contract and validation evidence.
+  see `doc/SHIELD.md` for the player contract and validation evidence.
 - `node tests/rock-boss.mjs [game.html]`: Stone Jaw scheduling/corridor safety,
   jump-through trajectories, roof/ledge collisions, shield/Chili/feather, pause,
   reset, rotation and keyboard/touch layouts. Accepts `DINO_BROWSER=webkit`;
-  see `BOSS.md` for the player contract and validation evidence.
+  see `doc/BOSS.md` for the player contract and validation evidence.
 - `node tests/rock-training.mjs [game.html]`: Debug switch, six consecutive
   rock attempts, survival/result sounds, acceleration/cap, score isolation, exit and reload
   reset in desktop/touch layouts. Accepts `DINO_BROWSER=webkit`.
@@ -62,16 +62,16 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   landscape and paused orientation changes. Accepts `DINO_BROWSER`.
 - `node tests/android-preview.cjs` and `node tests/android-feather.mjs`: run the
   controlled physical-Android checks over USB/CDP. Requires Chrome open and the
-  ADB bridges documented in FEATHER.md. The runner restores rotation settings,
+  ADB bridges documented in doc/FEATHER.md. The runner restores rotation settings,
   closes its own tab and never uses the live score API.
 - `node tests/android-attract.mjs`: verify attract rotation, persistent START,
   touch starts and shield collisions on physical Android. Both Android runners
   accept `DINO_ANDROID_URL` for an existing local server and verify its artifact
   hash. `node tests/android-cdp-relay.mjs` optionally scopes CDP to test-created
-  tabs when existing Chrome targets block initialization; see FEATHER.md.
+  tabs when existing Chrome targets block initialization; see doc/FEATHER.md.
 - `node tests/android-rock-boss.mjs [game.html]`: physical Stone Jaw touch,
   three approach speeds, pause/rotation, roof/ledge hits, shield and reduced motion.
-  Defaults to the safe preview on8877 and scoped relay9224; see `BOSS.md`.
+  Defaults to the safe preview on8877 and scoped relay9224; see `doc/BOSS.md`.
 - `php -l highscores-lib.php`: check PHP syntax; repeat for other changed PHP files.
 - `node tests/admin-web.mjs`: isolated real-PHP CLI/HTTP/security checks and four
   responsive browser layouts without JavaScript. Requires PHP (`DINO_PHP`) and
@@ -79,7 +79,7 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   data/config/session directories and PHP server; never contacts the live API.
 - `node tests/volume-controls.mjs [game.html]`: music/effects sliders, native
   keyboard/touch input, persistence, master mute and rendered audio scaling.
-  Accepts `DINO_BROWSER=webkit`; see `VOLUME.md` for Windows audio harness limits.
+  Accepts `DINO_BROWSER=webkit`; see `doc/VOLUME.md` for Windows audio harness limits.
 - `node tests/theme-songs.mjs [game.html]`: actual MP3 decoding, saved theme-song
   selection, offline switching and cached byte-range responses in Chromium.
   Both optional MP3 files are served from an isolated local fixture.
@@ -90,14 +90,14 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/screen-transitions.mjs [game.html]`: screen transitions (CSS,
   dialog and View Transition paths), input during transitions, focus, close
   paths, reduced motion and latency; accepts `DINO_BROWSER=webkit`. Other
-  suites turn transitions off unless `DINO_TRANSITIONS=1`. See `TRANSITIONS.md`.
+  suites turn transitions off unless `DINO_TRANSITIONS=1`. See `doc/TRANSITIONS.md`.
 - `node tests/android-transitions.mjs`: physical-Android frame times during
   transitions and START latency with/without them; same bridges as above.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
 - Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.
   Keep the game in one self-contained HTML, with no required sibling assets for
   `file://` play. The menu song is optional; hosted PWA assets remain separate.
-- See `FEATHER.md` for the tested engine versions, Windows WebKit harness
+- See `doc/FEATHER.md` for the tested engine versions, Windows WebKit harness
   workarounds and repeatable compatibility commands. Report emulator results
   separately from physical-device verification.
 
@@ -126,4 +126,4 @@ Keep secrets and mutable score data out of contributions. Configure storage thro
   loading and retries. It has injected store/API dependencies and no DOM access.
 - `HighscoreView` owns dialog rendering, name input and focus. `Runner` decides
   when eligibility may open the dialog, including after the death scene.
-- See `ARCHITECTURE.md` for the scoped design and validation procedure.
+- See `doc/ARCHITECTURE.md` for the scoped design and validation procedure.

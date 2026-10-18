@@ -578,3 +578,9 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Updated the minification guide's relative release link, doc/progress.md location and external test/comment references. Existing sibling documentation links still resolve in doc/. Commands remain relative to the project root. No game, delivery or runtime behavior changes.
 - Moving AGENTS.md means it no longer supplies automatically discovered repository-wide agent instructions; this consequence was communicated to the user. Future progress records belong here in doc/progress.md.
 - Validation: all16 tracked Markdown files are under doc/, all13 local Markdown links resolve, git diff --check clean. No gameplay tests needed for documentation moves and comments.
+
+
+## 2026-10-19: Restore root agent instructions
+
+- Returned AGENTS.md to the repository root so future agents automatically discover repository-wide instructions. General project documentation remains in doc/.
+- Updated all root agent documentation references to doc/ paths and removed the obsolete relocation note. Verified referenced Markdown paths exist; no runtime change.
