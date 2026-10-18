@@ -49,6 +49,8 @@ try{
     if(testingRanges && /Failed to load resource:.*status of 416/.test(text))expectedRangeErrors.push(text);
     else errors.push(text);
   });
+  // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+  await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
   await page.goto(origin+'/dino.html');
   await page.evaluate(async()=>{
     await navigator.serviceWorker.ready;

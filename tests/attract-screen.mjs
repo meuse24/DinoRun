@@ -56,6 +56,8 @@ try {
         } };
       try { localStorage.setItem('dino-fullscreen-disabled', 'true'); } catch {}
     });
+    // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+    await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
     await page.goto(pathToFileURL(file).href);
     await context.setOffline(true);
     await page.waitForFunction(() => !!window.__dinoRunner);
@@ -213,6 +215,8 @@ try {
       assert.equal(started.shield.charged, false);
       assert.equal(started.feather.charged, false);
       assert.equal(started.chili.remainingMs, 0);
+      // With transitions, START fades out inert for 140 ms (T4) before it is hidden.
+      if (process.env.DINO_TRANSITIONS === '1') await page.evaluate(() => window.__dinoTest.transitionDone());
       assert.equal(await page.locator('#start-game').isVisible(), false);
       assert.equal(await page.evaluate(() => window.__dinoRunner.game.world.width),
         options.viewport.width <= 600 && options.viewport.height >= options.viewport.width ? 420 : 600);

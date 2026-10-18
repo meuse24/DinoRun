@@ -59,6 +59,8 @@ try{
       adb('shell','settings','put','system','user_rotation',viewport);
       await page.bringToFront();
     }
+    // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+    await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
     const response=await page.goto(url,{waitUntil:'load'});
     await page.waitForFunction(()=>!!window.__dinoRunner);
     if(physical){

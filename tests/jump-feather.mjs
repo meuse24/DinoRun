@@ -82,6 +82,8 @@ try {
       };
       try { localStorage.setItem('dino-fullscreen-disabled', 'true'); } catch {}
     });
+    // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+    await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
     await page.goto(pathToFileURL(html).href, { waitUntil: 'load' });
     if (engine === 'webkit') await context.setOffline(true);
     await page.waitForFunction(() => !!window.__dinoRunner);

@@ -76,6 +76,8 @@ async function fixture(viewport,preset={},denied=false) {
   const page=await context.newPage();
   page.on('pageerror',error=>errors.push(String(error)));
   page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
+  // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+  await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
   await page.goto(url); await page.bringToFront();
   await page.locator('#settings-open').click();
   return {context,page,errors,requests};

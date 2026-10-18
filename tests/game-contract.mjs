@@ -115,6 +115,8 @@ try {
           localStorage.setItem('chromium-dino-highscore', 'invalid');
       }
     }, { blocked: !!blocked });
+    // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+    await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
     await page.goto(useFile ? pathToFileURL(file).href : url, { waitUntil: 'load' });
     if (useFile && engine === 'webkit') await context.setOffline(true);
     await page.waitForFunction(() => !!window.__dinoRunner);
@@ -276,6 +278,8 @@ try {
     window.__dinoTest = { highscoreApiUrl: null };
     localStorage.setItem('dino-fullscreen-disabled', 'true');
   });
+  // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+  await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 15000 });
   assert.equal(await page.locator('link[rel="manifest"]').getAttribute('href'), 'manifest.webmanifest');

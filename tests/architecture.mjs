@@ -173,6 +173,8 @@ try {
     window.__dinoTest = { manualFrames: true, highscoreApiUrl: null };
     localStorage.setItem('dino-fullscreen-disabled', 'true');
   });
+  // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+  await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
   await page.goto(pathToFileURL(path.join(root, 'dino.html')).href);
   await page.waitForFunction(() => !!window.__dinoRunner);
   await check('worlds spawn independently and resize without resets', async () => {

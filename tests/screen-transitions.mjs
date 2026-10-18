@@ -254,7 +254,8 @@ try {
       assert.equal(help.info, true);
       assert.equal(await page.title(), 'Help · m24 Dino Run');
       await page.frameLocator('#info-view').locator('[data-help-back]').first().click();
-      await page.waitForFunction(() => location.hash !== '#info');
+      // Window focus returns from the guide iframe asynchronously (WebKit).
+      await page.waitForFunction(() => location.hash !== '#info' && !window.__dinoRunner.paused);
       await done(page);
       const returned = await snap(page);
       assert.equal(returned.page, true);
@@ -401,6 +402,286 @@ try {
     assert.deepEqual(errors, [], level + ' page errors');
     await context.close();
   }
+
+  // Mechanism A in the core loop (T4, T5, T5b, T6) with trusted mouse and touch input.
+  for (const layout of ['desktop', 'touch']) {
+    const touch = layout === 'touch';
+    const { context, page, errors } = await openGame(browser, { touch,
+      viewport: touch ? { width: 390, height: 844 } : { width: 1280, height: 720 } });
+    await page.evaluate(() => {
+      window.__motion = (selector) => [...document.querySelectorAll(selector)]
+        .flatMap(el => el.getAnimations({ subtree: true }))
+        .filter(a => String(a.animationName || '').startsWith('motion-'))
+        .map(a => ({ name: a.animationName, target: a.effect.target.id || a.effect.target.tagName,
+          delay: a.effect.getTiming().delay, end: a.effect.getComputedTiming().endTime, state: a.playState }));
+      // Holds every motion animation at a fraction of its timing, or releases it.
+      window.__holdMotion = (fraction) => {
+        // A held exit must not end through its safety timeout; play() ends it normally.
+        if (fraction !== null)
+          for (const leave of window.__dinoRunner.motion.leaving.values()) clearTimeout(leave.timer);
+        for (const a of document.getAnimations()) {
+          if (!String(a.animationName || '').startsWith('motion-')) continue;
+          if (fraction === null) { a.play(); continue; }
+          a.pause();
+          a.currentTime = a.effect.getComputedTiming().endTime * fraction;
+        }
+      };
+      window.__pointerTargets = [];
+      document.addEventListener('pointerdown', e => window.__pointerTargets.push(
+        e.target.id || e.target.closest?.('[id]')?.id || e.target.tagName), true);
+      window.__frames = n => { for (let i = 0; i < n; i++) window.advanceTime(1000 / 60); };
+    });
+    const tap = async (x, y) => {
+      if (touch) await page.touchscreen.tap(x, y); else await page.mouse.click(x, y);
+    };
+    const center = async selector => {
+      const box = await page.locator(selector).boundingBox();
+      return [box.x + box.width / 2, box.y + box.height / 2];
+    };
+    await done(page);
+
+    await check(`${layout}: T4 START begins the round in the input task; the menu leaves inert`, async () => {
+      const before = await page.locator('#round-panel').boundingBox();
+      await tap(...await center('#start-game'));
+      assert.equal((await snap(page)).state, 'playing', 'Start is not delayed by the exit');
+      const leaving = await page.evaluate(() => {
+        window.advanceTime(0);
+        window.__holdMotion(0.5);
+        const panel = document.getElementById('round-panel');
+        return { kind: panel.dataset.leaving, inert: panel.inert, hidden: panel.hidden,
+          position: getComputedStyle(panel).position,
+          stage: document.getElementById('stage').className,
+          content: Number(getComputedStyle(document.getElementById('attract-content')).opacity),
+          motion: window.__motion('#round-panel, #touch-jump, #touch-duck, #mobile-hud') };
+      });
+      const during = await page.locator('#round-panel').boundingBox();
+      await page.screenshot({ path: path.join(output, `${layout}-t4-mid.png`) });
+      assert.equal(leaving.kind, 'start');
+      assert.equal(leaving.inert, true);
+      assert.equal(leaving.hidden, false);
+      assert.equal(leaving.position, 'absolute');
+      assert.match(leaving.stage, /attract-leaving/);
+      assert.doesNotMatch(leaving.stage, /\bidle\b/, 'The game layout applies at once');
+      assert(Math.abs(during.x - before.x) <= 1 && Math.abs(during.y - before.y) <= 1 &&
+        Math.abs(during.width - before.width) <= 1, 'The leaving menu stays in place');
+      assert(leaving.content > 0.05 && leaving.content < 0.95, 'Half-way state ' + leaving.content);
+      const names = new Set(leaving.motion.map(a => a.name));
+      for (const name of ['motion-rise-out', 'motion-press-out', 'motion-fade-out'])
+        assert(names.has(name), name + ' runs');
+      if (touch) assert(leaving.motion.some(a => a.target === 'touch-jump' && a.name === 'motion-fade-in'));
+      // Taps on the area under the leaving menu reach the game input.
+      const [x, y] = await center('#round-panel');
+      const reach = await page.evaluate(() => {
+        const r = window.__dinoRunner, g = r.game;
+        r.endJump();
+        for (let i = 0; (g.trex.jumping || g.countingDown) && i < 400; i++) window.advanceTime(1000 / 60);
+        window.__pointerTargets.length = 0;
+        window.__jumps = 0;
+        g.on(e => { if (e.type === 'jump') window.__jumps++; });
+        return { grounded: !g.trex.jumping, leaving: r.motion.isLeaving(document.getElementById('round-panel')) };
+      });
+      assert.deepEqual(reach, { grounded: true, leaving: true });
+      await tap(x, y);
+      const groundTap = await page.evaluate(() => ({ targets: window.__pointerTargets.splice(0),
+        jumps: window.__jumps, jumping: window.__dinoGame.trex.jumping }));
+      assert(!groundTap.targets.some(t => ['round-panel', 'start-game', 'attract-content'].includes(t)),
+        'Taps pass through the leaving menu: ' + groundTap.targets);
+      assert.equal(groundTap.jumps, 1, 'On the ground a tap jumps');
+      await page.evaluate(() => window.__frames(6));
+      await tap(x, y);
+      assert.equal(await page.evaluate(() => window.__jumps), 1, 'In the air without a feather no second jump');
+      await page.evaluate(() => { window.__dinoGame.feather.charged = true; });
+      await tap(x, y);
+      assert.equal(await page.evaluate(() => window.__jumps), 2, 'A charged feather allows the air jump');
+      if (touch) {
+        await page.evaluate(() => window.__pointerTargets.splice(0));
+        await page.touchscreen.tap(...await center('#touch-duck'));
+        assert.equal((await page.evaluate(() => window.__pointerTargets.splice(0)))[0], 'touch-duck',
+          'Touch buttons are usable while they fade in');
+      }
+      await page.evaluate(() => window.__holdMotion(null));
+      await done(page);
+      const after = await page.evaluate(() => ({ hidden: document.getElementById('round-panel').hidden,
+        style: document.getElementById('round-panel').getAttribute('style'),
+        leaving: document.querySelectorAll('[data-leaving]').length,
+        stage: document.getElementById('stage').className }));
+      assert.deepEqual({ ...after, stage: /attract-leaving/.test(after.stage) },
+        { hidden: true, style: null, leaving: 0, stage: false });
+    });
+
+    await check(`${layout}: T5 Game over pops in after the hit stop and pauses with the game`, async () => {
+      const crash = await page.evaluate(() => {
+        const r = window.__dinoRunner, g = r.game;
+        g.score = 0; g.gameOver();
+        window.advanceTime(1000 / 60);
+        const overlay = document.getElementById('game-over-overlay');
+        return { enter: overlay.dataset.enter, hidden: overlay.hidden,
+          motion: window.__motion('#game-over-overlay, #touch-jump, #touch-duck'),
+          touchLeaving: document.getElementById('touch-jump').dataset.leaving ?? null,
+          touchInert: document.getElementById('touch-jump').inert };
+      });
+      assert.equal(crash.enter, 'death');
+      assert.equal(crash.hidden, false);
+      const pop = crash.motion.find(a => a.target === 'game-over-overlay');
+      assert.equal(pop.name, 'motion-pop-in');
+      assert.equal(pop.delay, 120, 'Delay equals DEATH_HIT_MS');
+      if (touch) {
+        assert.equal(crash.touchLeaving, 'crash');
+        assert.equal(crash.touchInert, true);
+      }
+      await page.evaluate(() => { window.__holdMotion(0.6); });
+      await page.screenshot({ path: path.join(output, `${layout}-t5-mid.png`) });
+      const midScale = await page.evaluate(() => Number(getComputedStyle(document.getElementById('game-over-overlay')).scale));
+      assert(midScale > 0.85 && midScale < 1.1, 'Pop scale mid-way ' + midScale);
+      // Held animations no longer follow CSS play state; restart the entrance first.
+      await page.evaluate(() => {
+        window.__holdMotion(null);
+        window.__dinoRunner.motion.enter(document.getElementById('game-over-overlay'), 'death');
+      });
+      await page.locator('#settings-open').click();
+      assert.equal(await page.evaluate(() => {
+        const a = document.getElementById('game-over-overlay').getAnimations()[0];
+        return !a || a.playState === 'paused';
+      }), true, 'The pop pauses with the frozen death scene');
+      await page.locator('#settings-close').click();
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+    });
+
+    await check(`${layout}: T6 the result leaves and START returns usable and focused`, async () => {
+      const back = await page.evaluate(() => {
+        const g = window.__dinoGame;
+        for (let i = 0; g.state !== 'attract' && i < 400; i++) window.advanceTime(1000 / 60);
+        window.__holdMotion(0.3);
+        const overlay = document.getElementById('game-over-overlay'), panel = document.getElementById('round-panel');
+        return { state: g.state, overlay: overlay.dataset.leaving ?? null, overlayHidden: overlay.hidden,
+          panel: panel.dataset.enter ?? null, panelHidden: panel.hidden, startInert: panel.inert,
+          active: document.activeElement?.id, motion: window.__motion('#round-panel, #game-over-overlay') };
+      });
+      await page.screenshot({ path: path.join(output, `${layout}-t6-mid.png`) });
+      assert.equal(back.state, 'attract');
+      assert.equal(back.overlay, 'attract');
+      assert.equal(back.overlayHidden, false);
+      assert.equal(back.panel, 'attract');
+      assert.equal(back.panelHidden, false);
+      assert.equal(back.startInert, false);
+      assert.equal(back.active, 'start-game');
+      const names = new Set(back.motion.map(a => a.name));
+      for (const name of ['motion-rise-in', 'motion-start-in', 'motion-fade-out'])
+        assert(names.has(name), name + ' runs');
+      await tap(...await center('#start-game'));
+      assert.equal((await snap(page)).state, 'playing', 'START works during its entrance');
+      await page.evaluate(() => {
+        window.__holdMotion(null);
+        const g = window.__dinoGame;
+        g.score = 0; g.gameOver();
+        for (let i = 0; g.state !== 'attract' && i < 400; i++) window.advanceTime(1000 / 60);
+      });
+      await done(page);
+      assert.equal(await page.evaluate(() => document.querySelectorAll('[data-leaving], [data-enter]').length), 0);
+    });
+
+    await check(`${layout}: T5b the result lifts away while a late qualification is pending`, async () => {
+      const waiting = await page.evaluate(() => {
+        const r = window.__dinoRunner, g = r.game, c = r.highscoreController;
+        c.store.local = () => Array.from({ length: 10 }, () => ({ score: 100 }));
+        c.store.cachedOnline = () => null;
+        c.online.normal = { state: 'idle' };
+        c.api.url = 'https://scores.invalid/highscores.php';
+        c.api.list = () => new Promise(resolve => { window.__qualify = resolve; });
+        r.start();
+        g.recordAtStart = 100; g.score = 12; g.gameTime = 4000; g.gameOver();
+        for (let i = 0; g.inDeathScene && i < 400; i++) window.advanceTime(1000 / 60);
+        const overlay = document.getElementById('game-over-overlay');
+        return { state: g.state, leaving: overlay.dataset.leaving ?? null, motion: window.__motion('#game-over-overlay') };
+      });
+      assert.equal(waiting.state, 'crashed');
+      assert.equal(waiting.leaving, 'wait');
+      assert.equal(waiting.motion[0]?.name, 'motion-lift-out');
+      await done(page);
+      assert.equal(await page.locator('#game-over-overlay').isVisible(), false);
+      await page.evaluate(() => window.__qualify({ entries: Array.from({ length: 10 }, () => ({ score: 100 })) }));
+      await page.evaluate(() => window.__frames(2));
+      assert.equal((await snap(page)).state, 'attract');
+      await done(page);
+    });
+
+    await check(`${layout}: reduced motion keeps only short fades without movement`, async () => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.evaluate(() => { window.__dinoRunner.attract.userPaused = false; });
+      await tap(...await center('#start-game'));
+      const start = await page.evaluate(async () => {
+        window.advanceTime(0);
+        const motion = window.__motion('#round-panel');
+        await window.__dinoTest.transitionDone();
+        return { motion, hidden: document.getElementById('round-panel').hidden };
+      });
+      assert(start.motion.every(a => a.end === 0), 'T4 is immediate');
+      assert.equal(start.hidden, true);
+      const crash = await page.evaluate(() => {
+        const g = window.__dinoGame;
+        g.score = 0; g.gameOver(); window.advanceTime(1000 / 60);
+        window.__holdMotion(0.5);
+        const motion = window.__motion('#game-over-overlay');
+        const scale = getComputedStyle(document.getElementById('game-over-overlay')).scale;
+        for (let i = 0; g.state !== 'attract' && i < 400; i++) window.advanceTime(1000 / 60);
+        window.__holdMotion(0.5);
+        const content = getComputedStyle(document.getElementById('attract-content'));
+        const enter = window.__motion('#round-panel, #game-over-overlay');
+        window.__holdMotion(null);
+        return { motion, scale, translate: content.translate, enter };
+      });
+      assert(crash.motion.every(a => a.end <= 120 && a.delay === 0), JSON.stringify(crash.motion));
+      assert(['1', 'none'].includes(crash.scale), 'No scaling: ' + crash.scale);
+      assert(['none', '0px', '0px 0px'].includes(crash.translate), 'No movement: ' + crash.translate);
+      assert(crash.enter.every(a => a.end <= 120), JSON.stringify(crash.enter));
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await done(page);
+    });
+
+    assert.deepEqual(errors, [], layout + ' page errors');
+    await context.close();
+  }
+
+  // Trusted input to the first rendered frame with the jump pose, real rAF loop.
+  await check('START latency with and without transitions differs by at most one frame', async () => {
+    const results = {};
+    for (const transitions of [true, false]) {
+      const { context, page, errors } = await openGame(browser, { manualFrames: false, transitions });
+      await page.evaluate(() => {
+        window.__latency = [];
+        document.getElementById('start-game').addEventListener('pointerdown', e => {
+          const t0 = e.timeStamp;
+          const poll = now => {
+            if (window.__dinoGame.trex.jumping) window.__latency.push(now - t0);
+            else requestAnimationFrame(poll);
+          };
+          requestAnimationFrame(poll);
+        }, true);
+      });
+      const [x, y] = await (async () => {
+        const box = await page.locator('#start-game').boundingBox();
+        return [box.x + box.width / 2, box.y + box.height / 2];
+      })();
+      for (let run = 0; run < 30; run++) {
+        await page.evaluate(() => window.__dinoTest.transitionDone());
+        await page.mouse.click(x, y);
+        await page.waitForFunction(n => window.__latency.length === n, run + 1);
+        await page.evaluate(() => {
+          const r = window.__dinoRunner;
+          r.game.score = 0; r.game.gameOver();
+          r.returnToAttract();
+        });
+      }
+      const samples = (await page.evaluate(() => window.__latency)).sort((a, b) => a - b);
+      results[transitions ? 'on' : 'off'] = { median: samples[14], p95: samples[Math.ceil(30 * 0.95) - 1] };
+      assert.deepEqual(errors, []);
+      await context.close();
+    }
+    report.latency = results;
+    console.log('  latency ms', JSON.stringify(results));
+    assert(Math.abs(results.on.median - results.off.median) <= 1000 / 60 + 1, 'median');
+    assert(Math.abs(results.on.p95 - results.off.p95) <= 1000 / 60 + 1, 'p95');
+  });
 
   await check('Help return restarts the real frame loop after a deferred commit', async () => {
     const { context, page, errors } = await openGame(browser, { manualFrames: false });

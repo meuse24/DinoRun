@@ -163,12 +163,142 @@
         --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
         --motion-reduced: 120ms;
         --motion-scale: 1;
+        /* T4 Attract -> game: the menu clears the field, the world keeps running. */
+        --t4-exit: 160ms;
+        --t4-start-exit: 140ms;
+        --t4-hud: 200ms;
+        --t4-hud-delay: 80ms;
+        --t4-touch: 160ms;
+        /* T5 game -> death scene; T5b death scene -> waiting for qualification. */
+        --t5-enter: 220ms;
+        --t5-delay: 120ms; /* = DEATH_HIT_MS */
+        --t5-touch-exit: 150ms;
+        --t5b-exit: 150ms;
+        /* T6 death scene/waiting -> attract. */
+        --t6-exit: 150ms;
+        --t6-enter: 280ms;
+        --t6-delay: 60ms;
+        --t6-start: 240ms;
       }
       @media (prefers-reduced-motion: reduce) {
-        /* Movement collapses to zero; what remains is a short fade. */
+        /* Movement collapses to zero; what remains is a short fade or nothing. */
         :root {
           --motion-scale: 0;
+          --t4-exit: 0ms;
+          --t4-start-exit: 0ms;
+          --t4-hud: 0ms;
+          --t4-hud-delay: 0ms;
+          --t4-touch: 0ms;
+          --t5-enter: var(--motion-reduced);
+          --t5-delay: 0ms;
+          --t5-touch-exit: var(--motion-reduced);
+          --t5b-exit: var(--motion-reduced);
+          --t6-exit: var(--motion-reduced);
+          --t6-enter: var(--motion-reduced);
+          --t6-delay: 0ms;
+          --t6-start: var(--motion-reduced);
         }
+      }
+      /* Mechanism A keyframes. `translate`/`scale` compose with existing transforms;
+         every name starts with motion- so the coordinator can await exactly these. */
+      @keyframes motion-fade-in {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes motion-fade-out {
+        to {
+          opacity: 0;
+        }
+      }
+      @keyframes motion-rise-in {
+        from {
+          opacity: 0;
+          translate: 0 calc(16px * var(--motion-scale));
+        }
+      }
+      @keyframes motion-rise-out {
+        to {
+          opacity: 0;
+          translate: 0 calc(-12px * var(--motion-scale));
+          scale: calc(1 - 0.02 * var(--motion-scale));
+        }
+      }
+      @keyframes motion-lift-out {
+        to {
+          opacity: 0;
+          translate: 0 calc(-8px * var(--motion-scale));
+        }
+      }
+      @keyframes motion-press-out {
+        to {
+          opacity: 0;
+          scale: calc(1 - 0.1 * var(--motion-scale));
+        }
+      }
+      @keyframes motion-start-in {
+        from {
+          opacity: 0.6;
+          scale: calc(1 - 0.08 * var(--motion-scale));
+        }
+      }
+      @keyframes motion-pop-in {
+        from {
+          opacity: 0;
+          scale: calc(1 - 0.15 * var(--motion-scale));
+        }
+      }
+      /* T4: the attract menu stays where it was (the stage already shows the game
+         layout) and fades while taps fall through to the game. */
+      #stage.attract-leaving #round-panel[data-leaving] {
+        position: absolute;
+        z-index: 3;
+        margin: 0;
+      }
+      #round-panel[data-leaving],
+      #round-panel[data-leaving] * {
+        pointer-events: none !important;
+      }
+      :root.motion #round-panel[data-leaving='start'] #attract-content {
+        animation: motion-rise-out var(--t4-exit) var(--ease-in) both;
+      }
+      :root.motion #round-panel[data-leaving='start'] #start-game {
+        animation: motion-press-out var(--t4-start-exit) var(--ease-in) both;
+      }
+      :root.motion #round-panel[data-leaving='start'] :is(.menu-title, #attract-navigation, #install-game) {
+        animation: motion-fade-out var(--t4-exit) var(--ease-in) both;
+      }
+      :root.motion #mobile-hud[data-enter='start'] {
+        animation: motion-fade-in var(--t4-hud) var(--ease-out) var(--t4-hud-delay) both;
+      }
+      :root.motion :is(#touch-jump, #touch-duck)[data-enter='start'] {
+        animation: motion-fade-in var(--t4-touch) var(--ease-out) both;
+      }
+      /* T5: the Game over result pops in after the hit stop; touch controls step aside. */
+      :root.motion #game-over-overlay[data-enter='death'] {
+        animation: motion-pop-in var(--t5-enter) var(--ease-pop) var(--t5-delay) both;
+      }
+      :root.motion #stage.game-paused #game-over-overlay {
+        animation-play-state: paused;
+      }
+      :root.motion :is(#touch-jump, #touch-duck)[data-leaving='crash'] {
+        animation: motion-fade-out var(--t5-touch-exit) var(--ease-in) both;
+      }
+      /* T5b and T6: the result leaves; the attract menu returns with START anchored. */
+      :root.motion #game-over-overlay[data-leaving='wait'] {
+        animation: motion-lift-out var(--t5b-exit) var(--ease-in) both;
+      }
+      :root.motion #game-over-overlay[data-leaving='attract'] {
+        animation: motion-fade-out var(--t6-exit) var(--ease-in) both;
+      }
+      :root.motion #round-panel[data-enter='attract'] #attract-content {
+        animation: motion-rise-in var(--t6-enter) var(--ease-out) var(--t6-delay) both;
+      }
+      :root.motion #round-panel[data-enter='attract'] #start-game {
+        animation: motion-start-in var(--t6-start) var(--ease-pop) both;
+      }
+      :root.motion #round-panel[data-enter='attract'] :is(.menu-title, #attract-navigation, #install-game) {
+        animation: motion-fade-in var(--t6-enter) var(--ease-out) both;
       }
       /* raiseModalDialogs() reopens a dialog technically: never animate that. */
       dialog.no-motion,
@@ -1127,7 +1257,7 @@
         pointer-events: none;
         z-index: 2;
       }
-      #stage.idle #round-panel h1 {
+      :is(#stage.idle, #stage.attract-leaving) #round-panel h1 {
         animation: idle-title 4s ease-in-out infinite;
       }
       @keyframes idle-title {
@@ -1189,7 +1319,7 @@
         }
       }
       @media (prefers-reduced-motion: reduce) {
-        #stage.idle #round-panel h1 {
+        :is(#stage.idle, #stage.attract-leaving) #round-panel h1 {
           animation: none;
         }
       }
@@ -1685,9 +1815,9 @@
         transform: translateY(-50%);
       }
       #stage.idle #mobile-hud,
-      #stage.idle #round-panel::before,
+      :is(#stage.idle, #stage.attract-leaving) #round-panel::before,
       #page:has(#stage.idle) > .hint { display: none; }
-      #stage.idle #round-panel {
+      :is(#stage.idle, #stage.attract-leaving) #round-panel {
         position: relative;
         inset: auto;
         transform: none;
@@ -1708,14 +1838,14 @@
         grid-template-rows: auto minmax(0, 1fr) auto;
         gap: 12px;
       }
-      #stage.idle #round-panel h1 {
+      :is(#stage.idle, #stage.attract-leaving) #round-panel h1 {
         margin: 0;
         font-size: clamp(34px, 6cqw, 64px);
         animation: none;
         text-shadow: 0 3px 0 #ffffff80;
         letter-spacing: -0.04em;
       }
-      #stage.idle #round-panel h1 .brand-logo { width: 52px; height: 26px; vertical-align: middle; }
+      :is(#stage.idle, #stage.attract-leaving) #round-panel h1 .brand-logo { width: 52px; height: 26px; vertical-align: middle; }
       #attract-content { display: grid; align-items: center; min-height: 0; }
       .attract-slide { width: 100%; }
       #round-panel .attract-heading h2 { font: 900 clamp(24px, 3.2cqw, 36px)/1.15 system-ui, sans-serif; margin: 4px 0 14px; }
@@ -1766,13 +1896,13 @@
       #round-panel #start-game:hover { filter: brightness(1.07); }
       #round-panel #start-game:active { box-shadow: 0 2px 0 #a54b2b; }
       #round-panel #start-game .action-icon { width: 28px; height: 28px; }
-      #stage.idle #install-game { position: absolute; top: 4px; right: 0; width: auto; min-height: 32px; padding: 4px 12px; margin: 0; font-size: 12px; border: 0; box-shadow: none; pointer-events: auto; }
-      #stage.idle #install-game .action-icon { width: 18px; height: 18px; }
+      :is(#stage.idle, #stage.attract-leaving) #install-game { position: absolute; top: 4px; right: 0; width: auto; min-height: 32px; padding: 4px 12px; margin: 0; font-size: 12px; border: 0; box-shadow: none; pointer-events: auto; }
+      :is(#stage.idle, #stage.attract-leaving) #install-game .action-icon { width: 18px; height: 18px; }
       #stage.idle #touch-controls { position: absolute; display: flex; bottom: 8px; right: 8px; left: auto; width: auto; margin: 0; transform: none; }
       @media (max-width: 600px) and (orientation: portrait) {
-        #stage.idle #round-panel { padding: 12px 0 76px; }
-        #stage.idle #round-panel h1 { font-size: clamp(30px, 9vw, 48px); }
-        #stage.idle #round-panel h1 .brand-logo { width: 40px; height: 20px; }
+        :is(#stage.idle, #stage.attract-leaving) #round-panel { padding: 12px 0 76px; }
+        :is(#stage.idle, #stage.attract-leaving) #round-panel h1 { font-size: clamp(30px, 9vw, 48px); }
+        :is(#stage.idle, #stage.attract-leaving) #round-panel h1 .brand-logo { width: 40px; height: 20px; }
         .attract-powerups { grid-template-columns: 1fr; gap: 8px; }
         .attract-powerup { display: flex; align-items: center; gap: 14px; padding: 12px 16px; text-align: left; border-radius: 16px; }
         .attract-powerup svg { width: 44px; height: 44px; flex: none; }
@@ -1781,7 +1911,7 @@
         #round-panel #start-game { min-height: 68px; }
         #stage.idle #touch-controls { bottom: 0; left: 0; right: 0; justify-content: center; }
         #stage.idle:has(#install-game:not([hidden])) #touch-controls { right: auto; justify-content: flex-start; }
-        #stage.idle #install-game { top: auto; bottom: -64px; right: 0; min-height: 44px; }
+        :is(#stage.idle, #stage.attract-leaving) #install-game { top: auto; bottom: -64px; right: 0; min-height: 44px; }
       }
       /* Landscape uses the whole safe width and a compact horizontal menu.
          The isolated preview world adapts to the Canvas, preserving artwork proportions. */
@@ -1793,10 +1923,10 @@
           height: min(36.666667cqw, 520px, calc(100dvh - var(--top-space) - var(--footer-space)));
         }
         #stage.idle #game { height: 100%; aspect-ratio: auto; }
-        #stage.idle #round-panel { padding: 0; }
+        :is(#stage.idle, #stage.attract-leaving) #round-panel { padding: 0; }
         #start-view { grid-template-columns: minmax(0, 1fr) minmax(200px, 30%); grid-template-rows: auto minmax(0, 1fr); gap: 6px 22px; }
-        #stage.idle #round-panel h1 { font-size: clamp(30px, 3.4cqw, 48px); }
-        #stage.idle #round-panel h1 .brand-logo { width: clamp(40px, 4cqw, 52px); height: auto; }
+        :is(#stage.idle, #stage.attract-leaving) #round-panel h1 { font-size: clamp(30px, 3.4cqw, 48px); }
+        :is(#stage.idle, #stage.attract-leaving) #round-panel h1 .brand-logo { width: clamp(40px, 4cqw, 52px); height: auto; }
         #attract-content { grid-column: 1; grid-row: 2; }
         #attract-footer { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 30%; min-width: 200px; padding-bottom: 48px; }
         #round-panel #start-game { min-height: clamp(60px, 6cqw, 80px); font-size: clamp(25px, 2.6cqw, 36px); }
@@ -6969,6 +7099,7 @@
           constructor(enabled = motionEnabled) {
             this.enabled = enabled;
             this.leaving = new Map();
+            this.entering = new WeakMap();
             // Reflow must never be animated: finish everything at its end state.
             for (const [target, event] of [
               [window, 'resize'],
@@ -6997,16 +7128,16 @@
               getComputedStyle(el).animationName;
             }
             el.dataset.enter = kind;
-            const animations = this.animations(el);
-            Promise.all(animations.map((a) => a.finished)).then(
-              () => {
-                if (el.dataset.enter === kind) el.removeAttribute('data-enter');
-              },
-              () => {},
-            );
+            const token = (this.entering.get(el) || 0) + 1;
+            this.entering.set(el, token);
+            // Ended or cancelled (for example hidden): only the latest entrance clears.
+            const clear = () => {
+              if (this.entering.get(el) === token) el.removeAttribute('data-enter');
+            };
+            Promise.all(this.animations(el).map((a) => a.finished)).then(clear, clear);
           }
           // Keeps el visible while `data-leaving` keyframes play, then calls done().
-          leave(el, kind, done = () => {}, maxMs = 400) {
+          leave(el, kind, done = () => {}) {
             if (this.leaving.has(el)) return;
             el.removeAttribute('data-enter');
             if (!this.enabled || el.hidden) {
@@ -7024,7 +7155,8 @@
               return;
             }
             // Safety: no animation end (hidden tab, removed node) still ends the exit.
-            leave.timer = setTimeout(finish, maxMs + 100);
+            const end = Math.max(...animations.map((a) => Number(a.effect?.getComputedTiming().endTime) || 0));
+            leave.timer = setTimeout(finish, end + 100);
             Promise.all(animations.map((a) => a.finished)).then(finish, () => {});
           }
           endLeave(el, leave, complete) {
@@ -7215,6 +7347,7 @@
             this.feedback = document.getElementById('round-feedback');
             this.coach = document.getElementById('coach');
             this.controlsHint = document.querySelector('#page > .hint');
+            this.mobileHud = document.getElementById('mobile-hud');
             this.hud = Object.fromEntries(
               ['mode', 'score', 'record', 'fps', 'turbo', 'turbo-label', 'turbo-bar'].map((id) => [
                 id,
@@ -7277,17 +7410,81 @@
             if (game.crashed) this.updateResult(game);
             this.updateCoach(game, labels, paused);
           }
+          // Visibility follows the game state synchronously; mechanism A only keeps a
+          // leaving element on screen (inert) until its exit animation has ended.
           updateRoundPanel(game, night) {
-            const idle = game.state === 'attract';
-            this.panel.hidden = !idle;
-            this.startView.hidden = !idle;
+            const idle = game.state === 'attract',
+              motion = this.motion;
+            // Inside a View Transition commit the new snapshot needs the final state.
+            const animate = !this.presenter.committing;
+            const entering = [];
+            if (idle !== this.shownIdle) {
+              const first = this.shownIdle === undefined;
+              this.shownIdle = idle;
+              if (idle) {
+                motion.cancelLeave(this.panel);
+                this.releasePanel();
+                if (!first && animate) entering.push([this.panel, 'attract']);
+              } else if (!first && animate) {
+                this.leaveAttract();
+                entering.push([this.mobileHud, 'start']);
+              }
+            }
+            // A round that ends during the exit no longer shows the menu.
+            if (!game.playing) motion.finishLeave(this.panel);
+            const leaving = motion.isLeaving(this.panel);
+            this.panel.hidden = !idle && !leaving;
+            this.startView.hidden = this.panel.hidden;
             // A pending View Transition still captures the old screen; commit() applies it.
-            if (!this.transition?.pending) this.gameOverOverlay.hidden = !game.inDeathScene;
+            if (!this.transition?.pending) {
+              const overlay = this.gameOverOverlay,
+                shown = game.inDeathScene;
+              if (shown !== this.overlayShown) {
+                const first = this.overlayShown === undefined;
+                this.overlayShown = shown;
+                if (first || !animate) motion.cancelLeave(overlay);
+                else if (shown) entering.push([overlay, 'death']);
+                else
+                  motion.leave(overlay, idle ? 'attract' : 'wait', () => {
+                    if (!this.overlayShown) overlay.hidden = true;
+                  });
+              }
+              overlay.hidden = !shown && !motion.isLeaving(overlay);
+            }
             this.quitButton.hidden = !idle;
             this.panel.classList.toggle('night', night);
             this.panel.classList.toggle('day', !night);
             this.stage.classList.toggle('idle', idle);
+            this.stage.classList.toggle('attract-leaving', leaving);
             this.stage.classList.toggle('controls-raised', !idle);
+            if (this.panelRect) this.placeLeavingPanel();
+            // Entering elements must already be visible to start their keyframes.
+            for (const [element, kind] of entering) motion.enter(element, kind);
+          }
+          // T4: the menu keeps its attract layout and position while the stage switches.
+          leaveAttract() {
+            this.panelRect = this.panel.getBoundingClientRect();
+            this.stage.classList.add('attract-leaving');
+            this.motion.leave(this.panel, 'start', () => {
+              this.releasePanel();
+              if (!this.shownIdle) this.panel.hidden = this.startView.hidden = true;
+            });
+          }
+          placeLeavingPanel() {
+            const rect = this.panelRect,
+              stage = this.stage.getBoundingClientRect();
+            this.panelRect = null;
+            Object.assign(this.panel.style, {
+              left: rect.left - stage.left + 'px',
+              top: rect.top - stage.top + 'px',
+              width: rect.width + 'px',
+              height: rect.height + 'px',
+            });
+          }
+          releasePanel() {
+            this.panelRect = null;
+            this.panel.removeAttribute('style');
+            this.stage.classList.remove('attract-leaving');
           }
           updateResult(game) {
             this.text(this.score, formatText('{score} points', { score: game.score }));
@@ -8797,6 +8994,8 @@
             this.presenter = new ScreenPresenter(this);
             this.transition = screenTransition = new ScreenTransition(this.presenter, this.report);
             this.sessionView.transition = this.transition;
+            this.sessionView.motion = this.motion;
+            this.sessionView.presenter = this.presenter;
             this.highscoreController = new HighscoreController({
               onEntryReady: () => this.finishRound(),
               onRecord: (detail) => this.report.record('highscore', detail),
@@ -8888,6 +9087,8 @@
               paused = reasons.length > 0;
             if (paused !== this.paused) {
               this.paused = paused;
+              // CSS animations of the frozen scene pause with it.
+              this.sessionView.stage.classList.toggle('game-paused', paused);
               this.report.breakSample();
               this.report.record(paused ? 'pause' : 'resume', reasons.join(', '));
               this.fps.reset();
@@ -9153,10 +9354,32 @@
               this.attract.advance(clamp(dt, 0, STEP * MAX_STEPS));
             return alpha;
           }
+          // Touch controls fade in for a new round and out after a crash; pausing,
+          // resuming and input changes stay immediate.
           updateTouchControls() {
-            this.input.duckButton.hidden =
-              !this.playing || this.paused || !this.input.touchQuery.matches;
-            this.input.jumpButton.hidden = this.input.duckButton.hidden;
+            const hidden = !this.playing || this.paused || !this.input.touchQuery.matches;
+            if (hidden === this.touchHidden) return;
+            const buttons = [this.input.jumpButton, this.input.duckButton];
+            const fresh = this.touchHidden === undefined;
+            this.touchHidden = hidden;
+            if (hidden) {
+              const crash = !fresh && this.game.crashed && !this.paused;
+              this.touchHiddenFor = this.paused ? 'pause' : !this.playing ? 'round' : 'input';
+              for (const button of buttons) {
+                if (crash)
+                  this.motion.leave(button, 'crash', () => {
+                    if (this.touchHidden) button.hidden = true;
+                  });
+                else this.motion.cancelLeave(button);
+                if (!this.motion.isLeaving(button)) button.hidden = true;
+              }
+              return;
+            }
+            for (const button of buttons) {
+              button.hidden = false;
+              if (this.touchHiddenFor === 'round') this.motion.enter(button, 'start');
+              else this.motion.cancelLeave(button);
+            }
           }
           draw(alpha = 1) {
             const wasIdle = this.sessionView.stage.classList.contains('idle');
