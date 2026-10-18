@@ -1161,6 +1161,31 @@ try {
         .map(item => item.getAnimations()[0]?.effect.getTiming().delay));
       assert.deepEqual(delays, [0, 40, 80, 120, 160, 200, 200]);
       await done(page);
+      // raiseModalDialogs() must not replay the staggered statistics, also once
+      // no-motion is released two frames later.
+      const raised = await page.evaluate(async () => {
+        const read = () => [...document.querySelectorAll('#goodbye .session-stat')]
+          .map(item => ({ opacity: getComputedStyle(item).opacity, running: item.getAnimations().length }));
+        window.__dinoTest.raiseModalDialogs();
+        const now = read();
+        for (let i = 0; i < 3; i++) await new Promise(f => requestAnimationFrame(f));
+        await new Promise(f => setTimeout(f, 50));
+        return { open: document.getElementById('goodbye').open, now, later: read() };
+      });
+      assert.equal(raised.open, true);
+      for (const state of [...raised.now, ...raised.later]) assert.deepEqual(state, { opacity: '1', running: 0 });
+      // A real close ends the raise: the next opening animates again.
+      const reopened = await page.evaluate(async () => {
+        const goodbye = document.getElementById('goodbye');
+        const closed = new Promise(f => goodbye.addEventListener('close', f, { once: true }));
+        goodbye.close();
+        await closed;
+        const settled = 'raised' in goodbye.dataset;
+        goodbye.showModal();
+        return { settled, running: goodbye.querySelector('.session-stat').getAnimations().length };
+      });
+      assert.deepEqual(reopened, { settled: false, running: 1 }, 'Entrance runs again after a real close');
+      await done(page);
       await page.locator('#new-session').click();
       await done(page);
     });
@@ -1238,6 +1263,43 @@ try {
     await page.waitForTimeout(400);
     const after = await page.evaluate(() => window.__dinoRunner.attract.elapsed);
     assert(after > before + 100, `Attract clock advances after Help (${before} -> ${after})`);
+    assert.deepEqual(errors, []);
+    await context.close();
+  });
+
+  await check('Help return into a running round applies at once and the next tap jumps', async () => {
+    const { context, page, errors } = await openGame(browser, {});
+    await done(page);
+    await page.evaluate(() => {
+      const r = window.__dinoRunner, g = r.game;
+      // No obstacles: the round must survive Help and the tap.
+      g.on(e => { if (e.type === 'step') g.horizon.obstacles.length = 0; });
+      g.start(0);
+      // Land first: in the air without a feather a tap correctly does not jump.
+      for (let i = 0; (g.trex.jumping || g.countingDown) && i < 400; i++) window.advanceTime(1000 / 60);
+      window.__jumps = 0;
+      g.on(e => { if (e.type === 'jump') window.__jumps++; });
+      window.__targets = [];
+      addEventListener('pointerdown', e => window.__targets.push(e.target.id || e.target.tagName), true);
+    });
+    await page.locator('#info-link').click();
+    await page.waitForFunction(() => location.hash === '#info');
+    await done(page);
+    await page.frameLocator('#info-view').locator('[data-help-back]').first().click();
+    await page.waitForFunction(() => location.hash !== '#info' && !window.__dinoRunner.paused);
+    const back = await snap(page);
+    assert.equal(back.state, 'playing');
+    assert.equal(back.paused, false);
+    assert.equal(back.current, null, 'No View Transition while the round runs');
+    assert.equal(back.pending, false);
+    assert.equal(back.page, true);
+    assert.equal(back.info, false);
+    assert.equal(await viewTransitionAnimations(page), 0);
+    const box = await page.locator('#game').boundingBox();
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    const tapped = await page.evaluate(() => ({ targets: window.__targets.splice(0), jumps: window.__jumps }));
+    assert(!tapped.targets.includes('HTML'), 'The tap is not captured by the root: ' + tapped.targets);
+    assert.equal(tapped.jumps, 1, 'The first tap after Help jumps');
     assert.deepEqual(errors, []);
     await context.close();
   });

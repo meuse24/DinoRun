@@ -543,6 +543,11 @@
         transition: none !important;
         animation: none !important;
       }
+      /* Child entrances are tied to [open] and would replay after a raise; they stay
+         settled until the dialog really closes. */
+      dialog[data-raised] * {
+        animation: none !important;
+      }
       /* View Transitions (mechanism C) run only while the game is paused. Names exist
          only for their own type, so the world and menus always stay in root, under the
          backdrop; root is styled per type, never left to the browser default. */
@@ -3164,7 +3169,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.4';
+        const BUILD = '2026-10-18.5';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -3372,6 +3377,16 @@
             const focused = document.activeElement,
               scroll = dialog.scrollTop;
             suppressDialogMotion(dialog);
+            if (!('raised' in dialog.dataset)) {
+              dialog.dataset.raised = '';
+              // The queued close of this reopen arrives while open; a real close ends it.
+              const settle = () => {
+                if (dialog.open) return;
+                delete dialog.dataset.raised;
+                dialog.removeEventListener('close', settle);
+              };
+              dialog.addEventListener('close', settle);
+            }
             dialog.close();
             dialog.showModal();
             dialog.scrollTop = scroll;
@@ -9309,7 +9324,11 @@
               runner.presenter.focusAfterApply(
                 !this.infoView.hidden ? document.getElementById('info-link') : gameEl,
               );
-            if (switching && this.shown) runner.transition.request(showingInfo ? 'help-forward' : 'help-back');
+            // Returning into a running round never animates: the round resumes as soon as
+            // window focus is back, and a document-wide View Transition would capture its taps.
+            const intoRound = !showingInfo && runner.game.state !== 'attract';
+            if (switching && this.shown && !intoRound)
+              runner.transition.request(showingInfo ? 'help-forward' : 'help-back');
             else runner.presenter.commit();
             this.shown = true;
           }

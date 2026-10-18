@@ -1,7 +1,7 @@
 # Plan: Weiche Screen-Übergänge (View Transition API und CSS)
 
-Status: **Umgesetzt** in Build `2026-10-18.4` (`dino.html`, PWA-Cache
-`dino-run-v13`), Branch `feat/screen-transitions`, Phasen 1–7. Der Plan
+Status: **Umgesetzt** in Build `2026-10-18.5` (`dino.html`, PWA-Cache
+`dino-run-v14`), Branch `feat/screen-transitions`, Phasen 1–7. Der Plan
 bezog sich auf Build `2026-10-18.3`; er legt fest, welche Übergänge wie
 animiert werden, mit welchem Mechanismus, wo sie technisch andocken und wie
 sie geprüft werden. Ergebnisse und Abweichungen: Abschnitt 8.1.
@@ -662,6 +662,29 @@ spät, während das T5b-Ergebnis noch ausblendet, trugen zwei Elemente den
 Transition-Namen `result`. Jetzt beendet `commit()` den laufenden Austritt,
 und die Namen gelten nur für `#scores[open]`. Regressionstests sind
 ergänzt.
+
+**Review-Befunde nach Phase 7 (Build `2026-10-18.5`, Cache `dino-run-v14`):**
+
+- *Hilfe-Rückkehr verschluckte Spielinput (P1).* Kehrte man aus der Hilfe in
+  eine laufende Runde zurück, lief die Runde sofort weiter, während
+  `help-back` noch als dokumentweite VT animierte. Taps landeten auf `HTML`.
+  Jetzt wird die Rückkehr in eine Runde (Zustand nicht `attract`) sofort ohne
+  VT angewendet. Aus Attract bleibt T11 animiert. Die Bedingung prüft
+  bewusst nicht `runner.paused`, weil der Fensterfokus aus dem iframe
+  asynchron zurückkommt.
+- *Neuöffnen animierte die Goodbye-Statistiken erneut (P2).*
+  `raiseModalDialogs()` markiert den Dialog mit `data-raised`. Kind-Animationen
+  bleiben dann im Endzustand, bis der Dialog wirklich schließt.
+- Neue Regressionstests in `screen-transitions.mjs` (jetzt 86 Prüfungen)
+  scheitern gegen den vorherigen Stand an genau diesen Stellen und bestehen
+  jetzt in Chromium und WebKit, auch gegen `release/dino.html`.
+- `tests/release.mjs` hatte den Hook „Übergänge aus“ nicht erhalten. In
+  WebKit unter Last fing es deshalb einmal einen T7a-Zwischenstand ein. Der
+  Hook ist jetzt wie in den übrigen Suites ergänzt; Toleranzen sind
+  unverändert. Danach sind beide Engines bei 52 Szenen pixelgleich.
+- Alle acht Suites und `screen-transitions.mjs` bestehen in beiden Engines,
+  attract-screen und game-over-flow zusätzlich mit `DINO_TRANSITIONS=1`.
+  Auf den Geräten ist nach dieser Korrektur nicht erneut gemessen worden.
 
 ## 9. Risiken
 

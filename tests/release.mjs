@@ -53,6 +53,8 @@ for (const [name, viewport] of [
           highscoreApiUrl: null, musicAudio: audio };
         localStorage.setItem('dino-fullscreen-disabled', 'true');
       });
+      // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.
+      await page.addInitScript(on => { if (window.__dinoTest) window.__dinoTest.transitions = on; }, process.env.DINO_TRANSITIONS === '1');
       await page.goto('http://dino-release.test/dino.html');
       await page.waitForFunction(() => !!window.__dinoRunner);
       // Freeze CSS motion as well as the manual game clock. WebKit's screenshot
