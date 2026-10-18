@@ -75,3 +75,15 @@ repository's `progress.md`. Phone and emulator results are distinct.
   hash exactly. Game source/logic is identical. Current full browser comparisons
   verify the final packaging. Phone rotation (auto=1, user=0), fixture storage
   and test tabs/helpers/USB bridges were restored/cleaned; live scores untouched.
+
+### Additional older phone: Galaxy S10e
+
+The final compact hash above was tested directly on Samsung SM-G970F / Galaxy
+S10e, Android 12/API 31, Chrome 154.0.8037.127. Both portrait 360x760 and landscape
+760x360 pass all five round-end flows with normal rAF, controlled real cactus
+collisions and 15 trusted touches per orientation. Entry rejection/save/cancel,
+late positive/negative qualification, Off and session statistics pass without
+browser errors or live score requests. Attract/shield and feather/duck/help/
+restart/hosted-offline regressions also pass on the same hash. Evidence:
+`output/s10e-2026-10-18/verification.json`; original rotation/storage restored,
+test tabs/helpers/USB bridges cleaned.

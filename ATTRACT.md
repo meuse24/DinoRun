@@ -179,3 +179,24 @@ geometry and computed styles. The targeted 12-scene landscape comparison passes
 with equal pointer state; exact pixel tolerance remains unchanged. Use
 `DINO_RELEASE_LAYOUTS=landscape` for a targeted comparison when diagnosing a
 failure; omit it for the full four-layout suite.
+
+## Additional Galaxy S10e verification (2026-10-18)
+
+Build 2026-10-18.2, final compact SHA-256
+`5fc33e04ce2b41c69384154d5bcd96bb040d009af31c824466aa19156a9c31d0`,
+passes on physical Samsung SM-G970F / Galaxy S10e, Android12, Chrome154.0.8037.127.
+Actual browser viewports are portrait360x617 and short landscape673x280, DPR3.
+Normal rAF, full preview rotation, demo, three power-up cards, pause/settings,
+trusted starts from every panel and shield collection/first-hit survival/
+subsequent death pass; no browser errors or live highscore requests.
+
+Older Chrome retained Start's `:active` state after a touch/orientation change:
+the captured transform was exactly `matrix(1, 0, 0, 1, 0, 2)`. The physical
+harness now toggles the real preview pause control twice before recording its
+resting baseline. Start's existing 1px position tolerance stays unchanged, and
+both layouts pass. Initial/resting geometry is included in the report. No game
+code or graphics changes were needed.
+
+Report/screenshots: `output/s10e-2026-10-18/attract/device/attract-report.json`;
+aggregate: `output/s10e-2026-10-18/verification.json`. Original fixture records,
+fullscreen preference and rotation restored; own tabs/helpers/bridges cleaned.

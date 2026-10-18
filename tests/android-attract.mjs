@@ -102,6 +102,19 @@ try {
     adb('shell', 'settings', 'put', 'system', 'user_rotation', value);
     await page.waitForFunction(portrait => (innerHeight > innerWidth) === portrait, name === 'portrait');
     await reset();
+    // Older Android Chrome can retain :active on Start after the previous
+    // orientation's touch. Compare its resting position, not the intentional
+    // 2px pressed transform. Toggle the real preview pause control twice to
+    // clear it without tapping through the pointer-transparent title.
+    const initialStart = await page.locator('#start-game').evaluate(button => ({
+      active: button.matches(':active'), transform: getComputedStyle(button).transform,
+      rect: button.getBoundingClientRect().toJSON(),
+    }));
+    await touch(page.locator('#attract-pause'));
+    await page.waitForFunction(() => window.__dinoRunner.attract.paused);
+    await touch(page.locator('#attract-pause'));
+    await page.waitForFunction(() => !window.__dinoRunner.attract.paused);
+    await page.waitForFunction(() => !document.getElementById('start-game').matches(':active'));
     const start = await checkStart();
     await page.screenshot({ path: path.join(output, `${name}-scores.png`) });
     await page.waitForFunction(() => window.__dinoRunner.attract.index === 1);
@@ -142,7 +155,7 @@ try {
     const viewport = await page.evaluate(() => ({ width: innerWidth, height: innerHeight,
       dpr: devicePixelRatio, screen: [screen.width, screen.height] }));
     layouts.push({ name, viewport, rotation: 'passed', previewPause: 'passed',
-      startFromEveryPanel: 'passed', target: start });
+      startFromEveryPanel: 'passed', initialStart, target: start });
     console.log(`${name}: real rotation, demo, power-ups, preview pause and three touch starts passed`);
   }
 

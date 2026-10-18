@@ -225,3 +225,20 @@ browser errors or live submissions. The source hash and separate attract/shield
 results are in [ATTRACT.md](ATTRACT.md). Initial task rotation settings were
 restored to auto=1/user_rotation=0, all own helpers/bridges were removed, and the
 existing 8765 server was kept running.
+
+### Additional Galaxy S10e verification (2026-10-18)
+
+The final build2026-10-18.2 compact artifact, SHA-256
+`5fc33e04ce2b41c69384154d5bcd96bb040d009af31c824466aa19156a9c31d0`,
+passes physical Samsung SM-G970F / Galaxy S10e, Android12/API31 and
+Chrome154.0.8037.127. Trusted touch collection/air jump, one-charge consumption,
+duck press/release, pause preservation, help, death/automatic entry/attract start
+and hosted offline reload/air jump pass. Portrait360x760 and landscape760x360,
+DPR3, normal rAF; no viewport emulation, manual frames or live score requests.
+
+Two four-second controlled scenes measured 59.92/59.91FPS (240 frames each),
+median16.7ms, p95=16.8ms. These short samples do not establish sustained-play
+performance. Screenshots inspected; no browser errors. Original records and
+rotation(auto1/user0) restored; own tab/preview/relay/USB bridges removed.
+Reports: `output/s10e-2026-10-18/feather/device/report.json`; aggregate
+`output/s10e-2026-10-18/verification.json`.
