@@ -2607,7 +2607,7 @@
             <button id="rock-training-toggle" type="button" role="switch" aria-checked="false" aria-describedby="rock-training-help">
               Rock training
             </button>
-            <p id="rock-training-help">Only rocks at a fixed pace. Starts next run; no highscores.
+            <p id="rock-training-help">Endless rock practice, no deaths or highscores. Starts next run; switch off to exit.
               Resets on reload.</p>
             <a id="highscore-admin-link" href="https://meuse24.info/apps/dino/score-console.php" target="_blank" rel="noopener noreferrer">Manage highscores (new tab)</a>
             <section id="test-report" aria-labelledby="log-toggle">
@@ -3302,7 +3302,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-19.1';
+        const BUILD = '2026-10-19.2';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4153,11 +4153,11 @@
               tone.stop(t + duration + 0.01);
             } catch (e) {}
           }
-          boss(clear = false) {
+          boss(clear = false, failed = false) {
             const audio = this.context;
             if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
             try {
-              const notes = clear ? [196, 293.66, 392] : [100, 82, 65];
+              const notes = clear ? (failed ? [330, 220, 147] : [196, 293.66, 392]) : [100, 82, 65];
               notes.forEach((frequency, i) => {
                 const t = audio.currentTime + i * (clear ? 0.09 : 0.18),
                   duration = clear ? 0.22 : 0.3,
@@ -5529,6 +5529,7 @@
             this.phase = 'idle';
             this.remaining = this.training ? 0 : ROCK_BOSS.firstSpawnMs;
             this.completed = 0;
+            this.result = null;
             this.rock = null;
           }
           get reserved() {
@@ -5545,6 +5546,7 @@
               // Existing hazards still move normally; never erase a player's obstacle.
               if (!corridorClear) return;
               this.phase = 'warning';
+              this.result = null;
               this.remaining = ROCK_BOSS.warningMs;
               return 'bossWarning';
             }
@@ -5554,7 +5556,7 @@
               // Thickness grows with speed, preserving short-jump clearance time.
               const passageWidth = Math.round(clamp(speed * 8, 32, 104)), width = passageWidth + 48;
               this.rock = {
-                type: { name: 'rockBoss', clusterStep: 0 }, size: 1,
+                type: { name: 'rockBoss', clusterStep: 0 }, size: 1, failed: false,
                 x: this.world.width + 12, y: ROCK_BOSS.top, width, height: GROUND_Y - ROCK_BOSS.top,
                 collisionBoxes: [
                   new CollisionBox(0, 0, width, ROCK_BOSS.openingTop - ROCK_BOSS.top),
@@ -5573,7 +5575,8 @@
               }
             }
           }
-          finish() {
+          finish(clean = true) {
+            this.result = clean;
             this.rock = null;
             this.completed++;
             this.phase = 'cleared';
@@ -5938,7 +5941,10 @@
                 }
                 const rock = this.boss.rock;
                 if (!this.crashed && rock) {
-                  if (boxesCollide(this.trex, rock)) {
+                  if (this.rockTraining) {
+                    if (boxesCollide(this.trex, rock)) rock.failed = true;
+                    if (rock.x + rock.width < this.trex.x) this.clearBoss(!rock.failed);
+                  } else if (boxesCollide(this.trex, rock)) {
                     if (this.shield.consume()) {
                       this.emit('shieldPop', { obstacle: 'rockBoss' });
                       this.clearBoss(false);
@@ -5968,8 +5974,8 @@
           }
           clearBoss(clean) {
             const rock = this.boss.rock;
-            this.boss.finish();
-            this.emit('bossClear', { clean, x: rock.x + rock.width / 2, y: GROUND_Y - 20 });
+            this.boss.finish(clean);
+            this.emit(this.rockTraining ? 'trainingResult' : 'bossClear', { clean, x: rock.x + rock.width / 2, y: GROUND_Y - 20 });
           }
         }
 
@@ -6152,7 +6158,24 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             const x = this.world.width / 2;
-            if (active) {
+            if (boss.training && boss.phase === 'cleared') {
+              ctx.fillStyle = '#173f69';
+              ctx.beginPath();
+              ctx.arc(x, 65, 23, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.strokeStyle = boss.result ? '#70f0a4' : '#ff7373';
+              ctx.lineWidth = 5;
+              ctx.lineCap = 'round';
+              ctx.lineJoin = 'round';
+              ctx.beginPath();
+              if (boss.result) {
+                ctx.moveTo(x - 12, 65); ctx.lineTo(x - 3, 74); ctx.lineTo(x + 13, 56);
+              } else {
+                ctx.moveTo(x - 10, 55); ctx.lineTo(x + 10, 75);
+                ctx.moveTo(x + 10, 55); ctx.lineTo(x - 10, 75);
+              }
+              ctx.stroke();
+            } else if (active) {
               ctx.font = '800 9px system-ui, sans-serif';
               ctx.fillStyle = '#fff0bd';
               ctx.fillText(boss.training ? 'ROCK TRAINING · SHORT JUMPS' : 'SHORT JUMP THROUGH', x, GROUND_Y + 17);
@@ -9866,6 +9889,8 @@
             trainingToggle.addEventListener('click', () => {
               this.rockTrainingRequested = !this.rockTrainingRequested;
               trainingToggle.setAttribute('aria-checked', String(this.rockTrainingRequested));
+              if (!this.rockTrainingRequested && this.game.rockTraining && this.game.playing)
+                this.returnToAttract();
               this.report.record('rock-training', this.rockTrainingRequested ? 'next run: on' : 'next run: off');
             });
             this.modeSelect = document.getElementById('mode-select');
@@ -10089,6 +10114,10 @@
               case 'bossEnter':
                 effects.burst(game.world.width - 8, GROUND_Y - 4, 10, 'rock');
                 break;
+              case 'trainingResult':
+                this.sound.boss(true, !event.clean);
+                this.announce(event.clean ? 'Good jump!' : 'Rock touched. Try again!');
+                break;
               case 'bossClear':
                 this.sound.boss(true);
                 effects.burst(clamp(event.x, 20, game.world.width - 20), event.y, 28, 'rock');
@@ -10204,7 +10233,7 @@
             this.returnToAttract();
           }
           returnToAttract() {
-            if (!this.game.crashed || this.ended) return;
+            if (this.ended || (!this.game.crashed && !(this.game.rockTraining && this.game.playing))) return;
             // START becomes usable again: a running document transition would capture taps.
             this.transition.skip('attract');
             this.highscoreController.roundLeft();
@@ -10349,7 +10378,7 @@
             chili: { remainingMs: game.turbo.remaining, pickup: game.turbo.pickup },
             feather: { charged: game.feather.charged, pickup: game.feather.pickup },
             shield: { charged: game.shield.charged, pickup: game.shield.pickup, popRemainingMs: game.shield.popRemaining },
-            boss: { phase: game.boss.phase, remainingMs: game.boss.remaining, completed: game.boss.completed,
+            boss: { phase: game.boss.phase, remainingMs: game.boss.remaining, completed: game.boss.completed, result: game.boss.result,
               rock: game.boss.rock ? { x: game.boss.rock.x, y: game.boss.rock.y,
                 width: game.boss.rock.width, height: game.boss.rock.height,
                 openingTop: ROCK_BOSS.openingTop, openingBottom: ROCK_BOSS.openingBottom } : null },

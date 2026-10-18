@@ -542,3 +542,11 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Completed: source training tests pass Chromium and WebKit in three layouts each; release passes Chromium in three layouts and all eight existing boss checks. Three actual-input waves per layout, no unexpected spawns, fixed pace, records/stats isolated, next-round switching and reload reset verified. Architecture11, lifecycle7 and installed skill client pass; screenshots/state inspected under output/rock-training. Fixed a test-only hidden-role lookup after reload by selecting the hidden switch by ID.
 - Built release2026-10-19.1 (232101 bytes, SHA256 1e7c5ce55873aecc6011f77748e08046aff41103a7ec4499793f57824c1339d6), updated size documentation and test commands. New training checks are desktop/touch emulation, not physical Android. Existing physical boss verification remains documented separately.
 - Final validation: WebKit release training also passes all three layouts; Chromium source/release comparison passes all64 scenes pixel-identically. Documentation complete, no remaining implementation TODOs.
+
+
+## 2026-10-19: Endless rock training feedback
+
+- Applied develop-web-game skill. Training now records floor/roof contact per rock, never kills the player, and emits exactly one trainingResult after the rock passes. Canvas vector green check/red X lasts the existing clearance interval; ascending/descending short synth notes use the existing audio gain/mute path. No new asset, timer or animation loop. Normal boss collision handling unchanged.
+- Switching training Off returns the living practice round to attract, allowing a normal next START without reloading. Training still excludes scores and session stats. Build2026-10-19.2/cachev23; release regenerated.
+- Six encounters per layout test clean passages, no jump, held roof hit and successful recovery, exact result/audio dispatch count, survival, exit, normal return and score isolation. Chromium source passed three desktop/touch layouts; eight normal boss regressions, eleven architecture scenarios and installed skill client passed. Screenshots and skill JSON inspected under output/rock-feedback. Physical phone not tested this iteration.
+- Final: WebKit release passed all three layouts as well. Documentation updated; no remaining implementation TODOs.

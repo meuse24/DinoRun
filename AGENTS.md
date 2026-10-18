@@ -49,8 +49,8 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   jump-through trajectories, roof/ledge collisions, shield/Chili/feather, pause,
   reset, rotation and keyboard/touch layouts. Accepts `DINO_BROWSER=webkit`;
   see `BOSS.md` for the player contract and validation evidence.
-- `node tests/rock-training.mjs [game.html]`: Debug switch, three consecutive
-  rock passages, fixed pace, score isolation, next-round activation and reload
+- `node tests/rock-training.mjs [game.html]`: Debug switch, six consecutive
+  rock attempts, survival/result sounds, fixed pace, score isolation, exit and reload
   reset in desktop/touch layouts. Accepts `DINO_BROWSER=webkit`.
 - `node tests/attract-screen.mjs [game.html]`: check the rotating score/demo/
   power-up preview, persistent Start target, isolated demo, online/local scores,

@@ -130,20 +130,26 @@ bridges described in FEATHER.md. The runner defaults to relay9224; optional
 DINO_CDP_URL/DINO_ANDROID_URL/DINO_ANDROID_SERIAL select existing safe bridges,
 server and device. DINO_TEST_OUTPUT chooses the report directory.
 
-## Debug rock training (build 2026-10-19.1)
+## Debug rock training (build 2026-10-19.2)
 
 Settings > Debug log > Rock training enables continuous practice from the next
-START. Switching during a round applies to the following round; reload resets
-it to Off. Only rocks spawn, at the selected mode's fixed starting speed (normal
-6, relaxed 4.2). The regular warning and clearance pauses remain between rocks.
-No personal records, top-ten qualification, online submission or session stats
-are recorded for training. The result and gameplay footer identify practice.
+START. Switching Off exits practice to the start screen; reload also resets it.
+Only rocks spawn at the selected mode's fixed starting speed (normal 6, relaxed
+4.2), with the regular warning and clearance pauses.
 
-`node tests/rock-training.mjs [game.html]` verifies three successive passages,
-keyboard/touch switching, fixed speed, score isolation, normal-mode return and
-reload reset. Chromium and WebKit source/release pass desktop, portrait
-and landscape layouts. Screenshots inspected. Architecture (11), lifecycle (7),
-release boss regression (8), 64 pixel-identical source/release scenes and the
-installed skill client pass. Evidence lives in
-`output/rock-training/`. These new training checks use browser emulation;
-the physical Android result above applies to the previous boss build.
+Training collisions never kill the dinosaur. A rock remembers any contact with
+its floor or roof, then gives exactly one result after passing: a green check
+and rising notes for a clean passage, or a red X and falling notes for contact.
+The symbol stays for the existing 1.4-second clearance interval. No particles
+or death sequence accompany the result. Sound respects mute and effects volume.
+No personal records, top-ten qualification, online submission or session stats
+are recorded. Normal play retains lethal collisions and shield behavior.
+
+`node tests/rock-training.mjs [game.html]` covers six consecutive encounters:
+three clean jumps, a missed jump, a held roof collision and a clean recovery.
+It checks one result/sound dispatch per rock, survival, fixed pace, score
+isolation, exit, normal-mode return and reload reset in three desktop/touch
+layouts. Chromium source and WebKit delivery pass; screenshots inspected.
+The eight normal boss checks, eleven architecture checks and installed skill
+client also pass. Evidence: `output/rock-feedback/`. These are browser emulation
+checks; the physical Android result above applies to the earlier boss build.

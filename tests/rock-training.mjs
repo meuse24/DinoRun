@@ -31,7 +31,7 @@ try{
   await page.locator('#start-game').click();
   assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),true);
   const speed=mode==='normal'?6:4.2,high=mode==='normal'?7:9;
-  await page.evaluate(()=>{window.__trainingRecords=[];window.__dinoGame.on(e=>{if(e.type==='record')window.__trainingRecords.push(e);});});
+  await page.evaluate(()=>{window.__trainingRecords=[];window.__trainingResults=[];window.__trainingSounds=[];const sound=window.__dinoRunner.sound;const bossSound=sound.boss.bind(sound);sound.boss=(clear,failed)=>{if(clear)window.__trainingSounds.push(!failed);bossSound(clear,failed);};window.__dinoGame.on(e=>{if(e.type==='trainingResult')window.__trainingResults.push(e.clean);});window.__dinoGame.on(e=>{if(e.type==='record')window.__trainingRecords.push(e);});});
   const advanceTo=kind=>page.evaluate(kind=>{
    const g=window.__dinoGame;
    for(let i=0;i<1000;i++){
@@ -54,15 +54,23 @@ try{
    assert.equal(await page.evaluate(()=>window.__dinoGame.highScore),high);
    if(wave===3)await page.screenshot({path:path.join(output,name+'-three-waves.png')});
   }
+  assert.deepEqual(await page.evaluate(()=>window.__trainingResults),[true,true,true]);
+  // Miss entirely, then hit the roof with a held jump: both must continue alive.
+  await advanceTo(4);
+  assert.equal(await page.evaluate(()=>window.__dinoGame.boss.result),false);
+  await page.screenshot({path:path.join(output,name+'-miss.png')});
+  await advanceTo('jump');await page.locator('#game').focus();await page.keyboard.down('Space');
+  await advanceTo(5);await page.keyboard.up('Space');
+  assert.equal(await page.evaluate(()=>window.__dinoGame.boss.result),false);
+  await advanceTo('jump');await page.keyboard.press('Space');await advanceTo(6);
+  assert.deepEqual(await page.evaluate(()=>window.__trainingResults),[true,true,true,false,false,true]);
+  assert.deepEqual(await page.evaluate(()=>window.__trainingSounds),[true,true,true,false,false,true]);
+  assert.equal(await page.evaluate(()=>window.__dinoGame.state),'playing');
+  await page.screenshot({path:path.join(output,name+'-recovered.png')});
   await page.locator('#settings-open').click();await toggle.click();
   assert.equal(await toggle.getAttribute('aria-checked'),'false');
-  assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),true,'current training run stays isolated');
+  assert.equal(await page.evaluate(()=>window.__dinoGame.state),'attract','switch off exits endless practice');
   await page.locator('#settings-close').click();await page.waitForFunction(()=>!window.__dinoRunner.paused);
-  await advanceTo('crash');
-  await page.evaluate(()=>{for(let i=0;i<12;i++)window.advanceTime(1000/60);});
-  assert.match(await page.locator('#round-feedback').textContent(),/Rock training/);
-  await page.screenshot({path:path.join(output,name+'-result.png')});
-  await advanceTo('attract');
   assert.equal(await page.locator('#scores').evaluate(e=>e.open),false);
   assert.equal(await page.evaluate(()=>window.__dinoRunner.highscoreController.pendingRound),null);
   assert.equal(await page.evaluate(()=>window.__dinoRunner.highscoreController.round),null);
@@ -77,8 +85,8 @@ try{
   assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),false,'enabling mid-run does not relabel a normal round');
   await page.reload();await page.waitForFunction(()=>!!window.__dinoRunner);
   assert.equal(await page.locator('#rock-training-toggle').getAttribute('aria-checked'),'false');assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),false);
-  assert.deepEqual(errors,[]);report.push({name,mode,speed,waves:3,highscoresUntouched:true,roundBoundary:true,reloadReset:true,errors});
-  await context.close();console.log(name+': three training waves, switch, fixed pace, records and normal return passed');
+  assert.deepEqual(errors,[]);report.push({name,mode,speed,waves:6,highscoresUntouched:true,roundBoundary:true,reloadReset:true,errors});
+  await context.close();console.log(name+': six training waves, switch, fixed pace, records and normal return passed');
  }
 }finally{await browser.close();assert(path.resolve(temporary).startsWith(path.resolve(os.tmpdir())+path.sep));fs.rmSync(temporary,{recursive:true,force:true});}
 fs.writeFileSync(path.join(output,'rock-training.json'),JSON.stringify(report,null,2));

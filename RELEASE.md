@@ -31,19 +31,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-19.1)
+## Size (UTF-8 bytes, build 2026-10-19.2)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 440,279 |
-| After Terser | 272,001 |
-| After CSSO | 239,137 |
-| Final HTML | 232,101 |
+| Readable source | 441,885 |
+| After Terser | 272,889 |
+| After CSSO | 240,025 |
+| Final HTML | 232,989 |
 
-Saved: **208,178 bytes (47.28%)**, before transport compression. The optional
+Saved: **208,896 bytes (47.27%)**, before transport compression. The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-72,488 bytes; Brotli quality 11 gives 63,798 bytes. These are measurements only;
+72,742 bytes; Brotli quality 11 gives 64,079 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -99,7 +99,7 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Rock training delivery verification
+## Previous rock training delivery verification (before endless feedback)
 
 Build `2026-10-19.1`, delivery SHA-256:
 `1e7c5ce55873aecc6011f77748e08046aff41103a7ec4499793f57824c1339d6`.
