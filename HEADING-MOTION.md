@@ -186,3 +186,17 @@ Cache dino-run-v19, Release neu gebaut. Skill-Client und vier gezielte
 Source/Release-Flows in Chromium/WebKit bestanden; normaler sichtbarer
 Edge-Lauf aufgenommen und Screenshots kontrolliert. Neue Vorschau:
 output/heading-wave-strong/title-wave.gif.
+
+## Physische Nachprüfung für Build .10
+
+Release-Datei per SHA-256 verifiziert und auf Galaxy S10e SM-G970F,
+Chrome155.0.8059.81, mit normalem rAF und Touch in beiden Orientierungen
+geprüft. Titelwelle über einen kompletten Zyklus sichtbar, Pause/Fortsetzen,
+Settings, Help, START, Game over, Namensdialog/Abbrechen, Goodbye/New session
+und Reduced Motion bestanden. Keine Browserfehler; Screenshots angesehen.
+Je 1,2s Stichprobe mit Animation: Median16,7ms, p95=16,8ms, kein Frame>33ms
+in beiden Orientierungen. Die Baseline ohne Bewegung hatte im Querformat
+vier langsame Frames; die kurzen Stichproben erlauben keine Dauerlast-Aussage.
+Rotation(auto1/user0) und Test-Origin-Speicher restauriert, eigener Tab und
+USB8877/9223 sowie Vorschau/Relay beendet. Bericht unter
+output/heading-phone-review/phone-review/. Codeprüfung: CODE-REVIEW.md.
