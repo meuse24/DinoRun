@@ -200,3 +200,36 @@ vier langsame Frames; die kurzen Stichproben erlauben keine Dauerlast-Aussage.
 Rotation(auto1/user0) und Test-Origin-Speicher restauriert, eigener Tab und
 USB8877/9223 sowie Vorschau/Relay beendet. Bericht unter
 output/heading-phone-review/phone-review/. Codeprüfung: CODE-REVIEW.md.
+
+## Kleine Bereinigung (Build 2026-10-18.11)
+
+`HeadingMotion` als kleine Präsentationsklasse unter Runner bündelt
+Initialisierung/Text-Cache, Übergangsfreigabe und Überschriften-Pausen.
+HighscoreView und GamePage delegieren ihre Animationsaufgaben. Ein Token
+je Ziel ersetzt doppelte Generation-Wächter für Animationsstarts; native
+Dialog-/Spiel-Lebenszyklen bleiben bei den bisherigen Zuständigkeiten.
+
+CSS-Werte für Atmen/Welle und Eintrittszeiten sind zentral definiert, mit
+den unveränderten Werten aus .10. WeakMap-Cache berücksichtigt Text und
+Offset; ein neuer Offset aktualisiert die Phase ohne neue Buchstabenknoten.
+Keine neue Bibliothek und keine Arbeit im Frame-Loop. BUILD .11,
+PWA-Cache dino-run-v20, Release reproduzierbar neu gebaut.
+
+Neue Regressionen: `node tests/heading-motion.mjs [game.html]`, auch mit
+`DINO_BROWSER=webkit`. Prüfen echten Presenter über vorhandenen Runner-Hook,
+keine Quelltext-Extraktion oder zusätzliche Produktions-Test-Schnittstelle.
+
+
+Validierung .11: 86 Übergangsprüfungen und Skill-Client (Release) bestanden;
+52 Source/Release-UI-/Spielszenen in Chromium pixel-identisch. Vier gezielte
+Wellen-Flows und die neuen Cache-/Callback-Regressionen bestehen jeweils
+gegen Quelle/Release in Chromium und WebKit. Zwölf Vorher/Nachher-Aufnahmen
+(Titel, Settings, Help; Desktop/Hochformat; beide Engines) haben identische
+Transformationen, Geometrie, Dauer, Phasen und zugängliche Namen. Zehn sind
+pixel-identisch; zwei unterscheiden sich an 6 bzw. 4 Schriftkanten-Pixeln
+(maximaler Kanalunterschied 7 bzw. 12). Screenshots und Spielzustand angesehen,
+keine Browserfehler. Berichte: output/heading-refactor/ und final/ darunter.
+
+Physischer Nachtest für .11 derzeit nicht erfolgt: Galaxy S10e angeschlossen,
+aber gesperrt; Entsperren angefragt. Die Geräteprüfung von .10 oben gilt nur
+für diesen Vorgänger. Desktop-/Touch-Layouts sind Browserprüfungen.

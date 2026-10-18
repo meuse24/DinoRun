@@ -1979,6 +1979,26 @@
     <style id="heading-motion-styles">
       /* Small arcade gestures, independent of panel transforms and input.
          Idle breathing is separate from finite motion-heading-* cleanup. */
+      :root {
+        --heading-idle-duration: 3.2s;
+        --heading-idle-easing: ease-in-out;
+        --heading-breath-lift: -4px;
+        --heading-breath-scale: 1.06;
+        --heading-wave-height: 3.5px;
+        --heading-wave-tilt: 1deg;
+        --heading-wave-phase: -200ms;
+        --heading-logo-duration: 4.8s;
+        --heading-logo-lift: -2px;
+        --heading-entry-easing: ease-out;
+        --heading-title-duration: 280ms;
+        --heading-title-stagger: 40ms;
+        --heading-slide-duration: 240ms;
+        --heading-slide-delay: 60ms;
+        --heading-dialog-duration: 380ms;
+        --heading-dialog-delay: 40ms;
+        --heading-goodbye-duration: 360ms;
+        --heading-death-duration: 320ms;
+      }
       .heading-ink {
         display: inline-block;
         transform-origin: 50% 85%;
@@ -2011,43 +2031,43 @@
       }
       @keyframes heading-logo-float {
         0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-2px); }
+        50% { transform: translateY(var(--heading-logo-lift)); }
       }
       @keyframes heading-breathe {
         0%, 100% { transform: none; }
-        50% { transform: translateY(-4px) scale(1.06); }
+        50% { transform: translateY(var(--heading-breath-lift)) scale(var(--heading-breath-scale)); }
       }
       @keyframes heading-ripple {
-        0%, 100% { transform: translateY(3.5px) rotate(1deg); }
-        50% { transform: translateY(-3.5px) rotate(-1deg); }
+        0%, 100% { transform: translateY(var(--heading-wave-height)) rotate(var(--heading-wave-tilt)); }
+        50% { transform: translateY(calc(-1 * var(--heading-wave-height))) rotate(calc(-1 * var(--heading-wave-tilt))); }
       }
       @media (prefers-reduced-motion: no-preference) {
         :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-breath,
         :root.motion.help-page.help-active .menu-title .heading-breath {
-          animation: heading-breathe 3.2s ease-in-out infinite;
+          animation: heading-breathe var(--heading-idle-duration) var(--heading-idle-easing) infinite;
         }
         :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-wave-char,
         :root.motion.help-page.help-active .menu-title .heading-wave-char {
           display: inline-block;
-          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -200ms) infinite;
+          animation: heading-ripple var(--heading-idle-duration) var(--heading-idle-easing) calc(var(--wave-i, 0) * var(--heading-wave-phase)) infinite;
         }
         :root.motion #round-panel[data-enter] .title-word {
-          animation: motion-heading-hop 280ms ease-out both;
+          animation: motion-heading-hop var(--heading-title-duration) var(--heading-entry-easing) both;
         }
-        :root.motion #round-panel[data-enter] .title-word:last-child { animation-delay: 40ms; }
+        :root.motion #round-panel[data-enter] .title-word:last-child { animation-delay: var(--heading-title-stagger); }
         :root.motion .attract-slide[data-enter] .heading-ink {
-          animation: motion-heading-step 240ms ease-out 60ms both;
+          animation: motion-heading-step var(--heading-slide-duration) var(--heading-entry-easing) var(--heading-slide-delay) both;
         }
         :root.motion dialog[open] .heading-ink,
         :root.motion.help-page.help-active .menu-title .heading-ink {
-          animation: motion-heading-step 380ms ease-out 40ms both;
+          animation: motion-heading-step var(--heading-dialog-duration) var(--heading-entry-easing) var(--heading-dialog-delay) both;
         }
         :root.motion #goodbye[open] .heading-ink {
           animation-name: motion-heading-wave;
-          animation-duration: 360ms;
+          animation-duration: var(--heading-goodbye-duration);
         }
         :root.motion #game-over-overlay[data-enter='death'] .heading-ink {
-          animation: motion-heading-land 320ms ease-out var(--t5-delay) both;
+          animation: motion-heading-land var(--heading-death-duration) var(--heading-entry-easing) var(--t5-delay) both;
         }
         :root.motion #stage.heading-paused #round-panel :is(.heading-ink, .heading-breath, .heading-wave-char),
         :root.motion #stage.game-paused #game-over-overlay :is(.heading-ink, .heading-breath, .heading-wave-char),
@@ -2055,7 +2075,7 @@
           animation-play-state: paused !important;
         }
         :root.motion #stage.idle #round-panel:not([hidden]) .brand-float {
-          animation: heading-logo-float 4.8s ease-in-out infinite;
+          animation: heading-logo-float var(--heading-logo-duration) var(--heading-idle-easing) infinite;
         }
         :root.motion #stage.heading-paused .brand-float,
         :root.motion #stage:has(#attract-pause[aria-pressed='true']) .brand-float {
@@ -2070,10 +2090,10 @@
       @media (prefers-reduced-motion: no-preference) {
         /* A technical raise keeps the entry settled; visible text may still breathe. */
         :root.motion dialog[open][data-raised]:not(.no-motion) .heading-breath {
-          animation: heading-breathe 3.2s ease-in-out infinite !important;
+          animation: heading-breathe var(--heading-idle-duration) var(--heading-idle-easing) infinite !important;
         }
         :root.motion dialog[open][data-raised]:not(.no-motion) .heading-wave-char {
-          animation: heading-ripple 3.2s ease-in-out calc(var(--wave-i, 0) * -200ms) infinite !important;
+          animation: heading-ripple var(--heading-idle-duration) var(--heading-idle-easing) calc(var(--wave-i, 0) * var(--heading-wave-phase)) infinite !important;
         }
       }
     </style>
@@ -3272,7 +3292,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.10';
+        const BUILD = '2026-10-18.11';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -7517,36 +7537,84 @@
         // Screen transitions (TRANSITIONS.md): presentation only. Game state, timers and
         // input change synchronously; these helpers only decide how the DOM follows.
         const motionEnabled = testHooks.transitions !== false;
-        if (motionEnabled) document.documentElement.classList.add('motion');
-        // Set up the tiny text ripple once, never in the frame loop. The heading keeps
-        // its full accessible name; decorative glyphs do not become separate announcements.
-        function setHeadingText(element, text, offset = 0) {
-          if (element.dataset.waveText === text) return;
-          const heading = element.closest('h1, h2');
-          if (heading) heading.setAttribute('aria-label', element.classList.contains('title-word')
-            ? heading.textContent.replace(/\s+/g, ' ').trim() : text);
-          const fragment = element.ownerDocument.createDocumentFragment();
-          for (const [i, character] of [...text].entries()) {
-            if (/\s/.test(character)) {
-              fragment.append(character);
-              continue;
-            }
-            const glyph = element.ownerDocument.createElement('span');
-            glyph.className = 'heading-wave-char';
-            glyph.setAttribute('aria-hidden', 'true');
-            glyph.style.setProperty('--wave-i', offset + i);
-            glyph.textContent = character;
-            fragment.append(glyph);
+        // Presentation only: prepare glyphs once, defer entrances until snapshots
+        // disappear, and pause covered titles. No work in the animation frame loop.
+        class HeadingMotion {
+          constructor(enabled) {
+            this.enabled = enabled;
+            this.texts = new WeakMap();
+            this.pending = new WeakMap();
           }
-          element.replaceChildren(fragment);
-          element.dataset.waveText = text;
-        }
-        let titleWaveOffset = 0;
-        for (const element of document.querySelectorAll('.title-word, .heading-breath:not(.title-breath)')) {
-          const text = element.textContent;
-          const title = element.classList.contains('title-word');
-          setHeadingText(element, text, title ? titleWaveOffset : 0);
-          if (title) titleWaveOffset += [...text].length + 1;
+          initialize(doc) {
+            doc.documentElement.classList.toggle('motion', this.enabled);
+            let titleOffset = 0;
+            for (const element of doc.querySelectorAll('.title-word, .heading-breath:not(.title-breath)')) {
+              const text = element.textContent;
+              const title = element.classList.contains('title-word');
+              this.setText(element, text, title ? titleOffset : 0);
+              if (title) titleOffset += [...text].length + 1;
+            }
+          }
+          setText(element, text, offset = 0) {
+            const cached = this.texts.get(element);
+            if (cached?.text === text && cached.offset === offset) return;
+            if (cached?.text !== text) {
+              const fragment = element.ownerDocument.createDocumentFragment();
+              for (const character of text) {
+                if (/\s/.test(character)) {
+                  fragment.append(character);
+                  continue;
+                }
+                const glyph = element.ownerDocument.createElement('span');
+                glyph.className = 'heading-wave-char';
+                glyph.setAttribute('aria-hidden', 'true');
+                glyph.textContent = character;
+                fragment.append(glyph);
+              }
+              element.replaceChildren(fragment);
+            }
+            // Offset changes update phase without replacing existing glyph nodes.
+            let index = offset;
+            for (const node of element.childNodes) {
+              if (node.nodeType === Node.ELEMENT_NODE) node.style.setProperty('--wave-i', index);
+              index += [...node.textContent].length;
+            }
+            const heading = element.closest('h1, h2');
+            if (heading) heading.setAttribute('aria-label', element.classList.contains('title-word')
+              ? heading.textContent.replace(/\s+/g, ' ').trim() : text);
+            this.texts.set(element, { text, offset });
+          }
+          afterTransition(target, transition, reveal) {
+            // A new opening/sync invalidates callbacks from older transitions,
+            // including when this opening uses the CSS fallback instead.
+            const token = {};
+            this.pending.set(target, token);
+            if (!transition) return;
+            const finish = () => {
+              if (this.pending.get(target) === token) reveal();
+            };
+            transition.finished.then(finish, finish);
+          }
+          prepareDialog(dialog, transition) {
+            dialog.toggleAttribute('data-heading-pending', !!transition);
+            this.afterTransition(dialog, transition, () => {
+              if (dialog.open) dialog.removeAttribute('data-heading-pending');
+            });
+          }
+          syncGuide(frame, transition) {
+            const doc = frame.contentDocument;
+            if (!doc?.documentElement) return;
+            this.initialize(doc);
+            const root = doc.documentElement;
+            root.classList.toggle('help-active', !frame.hidden && !transition);
+            this.afterTransition(root, transition, () => {
+              if (frame.contentDocument === doc && !frame.hidden) root.classList.add('help-active');
+            });
+          }
+          updatePause(stage, reasons) {
+            // Blur alone can leave the menu visible on another monitor.
+            stage.classList.toggle('heading-paused', reasons.some(reason => reason !== 'blur'));
+          }
         }
         const isMotionAnimation = (animation) =>
           String(animation.animationName || animation.id || '').startsWith('motion-');
@@ -8739,20 +8807,11 @@
           apply() {
             this.listView.hidden = this.view !== 'list';
             this.entryView.hidden = this.view !== 'entry';
-            setHeadingText(this.title, 'Highscores');
+            this.runner.headingMotion.setText(this.title, 'Highscores');
             if (this.isOpen && !this.dialog.open) {
               this.shownGeneration = this.generation;
               const vt = this.runner.transition.current?.vt;
-              this.dialog.toggleAttribute('data-heading-pending', !!vt);
-              if (vt) {
-                const generation = this.generation;
-                const revealHeading = () => {
-                  if (this.generation === generation)
-                    this.dialog.removeAttribute('data-heading-pending');
-                };
-                // Snapshots hide real-element motion; start after the sheet is visible.
-                vt.finished.then(revealHeading, revealHeading);
-              }
+              this.runner.headingMotion.prepareDialog(this.dialog, vt);
               // Inside a View Transition (T7a) the sheet animates there, not twice.
               if (this.runner.transition.current) suppressDialogMotion(this.dialog);
               this.dialog.showModal();
@@ -8883,7 +8942,7 @@
           show(mode, source, reload = true) {
             this.mode = mode;
             this.source = source;
-            if (!this.listView.hidden) setHeadingText(this.title, 'Highscores');
+            if (!this.listView.hidden) this.runner.headingMotion.setText(this.title, 'Highscores');
             for (const button of this.dialog.querySelectorAll('[data-source]'))
               button.setAttribute('aria-pressed', String(button.dataset.source === source));
             if (source === 'online' && reload) this.controller.loadOnline(mode);
@@ -9426,7 +9485,7 @@
               landscapeFullscreen.sync();
             });
             infoView.addEventListener('load', () => {
-              this.syncGuideHeading();
+              this.runner.headingMotion.syncGuide(this.infoView, this.runner.transition.current?.vt);
               // Events inside the guide do not bubble into the parent window.
               for (const event of ['focus', 'blur'])
                 infoView.contentWindow?.addEventListener(event, () => runner.updateMusic());
@@ -9478,23 +9537,6 @@
             else runner.presenter.commit();
             this.shown = true;
           }
-          syncGuideHeading() {
-            const root = this.infoView.contentDocument?.documentElement;
-            if (!root) return;
-            const heading = this.infoView.contentDocument.querySelector('.heading-breath');
-            if (heading) setHeadingText(heading, heading.textContent);
-            const generation = this.headingGeneration = (this.headingGeneration || 0) + 1;
-            const vt = this.runner.transition.current?.vt;
-            root.classList.toggle('motion', motionEnabled);
-            root.classList.toggle('help-active', !this.infoView.hidden && !vt);
-            if (vt) {
-              const revealHeading = () => {
-                if (this.headingGeneration === generation && !this.infoView.hidden)
-                  root.classList.add('help-active');
-              };
-              vt.finished.then(revealHeading, revealHeading);
-            }
-          }
           // Part of presenter.commit().
           applyView() {
             if (!this.viewChanged) return;
@@ -9502,7 +9544,7 @@
             const runner = this.runner;
             const showingInfo = location.hash === '#info';
             this.infoView.hidden = !showingInfo;
-            this.syncGuideHeading();
+            this.runner.headingMotion.syncGuide(this.infoView, this.runner.transition.current?.vt);
             pageEl.hidden = showingInfo;
             document.title = showingInfo ? 'Help · m24 Dino Run' : 'Dino Run';
             if (!showingInfo) {
@@ -9542,6 +9584,8 @@
             this.input = new InputController(this);
             this.gamepad = new GamepadController(this);
             this.report = new TestReport(this);
+            this.headingMotion = new HeadingMotion(motionEnabled);
+            this.headingMotion.initialize(document);
             this.motion = new ElementMotion();
             this.presenter = new ScreenPresenter(this);
             this.transition = screenTransition = new ScreenTransition(this.presenter, this.report);
@@ -9637,9 +9681,7 @@
           updatePause() {
             const reasons = this.browser.pauseReasons(),
               paused = reasons.length > 0;
-            // A visible attract title may breathe on a second monitor while the
-            // simulation pauses for blur. Hidden pages and covered menus still stop.
-            this.sessionView.stage.classList.toggle('heading-paused', reasons.some(reason => reason !== 'blur'));
+            this.headingMotion.updatePause(this.sessionView.stage, reasons);
             if (paused !== this.paused) {
               this.paused = paused;
               // CSS animations of the frozen scene pause with it.

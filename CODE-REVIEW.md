@@ -1,10 +1,11 @@
-# Codeprüfung – Build 2026-10-18.10
+# Codeprüfung und Bereinigung – Build 2026-10-18.11
 
 Geprüft: lesbares Frontend `dino.html`, besonders Überschriften,
 Screen-Übergänge, Zuständigkeiten und die Architekturtests. Das ist kein
-vollständiger PHP-/Sicherheitsaudit. Spielcode wurde bei der Prüfung nicht geändert.
+vollständiger PHP-/Sicherheitsaudit. Die Ausgangsprüfung betraf Build .10;
+die unten beschriebene Bereinigung ist in Build .11 umgesetzt.
 
-## Befunde
+## Befunde der Ausgangsprüfung (.10)
 
 1. **Kleine Cache-Schwäche, niedrige Priorität:** `setHeadingText()` nimmt
    `offset` entgegen, überspringt bei gleichem Text aber jede Aktualisierung
@@ -38,7 +39,7 @@ Die große Einzeldatei erfüllt die bewusste Standalone-Vorgabe. Die Größe des
 Renderers allein begründet keinen Umbau: Er enthält viel Vektorzeichenlogik.
 Ein kleines Refactoring der Animationsschicht ist vor weiteren Effekten sinnvoll.
 
-Aktuell bestanden: elf Architektur- und sieben Lifecycle-/Offline-Szenarien.
+In der Ausgangsprüfung bestanden: elf Architektur- und sieben Lifecycle-/Offline-Szenarien.
 Die Cache-Schwäche wurde isoliert reproduziert und als Review-Befund belassen.
 Maschinenbericht: `output/heading-phone-review/quality-findings.json`.
 
@@ -57,3 +58,40 @@ keine allgemeine Leistungsgarantie aus diesen kurzen Stichproben ableiten.
 Screenshots angesehen, keine Browserfehler. Rotation und Test-Origin-Speicher
 wiederhergestellt; nur eigener Tab und eigene USB-/Vorschau-Helfer geschlossen.
 Bericht und Bilder: `output/heading-phone-review/phone-review/`.
+
+## Kleine Bereinigung (.11)
+
+Befunde 1–3 erledigt. `HeadingMotion` bündelt Text-/Glyph-Aufbereitung,
+Wellenphasen-Cache, Start nach View Transitions und Pausenregeln innerhalb
+von `dino.html`. `Runner` besitzt die Instanz; HighscoreView und GamePage
+rufen sie für ihre Darstellung auf. Ein Token je Ziel verwirft veraltete
+Übergangs-Callbacks; geschlossene Dialoge und verborgene/ersetzte Help-Seiten
+werden durch späte Fertigmeldungen nicht aktiviert.
+
+Text und Offset werden in einer WeakMap gespeichert. Reine Offset-Änderungen
+aktualisieren vorhandene Glyph-Knoten; identische Updates verändern den DOM
+nicht. CSS-Variablen bündeln Tempo, Wellenhöhe, Neigung, Phasenversatz und
+Eintrittszeiten. Alle bisherigen Zahlenwerte bleiben erhalten. CSS übernimmt
+weiterhin die laufende Bewegung; es gibt keinen zusätzlichen Frame-Loop.
+
+Die neue Prüfung `node tests/heading-motion.mjs [game.html]` verwendet die
+wirkliche, über den vorhandenen Runner-Hook erreichbare Instanz. Sie prüft
+Offset-Änderungen, Knoten-Wiederverwendung, Leerzeichen/Unicode, zugängliche
+Namen, überholte/fehlgeschlagene Übergänge, Schließen und CSS-Fallback.
+Quelle und Release bestehen in Chromium und WebKit. Die fragile Extraktion
+der älteren Controller-Architekturtests (Befund 4) bleibt eine spätere Aufgabe.
+
+
+Validierung .11: 86 Übergangsprüfungen und Skill-Client (Release) bestanden;
+52 Source/Release-UI-/Spielszenen in Chromium pixel-identisch. Vier gezielte
+Wellen-Flows und die neuen Cache-/Callback-Regressionen bestehen jeweils
+gegen Quelle/Release in Chromium und WebKit. Zwölf Vorher/Nachher-Aufnahmen
+(Titel, Settings, Help; Desktop/Hochformat; beide Engines) haben identische
+Transformationen, Geometrie, Dauer, Phasen und zugängliche Namen. Zehn sind
+pixel-identisch; zwei unterscheiden sich an 6 bzw. 4 Schriftkanten-Pixeln
+(maximaler Kanalunterschied 7 bzw. 12). Screenshots und Spielzustand angesehen,
+keine Browserfehler. Berichte: output/heading-refactor/ und final/ darunter.
+
+Physischer Nachtest für .11 derzeit nicht erfolgt: Galaxy S10e angeschlossen,
+aber gesperrt; Entsperren angefragt. Die Geräteprüfung von .10 oben gilt nur
+für diesen Vorgänger. Desktop-/Touch-Layouts sind Browserprüfungen.
