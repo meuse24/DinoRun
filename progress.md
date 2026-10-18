@@ -563,3 +563,10 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 - Applied develop-web-game skill. Beenden renamed Exit. Training-only warning600ms/result700ms (1900ms less waiting per cycle), warning audio suppressed during practice. Success660/880Hz and failure330/196Hz use two short notes over200ms via existing gain/mute path. Normal boss timing and tones unchanged. BUILD2026-10-19.4/cachev25, release rebuilt and size documentation updated.
 - Chromium source and WebKit delivery pass six-wave training/Exit tests in desktop/portrait/landscape. Chromium real offline DSP verifies distinct audible result signals, under205ms duration and mute. Existing eight normal boss tests and installed skill client pass. Screenshots/skill state inspected under output/rock-pace. No physical-device test this iteration.
+
+
+## 2026-10-19: Regular acceleration in training
+
+- Applied develop-web-game skill. Removed the training exception from regular acceleration; both modes now share the existing speed increment/cap. No changes to score isolation, collision feedback or training intervals. BUILD2026-10-19.5/cachev26 and rebuilt delivery.
+- Chromium training tests pass desktop/portrait/landscape with six real-input encounters. Assert increasing speed between rocks, exact selected-mode per-frame acceleration and stable maximum speed; survival, result sounds, Exit and records remain covered. Artifacts output/rock-acceleration. No physical phone test this iteration.
+- Final WebKit release passes all three training layouts; installed skill client passed and screenshots/state inspected. No outstanding implementation TODOs.

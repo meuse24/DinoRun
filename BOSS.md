@@ -130,13 +130,14 @@ bridges described in FEATHER.md. The runner defaults to relay9224; optional
 DINO_CDP_URL/DINO_ANDROID_URL/DINO_ANDROID_SERIAL select existing safe bridges,
 server and device. DINO_TEST_OUTPUT chooses the report directory.
 
-## Debug rock training (build 2026-10-19.4)
+## Debug rock training (build 2026-10-19.5)
 
 Settings > Debug log > Rock training enables continuous practice from the next
 START. The visible Exit button exits to the start screen and switches training
 Off. The Debug switch can also exit practice; reload resets it.
-Only rocks spawn at the selected mode's fixed starting speed (normal 6, relaxed
-4.2), with a 600ms warning and 700ms result pause. Normal play keeps its
+Only rocks spawn. Speed starts at normal6 or relaxed4.2 and increases with the
+selected mode's regular acceleration up to its regular maximum. Training keeps
+a 600ms warning and 700ms result pause. Normal play keeps its
 1800ms warning and 1400ms clearance. Training does not repeat the warning tone.
 
 Training collisions never kill the dinosaur. A rock remembers any contact with
@@ -149,7 +150,7 @@ are recorded. Normal play retains lethal collisions and shield behavior.
 
 `node tests/rock-training.mjs [game.html]` covers six consecutive encounters:
 three clean jumps, a missed jump, a held roof collision and a clean recovery.
-It checks one result/sound dispatch per rock, survival, fixed pace, score
+It checks one result/sound dispatch per rock, survival, increasing pace, score
 isolation, exit, normal-mode return and reload reset in three desktop/touch
 layouts. Chromium source and WebKit delivery pass; screenshots inspected.
 The eight normal boss checks, eleven architecture checks and installed skill

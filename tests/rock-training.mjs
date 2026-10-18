@@ -31,6 +31,7 @@ try{
   await page.locator('#start-game').click();
   assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),true);
   const speed=mode==='normal'?6:4.2,high=mode==='normal'?7:9;
+  let previousSpeed=speed;
   await page.evaluate(()=>{window.__trainingRecords=[];window.__trainingResults=[];window.__trainingSounds=[];const sound=window.__dinoRunner.sound;const bossSound=sound.boss.bind(sound);sound.boss=(clear,failed,training)=>{if(clear)window.__trainingSounds.push(!failed);bossSound(clear,failed,training);};window.__dinoGame.on(e=>{if(e.type==='trainingResult')window.__trainingResults.push(e.clean);});window.__dinoGame.on(e=>{if(e.type==='record')window.__trainingRecords.push(e);});});
   const advanceTo=kind=>page.evaluate(kind=>{
    const g=window.__dinoGame;
@@ -50,7 +51,7 @@ try{
    if(wave===1)await page.screenshot({path:path.join(output,name+'-approach.png')});
    await page.locator('#game').focus();
    if(touch)await page.locator('#touch-jump').tap();else await page.keyboard.press('Space');
-   const s=await advanceTo(wave);assert.equal(s.state,'playing');assert.equal(s.speed,speed);assert.equal(s.boss.completed,wave);assert(s.boss.remainingMs<=700);
+   const s=await advanceTo(wave);assert.equal(s.state,'playing');assert(s.speed>previousSpeed,'training accelerates between rocks');previousSpeed=s.speed;assert.equal(s.boss.completed,wave);assert(s.boss.remainingMs<=700);
    assert.equal(await page.evaluate(()=>window.__dinoGame.highScore),high);
    if(wave===3)await page.screenshot({path:path.join(output,name+'-three-waves.png')});
   }
@@ -67,6 +68,16 @@ try{
   assert.deepEqual(await page.evaluate(()=>window.__trainingSounds),[true,true,true,false,false,true]);
   assert.equal(await page.evaluate(()=>window.__dinoGame.state),'playing');
   await page.screenshot({path:path.join(output,name+'-recovered.png')});
+  const pace=await page.evaluate(()=>{
+   const g=window.__dinoGame,before=g.speed;window.advanceTime(1000/60);
+   const increment=g.speed-before;g.speed=g.config.maxSpeed-g.config.acceleration/2;
+   window.advanceTime(1000/60);const capped=g.speed;
+   for(let i=0;i<60;i++)window.advanceTime(1000/60);
+   return {increment,expected:g.config.acceleration,capped,maximum:g.config.maxSpeed,after:g.speed};
+  });
+  assert(Math.abs(pace.increment-pace.expected)<1e-9,'same acceleration as regular mode');
+  assert.equal(pace.capped,pace.maximum);assert.equal(pace.after,pace.maximum);
+
   assert.equal(await page.locator('#training-exit').isVisible(),true);
   assert.equal(await page.locator('#training-exit').textContent(),'Exit');
   if(touch)await page.locator('#training-exit').tap();else await page.locator('#training-exit').press('Enter');
@@ -107,7 +118,7 @@ try{
    assert.equal(audio.muted.energy,0,'Feedback respects mute');
   }
   assert.deepEqual(errors,[]);report.push({name,mode,speed,waves:6,highscoresUntouched:true,roundBoundary:true,reloadReset:true,errors});
-  await context.close();console.log(name+': six training waves, switch, fixed pace, records and normal return passed');
+  await context.close();console.log(name+': six training waves, switch, increasing pace, records and normal return passed');
  }
 }finally{await browser.close();assert(path.resolve(temporary).startsWith(path.resolve(os.tmpdir())+path.sep));fs.rmSync(temporary,{recursive:true,force:true});}
 fs.writeFileSync(path.join(output,'rock-training.json'),JSON.stringify(report,null,2));

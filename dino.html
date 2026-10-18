@@ -3308,7 +3308,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-19.4';
+        const BUILD = '2026-10-19.5';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -5905,8 +5905,7 @@
               else {
                 this.distance += travelSpeed;
                 this.score = Math.floor(this.distance * POINTS_PER_PX);
-                if (!this.rockTraining)
-                  this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
+                this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
                 this.horizon.update(
                   dt,
                   travelSpeed,
