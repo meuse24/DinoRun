@@ -130,10 +130,11 @@ bridges described in FEATHER.md. The runner defaults to relay9224; optional
 DINO_CDP_URL/DINO_ANDROID_URL/DINO_ANDROID_SERIAL select existing safe bridges,
 server and device. DINO_TEST_OUTPUT chooses the report directory.
 
-## Debug rock training (build 2026-10-19.2)
+## Debug rock training (build 2026-10-19.3)
 
 Settings > Debug log > Rock training enables continuous practice from the next
-START. Switching Off exits practice to the start screen; reload also resets it.
+START. The visible Beenden button exits to the start screen and switches training
+Off. The Debug switch can also exit practice; reload resets it.
 Only rocks spawn at the selected mode's fixed starting speed (normal 6, relaxed
 4.2), with the regular warning and clearance pauses.
 
@@ -153,3 +154,17 @@ layouts. Chromium source and WebKit delivery pass; screenshots inspected.
 The eight normal boss checks, eleven architecture checks and installed skill
 client also pass. Evidence: `output/rock-feedback/`. These are browser emulation
 checks; the physical Android result above applies to the earlier boss build.
+
+
+## More forgiving opening (2026-10-19.3)
+
+Both normal play and training use opening y=60..170 (110 pixels, previously
+78..166/88 pixels), mostly raising the ceiling. Passage thickness now follows
+speed*6 instead of speed*8, with matching limits 24..78; outer ledges stay24px.
+The same short-tap sweep increases the normal speed6 success window133->183ms,
+and relaxed speed4.2 window83->133ms. All six tested mode/speed combinations
+have larger windows; ground/roof remain solid. Eight boss checks and six-wave
+training/exit checks in three layouts pass Chromium source. Screenshots and
+skill client state inspected. Evidence: output/rock-easier. Phone layouts are
+emulated; no physical-device claim for this build.
+WebKit delivery also passes all three six-wave training/exit layouts.

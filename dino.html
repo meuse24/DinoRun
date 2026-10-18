@@ -969,6 +969,11 @@
       #touch-controls a {
         pointer-events: auto;
       }
+      #training-exit {
+        width: auto;
+        padding: 0 12px;
+        font: 700 13px system-ui, sans-serif;
+      }
       #touch-jump,
       #touch-duck {
         display: grid;
@@ -2520,6 +2525,7 @@
             <button id="settings-open" class="utility-button" type="button" aria-label="Settings" title="Settings" aria-haspopup="dialog">
               <span aria-hidden="true">⚙</span>
             </button>
+            <button id="training-exit" class="utility-button" type="button" hidden>Beenden</button>
             <button id="quit-game" class="utility-button" type="button" aria-label="Quit" title="Quit" hidden>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M12 2v9M6.2 5.8a9 9 0 1 0 11.6 0" />
@@ -3302,15 +3308,15 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-19.2';
+        const BUILD = '2026-10-19.3';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
           warningMs: 1800,
           clearMs: 1400,
           top: 28,
-          openingTop: 78,
-          openingBottom: 166,
+          openingTop: 60,
+          openingBottom: 170,
         });
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
@@ -5554,7 +5560,7 @@
               this.remaining = Math.max(0, this.remaining - dt);
               if (this.remaining > TIME_EPSILON) return;
               // Thickness grows with speed, preserving short-jump clearance time.
-              const passageWidth = Math.round(clamp(speed * 8, 32, 104)), width = passageWidth + 48;
+              const passageWidth = Math.round(clamp(speed * 6, 24, 78)), width = passageWidth + 48;
               this.rock = {
                 type: { name: 'rockBoss', clusterStep: 0 }, size: 1, failed: false,
                 x: this.world.width + 12, y: ROCK_BOSS.top, width, height: GROUND_Y - ROCK_BOSS.top,
@@ -8137,6 +8143,7 @@
             this.startView = document.getElementById('start-view');
             this.gameOverOverlay = document.getElementById('game-over-overlay');
             this.quitButton = document.getElementById('quit-game');
+            this.trainingExit = document.getElementById('training-exit');
             this.score = document.getElementById('round-score');
             this.feedback = document.getElementById('round-feedback');
             this.coach = document.getElementById('coach');
@@ -8199,6 +8206,7 @@
           }
           update(game, input, paused, night) {
             const labels = INPUT_LABELS[input.method] || INPUT_LABELS.keyboard;
+            this.trainingExit.hidden = !(game.playing && game.rockTraining);
             this.updateRoundPanel(game, night);
             this.text(this.controlsHint, labels.controls);
             if (game.crashed) this.updateResult(game);
@@ -9731,6 +9739,7 @@
               runner.endJump();
               gameEl.focus({ preventScroll: true });
             });
+            document.getElementById('training-exit').addEventListener('click', () => runner.endRockTraining());
             document.getElementById('quit-game').addEventListener('click', () => runner.quit());
             document.getElementById('new-session').addEventListener('click', () => runner.newSession());
           }
@@ -10230,6 +10239,12 @@
               highscores.openEntry(document.getElementById('start-game'), morph);
               return;
             }
+            this.returnToAttract();
+          }
+          endRockTraining() {
+            if (!this.game.rockTraining || !this.game.playing) return;
+            this.rockTrainingRequested = false;
+            document.getElementById('rock-training-toggle').setAttribute('aria-checked', 'false');
             this.returnToAttract();
           }
           returnToAttract() {

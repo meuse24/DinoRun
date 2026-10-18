@@ -550,3 +550,10 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Switching training Off returns the living practice round to attract, allowing a normal next START without reloading. Training still excludes scores and session stats. Build2026-10-19.2/cachev23; release regenerated.
 - Six encounters per layout test clean passages, no jump, held roof hit and successful recovery, exact result/audio dispatch count, survival, exit, normal return and score isolation. Chromium source passed three desktop/touch layouts; eight normal boss regressions, eleven architecture scenarios and installed skill client passed. Screenshots and skill JSON inspected under output/rock-feedback. Physical phone not tested this iteration.
 - Final: WebKit release passed all three layouts as well. Documentation updated; no remaining implementation TODOs.
+
+
+## 2026-10-19: Easier rock opening and training exit
+
+- User approved larger opening/thinner rock plus visible training exit. Applied develop-web-game skill. Shared geometry opening60..170 (+25% height), speed-scaled thickness6 instead of8. Visible Beenden button only while training; keyboard/touch exits to attract and switches training Off. BUILD2026-10-19.3/cachev24, delivery regenerated.
+- Chromium eight boss checks and three six-wave training layouts passed; exit tested with keyboard Enter and trusted touch, hidden again at attract. All six short-jump timing windows widened; normal6 133->183ms, relaxed4.2 83->133ms. Installed skill client passed; gameplay, exit UI and skill screenshots/state inspected. No physical Android test this iteration. Artifacts output/rock-easier.
+- Final WebKit delivery training/exit checks passed all three layouts. No outstanding implementation TODOs.

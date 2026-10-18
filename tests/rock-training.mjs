@@ -67,10 +67,11 @@ try{
   assert.deepEqual(await page.evaluate(()=>window.__trainingSounds),[true,true,true,false,false,true]);
   assert.equal(await page.evaluate(()=>window.__dinoGame.state),'playing');
   await page.screenshot({path:path.join(output,name+'-recovered.png')});
-  await page.locator('#settings-open').click();await toggle.click();
-  assert.equal(await toggle.getAttribute('aria-checked'),'false');
-  assert.equal(await page.evaluate(()=>window.__dinoGame.state),'attract','switch off exits endless practice');
-  await page.locator('#settings-close').click();await page.waitForFunction(()=>!window.__dinoRunner.paused);
+  assert.equal(await page.locator('#training-exit').isVisible(),true);
+  if(touch)await page.locator('#training-exit').tap();else await page.locator('#training-exit').press('Enter');
+  assert.equal(await page.locator('#rock-training-toggle').getAttribute('aria-checked'),'false');
+  assert.equal(await page.evaluate(()=>window.__dinoGame.state),'attract','exit returns to start');
+  assert.equal(await page.locator('#training-exit').isVisible(),false);
   assert.equal(await page.locator('#scores').evaluate(e=>e.open),false);
   assert.equal(await page.evaluate(()=>window.__dinoRunner.highscoreController.pendingRound),null);
   assert.equal(await page.evaluate(()=>window.__dinoRunner.highscoreController.round),null);
