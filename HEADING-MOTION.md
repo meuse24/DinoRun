@@ -114,3 +114,39 @@ Orientierungen bestanden; Screenshots angesehen, keine Browserfehler.
 Kurze Attract-Stichproben mit/ohne Bewegung: jeweils Median 16,7 ms,
 p95 16,8 ms, kein Frame über 33 ms. Die Aussage bleibt auf diese kurzen
 Stichproben beschränkt. Dateien: `output/heading-breathe/`.
+
+## Sichtbare Bewegung und Fokus (Build 2026-10-18.8)
+
+Erneute Nutzerrückmeldung: Haupttitel weiterhin unbewegt, Atmen in Help und
+Settings kaum wahrnehmbar. Ein normaler, sichtbarer Edge-Lauf über mehrere
+Sekunden bestätigte die geringe Amplitude des vorherigen Builds: DINO allein
+änderte seine Breite nur um etwa 2,7 px. Außerdem pausierte der Haupttitel
+beim Verlust des Fensterfokus zusammen mit der Simulation.
+
+Eintritt und Atmen liegen jetzt auf getrennten verschachtelten Spans. Das
+Atmen verwendet einen normalen transform statt einzelner scale/translate-
+Eigenschaften. Der gesamte Haupttitel einschließlich Logo bewegt sich als
+eine Einheit, ohne den Wortabstand zu verändern. Der neue Zyklus dauert
+3,2 Sekunden, mit bis zu 6 Prozent Vergrößerung und 4 px Hub. Der Edge-Lauf
+mit normalem rAF und ohne Media-Override misst am gesamten Titel rund
+269 bis 285 px Breite und etwa 6 px Veränderung der oberen Textkante;
+Help bewegt sich ebenfalls über etwa 6 px Höhe. Die Videoaufnahme und
+Ausschnitte sind unter output/heading-visible/ abgelegt (title-preview.gif).
+
+Die Simulation pausiert bei Blur weiterhin sofort. Ein noch sichtbares,
+unverdecktes Attract-Menü darf dabei weiteratmen, etwa auf einem zweiten
+Monitor. Die separate heading-paused-Klasse stoppt es bei anderen
+Pausengründen (verdeckender Dialog, Hilfe, versteckte Seite). Der bewusste
+Vorschau-Pausenschalter stoppt weiterhin Titel und Logo. Technisches
+Dialog-Neuöffnen unterdrückt nur den Eintritt, nicht dauerhaft das Atmen.
+Reduced Motion und der Testschalter deaktivieren die neuen Effekte wie zuvor.
+
+Die bestehenden 86 Übergangsprüfungen prüfen jetzt die tatsächliche
+Titelbreite (mehr als 10 px Unterschied am Maximum), das Weiteratmen bei
+Blur bei gleichzeitig pausierter Simulation und die bewusste Pause. Quelle
+in Chromium und Release in WebKit bestanden alle 86 Prüfungen. Chromium
+vergleicht alle 52 Source/Release-Szenen pixelgleich. Skill-Client gegen
+Quelle sowie Game-over-Flow gegen Release mit aktiven Übergängen in drei
+Desktop/Touch-Layouts bestanden. Die normalen Edge-Zeitreihen und Screenshots
+wurden geprüft. Das ist Desktop-/Emulationsprüfung; für Build .8 wurde kein
+neuer physischer Telefonlauf durchgeführt. PWA-Cache: dino-run-v17.

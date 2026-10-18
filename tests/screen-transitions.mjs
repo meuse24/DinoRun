@@ -744,22 +744,30 @@ try {
       assert(start >= 0.59 && start <= 0.61, 'START begins at 0.6, got ' + start);
       await hold(0.5);
       await page.screenshot({ path: path.join(output, `${layout}-t1-mid.png`) });
-      const breath = await page.locator('.title-word').first().evaluate(el => {
+      const breath = await page.locator('.title-breath').evaluate(el => {
         const animation = el.getAnimations().find(a => a.animationName === 'heading-breathe');
         animation.pause(); animation.currentTime = 0;
-        const resting = getComputedStyle(el).scale;
-        animation.currentTime = 2400;
-        const peak = getComputedStyle(el).scale;
+        const resting = el.getBoundingClientRect().width;
+        animation.currentTime = 1600;
+        const peak = el.getBoundingClientRect().width;
         animation.play();
         return { resting, peak };
       });
-      assert.equal(Number(breath.resting), 1);
-      assert(Number(breath.peak) >= 1.024, 'The title keeps breathing after its entrance');
+      assert(breath.peak - breath.resting > 10, 'The complete title visibly grows by more than 10 pixels');
+      assert(Math.abs(breath.peak / breath.resting - 1.06) < 0.001);
+      const unfocused = await page.evaluate(() => {
+        window.dispatchEvent(new Event('blur'));
+        const result = { paused: window.__dinoRunner.paused,
+          state: getComputedStyle(document.querySelector('.title-breath')).animationPlayState };
+        window.dispatchEvent(new Event('focus'));
+        return result;
+      });
+      assert.deepEqual(unfocused, { paused: true, state: 'running' }, 'A visible unfocused menu keeps breathing');
       // All idle heading gestures follow the same Pause control as the demo.
       await tap('#attract-pause');
       assert.equal(await page.locator('.brand-float').evaluate(el =>
         getComputedStyle(el).animationPlayState), 'paused');
-      assert.equal(await page.locator('.title-word').first().evaluate(el =>
+      assert.equal(await page.locator('.title-breath').evaluate(el =>
         getComputedStyle(el).animationPlayState), 'paused');
       await tap('#attract-pause');
       assert.equal(await page.locator('.brand-float').evaluate(el =>

@@ -1982,8 +1982,8 @@
       .heading-ink {
         display: inline-block;
         transform-origin: 50% 85%;
-        --heading-breath: heading-breathe 4.8s ease-in-out infinite;
       }
+      .heading-breath { display: inline-block; transform-origin: 50% 85%; }
       .brand-float { display: inline-block; }
       @keyframes motion-heading-hop {
         0% { transform: translateY(7px) scale(0.96, 1.04); }
@@ -2013,40 +2013,41 @@
         50% { transform: translateY(-2px); }
       }
       @keyframes heading-breathe {
-        0%, 100% { scale: 1; translate: 0 0; }
-        50% { scale: 1.025; translate: 0 -2px; }
+        0%, 100% { transform: none; }
+        50% { transform: translateY(-4px) scale(1.06); }
       }
       @media (prefers-reduced-motion: no-preference) {
-        :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-ink,
-        :root.motion.help-page.help-active .menu-title .heading-ink {
-          animation: var(--heading-breath);
+        :root.motion :where(#round-panel:not([hidden]), #game-over-overlay:not([hidden]), dialog[open]) .heading-breath,
+        :root.motion.help-page.help-active .menu-title .heading-breath {
+          animation: heading-breathe 3.2s ease-in-out infinite;
         }
         :root.motion #round-panel[data-enter] .title-word {
-          animation: motion-heading-hop 280ms ease-out both, var(--heading-breath);
+          animation: motion-heading-hop 280ms ease-out both;
         }
-        :root.motion #round-panel[data-enter] .title-word:last-child { animation-delay: 40ms, 0ms; }
+        :root.motion #round-panel[data-enter] .title-word:last-child { animation-delay: 40ms; }
         :root.motion .attract-slide[data-enter] .heading-ink {
-          animation: motion-heading-step 240ms ease-out 60ms both, var(--heading-breath);
+          animation: motion-heading-step 240ms ease-out 60ms both;
         }
         :root.motion dialog[open] .heading-ink,
         :root.motion.help-page.help-active .menu-title .heading-ink {
-          animation: motion-heading-step 380ms ease-out 40ms both, var(--heading-breath);
+          animation: motion-heading-step 380ms ease-out 40ms both;
         }
         :root.motion #goodbye[open] .heading-ink {
-          animation-name: motion-heading-wave, heading-breathe;
-          animation-duration: 360ms, 4.8s;
+          animation-name: motion-heading-wave;
+          animation-duration: 360ms;
         }
         :root.motion #game-over-overlay[data-enter='death'] .heading-ink {
-          animation: motion-heading-land 320ms ease-out var(--t5-delay) both, var(--heading-breath);
+          animation: motion-heading-land 320ms ease-out var(--t5-delay) both;
         }
-        :root.motion #stage.game-paused .heading-ink,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel .heading-ink {
+        :root.motion #stage.heading-paused #round-panel :is(.heading-ink, .heading-breath),
+        :root.motion #stage.game-paused #game-over-overlay :is(.heading-ink, .heading-breath),
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel :is(.heading-ink, .heading-breath) {
           animation-play-state: paused !important;
         }
         :root.motion #stage.idle #round-panel:not([hidden]) .brand-float {
           animation: heading-logo-float 4.8s ease-in-out infinite;
         }
-        :root.motion #stage.game-paused .brand-float,
+        :root.motion #stage.heading-paused .brand-float,
         :root.motion #stage:has(#attract-pause[aria-pressed='true']) .brand-float {
           animation-play-state: paused !important;
         }
@@ -2055,6 +2056,13 @@
       dialog.no-motion .heading-ink,
       dialog[data-heading-pending] .heading-ink,
       dialog[data-raised] .heading-ink { animation: none !important; }
+      dialog[data-heading-pending] .heading-breath { animation: none !important; }
+      @media (prefers-reduced-motion: no-preference) {
+        /* A technical raise keeps the entry settled; visible text may still breathe. */
+        :root.motion dialog[open][data-raised]:not(.no-motion) .heading-breath {
+          animation: heading-breathe 3.2s ease-in-out infinite !important;
+        }
+      }
     </style>
     <style id="menu-shell-styles">
       :root {
@@ -2383,6 +2391,7 @@
         <section id="round-panel" class="day" data-game-ui aria-label="Dino Run">
           <div id="start-view">
             <h1 class="menu-title">
+              <span class="heading-breath title-breath">
               <span class="brand-float"><svg class="brand-logo" width="40" height="20" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 72" role="img" aria-labelledby="m24-logo-title">
                 <title id="m24-logo-title">m24</title>
                 <rect x="1" y="1" width="142" height="70" rx="20" fill="#173f69"/>
@@ -2392,6 +2401,7 @@
                 <path d="M19 59h106" stroke="#ffd257" stroke-width="3" stroke-linecap="round"/>
               </svg></span>
               <span class="heading-ink title-word">DINO</span> <span class="heading-ink title-word">RUN</span>
+              </span>
             </h1>
             <button id="install-game" class="action-button" type="button" hidden>
               <svg class="action-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 16V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v11M3 20h18M12 6v9m-3-3 3 3 3-3" /></svg>
@@ -2399,7 +2409,7 @@
             </button>
             <div id="attract-content" role="region" aria-roledescription="carousel" aria-label="Dino Run preview" aria-live="off">
               <section id="attract-scores" class="attract-slide" aria-labelledby="attract-scores-title">
-                <div class="attract-heading"><span class="attract-kicker">THE LEADERBOARD</span><h2 id="attract-scores-title"><span class="heading-ink">Highscores</span></h2></div>
+                <div class="attract-heading"><span class="attract-kicker">THE LEADERBOARD</span><h2 id="attract-scores-title"><span class="heading-ink"><span class="heading-breath">Highscores</span></span></h2></div>
                 <div class="attract-scoreboard">
                   <p id="attract-score-source"></p>
                   <ol id="attract-score-list" aria-label="Highscores"></ol>
@@ -2408,12 +2418,12 @@
                 </div>
               </section>
               <section id="attract-demo" class="attract-slide" aria-labelledby="attract-demo-title" hidden>
-                <div class="attract-heading"><span class="attract-kicker">WATCH &amp; LEARN</span><h2 id="attract-demo-title"><span class="heading-ink">Run. Jump. Repeat.</span></h2></div>
+                <div class="attract-heading"><span class="attract-kicker">WATCH &amp; LEARN</span><h2 id="attract-demo-title"><span class="heading-ink"><span class="heading-breath">Run. Jump. Repeat.</span></span></h2></div>
                 <p class="attract-demo-caption">Jump over cacti. Duck under birds.</p>
                 <span class="attract-demo-label">DEMO · YOUR RUN STARTS BELOW</span>
               </section>
               <section id="attract-powerups" class="attract-slide" aria-labelledby="attract-powerups-title" hidden>
-                <div class="attract-heading"><span class="attract-kicker">A LITTLE EXTRA HELP</span><h2 id="attract-powerups-title"><span class="heading-ink">Power up your run</span></h2></div>
+                <div class="attract-heading"><span class="attract-kicker">A LITTLE EXTRA HELP</span><h2 id="attract-powerups-title"><span class="heading-ink"><span class="heading-breath">Power up your run</span></span></h2></div>
                 <div class="attract-powerups">
                   <article class="attract-powerup">
                     <svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="18" fill="#173f69" stroke="#ffd257"/><path d="M-5-7C10-11 12 8-9 12Q0 5-5-7" fill="#f04432" stroke="#ffb59a"/><path d="M0-7Q-2-13 3-14" fill="none" stroke="#45b86f" stroke-width="3"/></svg>
@@ -2445,7 +2455,7 @@
           </div>
         </section>
         <div id="game-over-overlay" hidden>
-          <h2 class="menu-title" lang="en"><span class="heading-ink">Game over</span></h2>
+          <h2 class="menu-title" lang="en"><span class="heading-ink"><span class="heading-breath">Game over</span></span></h2>
           <p id="round-score"></p>
           <p id="round-feedback"></p>
         </div>
@@ -2509,7 +2519,7 @@
       <div class="settings-content menu-frame">
         <header class="menu-header">
           <div>
-            <h1 class="menu-title" id="settings-title"><span class="heading-ink">Settings</span></h1>
+            <h1 class="menu-title" id="settings-title"><span class="heading-ink"><span class="heading-breath">Settings</span></span></h1>
           </div>
           <button id="settings-close" class="menu-back" type="button" aria-label="Back" title="Back" autofocus>
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg>
@@ -2597,7 +2607,7 @@
       <div class="menu-frame">
         <header class="menu-header">
           <div>
-            <h1 class="menu-title" id="scores-title"><span class="heading-ink">Highscores</span></h1>
+            <h1 class="menu-title" id="scores-title"><span class="heading-ink"><span class="heading-breath">Highscores</span></span></h1>
           </div>
           <button id="scores-close" class="menu-back" type="button" aria-label="Back" title="Back">
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg>
@@ -2643,7 +2653,7 @@
       </div>
     </dialog>
     <dialog id="goodbye" aria-labelledby="bye-title">
-      <h2 id="bye-title"><span class="heading-ink">Bye-bye, Dino! 👋</span></h2>
+      <h2 id="bye-title"><span class="heading-ink"><span class="heading-breath">Bye-bye, Dino! 👋</span></span></h2>
       <dl id="session-stats"></dl>
       <button id="new-session" type="button">
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM9 21v-7h6v7" /></svg>
@@ -2651,7 +2661,7 @@
       </button>
     </dialog>
     <dialog id="install-help" aria-labelledby="install-title">
-      <h2 id="install-title"><span class="heading-ink">Install Dino Run</span></h2>
+      <h2 id="install-title"><span class="heading-ink"><span class="heading-breath">Install Dino Run</span></span></h2>
       <p id="install-instructions"></p>
       <button id="install-close" type="button">Close</button>
     </dialog>
@@ -3100,7 +3110,7 @@
           <div class="wrap menu-frame">
             <header class="menu-header">
               <div>
-                <h1 class="menu-title"><span class="heading-ink">Help</span></h1>
+                <h1 class="menu-title"><span class="heading-ink"><span class="heading-breath">Help</span></span></h1>
               </div>
               <button class="back menu-back" type="button" data-help-back aria-label="Back" title="Back">
                 <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M19 12H5m7-7-7 7 7 7" /></svg>
@@ -3249,7 +3259,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-18.7';
+        const BUILD = '2026-10-18.8';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -8557,7 +8567,7 @@
             this.runner = runner;
             this.controller = controller;
             this.dialog = document.getElementById('scores');
-            this.title = document.querySelector('#scores-title .heading-ink');
+            this.title = document.querySelector('#scores-title .heading-breath');
             this.listView = document.getElementById('scores-list-view');
             this.entryView = document.getElementById('scores-entry-view');
             this.status = document.getElementById('scores-status');
@@ -9582,6 +9592,9 @@
           updatePause() {
             const reasons = this.browser.pauseReasons(),
               paused = reasons.length > 0;
+            // A visible attract title may breathe on a second monitor while the
+            // simulation pauses for blur. Hidden pages and covered menus still stop.
+            this.sessionView.stage.classList.toggle('heading-paused', reasons.some(reason => reason !== 'blur'));
             if (paused !== this.paused) {
               this.paused = paused;
               // CSS animations of the frozen scene pause with it.
