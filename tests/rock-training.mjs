@@ -31,7 +31,7 @@ try{
   await page.locator('#start-game').click();
   assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),true);
   const speed=mode==='normal'?6:4.2,high=mode==='normal'?7:9;
-  await page.evaluate(()=>{window.__trainingRecords=[];window.__trainingResults=[];window.__trainingSounds=[];const sound=window.__dinoRunner.sound;const bossSound=sound.boss.bind(sound);sound.boss=(clear,failed)=>{if(clear)window.__trainingSounds.push(!failed);bossSound(clear,failed);};window.__dinoGame.on(e=>{if(e.type==='trainingResult')window.__trainingResults.push(e.clean);});window.__dinoGame.on(e=>{if(e.type==='record')window.__trainingRecords.push(e);});});
+  await page.evaluate(()=>{window.__trainingRecords=[];window.__trainingResults=[];window.__trainingSounds=[];const sound=window.__dinoRunner.sound;const bossSound=sound.boss.bind(sound);sound.boss=(clear,failed,training)=>{if(clear)window.__trainingSounds.push(!failed);bossSound(clear,failed,training);};window.__dinoGame.on(e=>{if(e.type==='trainingResult')window.__trainingResults.push(e.clean);});window.__dinoGame.on(e=>{if(e.type==='record')window.__trainingRecords.push(e);});});
   const advanceTo=kind=>page.evaluate(kind=>{
    const g=window.__dinoGame;
    for(let i=0;i<1000;i++){
@@ -44,13 +44,13 @@ try{
    }
    throw new Error('Training did not reach '+kind);
   },kind);
-  const warning=await advanceTo('warning');assert(warning.boss.remainingMs>1700);assert(warning.rockTraining);
+  const warning=await advanceTo('warning');assert(warning.boss.remainingMs>500&&warning.boss.remainingMs<=600);assert(warning.rockTraining);
   for(let wave=1;wave<=3;wave++){
    await advanceTo('jump');
    if(wave===1)await page.screenshot({path:path.join(output,name+'-approach.png')});
    await page.locator('#game').focus();
    if(touch)await page.locator('#touch-jump').tap();else await page.keyboard.press('Space');
-   const s=await advanceTo(wave);assert.equal(s.state,'playing');assert.equal(s.speed,speed);assert.equal(s.boss.completed,wave);
+   const s=await advanceTo(wave);assert.equal(s.state,'playing');assert.equal(s.speed,speed);assert.equal(s.boss.completed,wave);assert(s.boss.remainingMs<=700);
    assert.equal(await page.evaluate(()=>window.__dinoGame.highScore),high);
    if(wave===3)await page.screenshot({path:path.join(output,name+'-three-waves.png')});
   }
@@ -68,6 +68,7 @@ try{
   assert.equal(await page.evaluate(()=>window.__dinoGame.state),'playing');
   await page.screenshot({path:path.join(output,name+'-recovered.png')});
   assert.equal(await page.locator('#training-exit').isVisible(),true);
+  assert.equal(await page.locator('#training-exit').textContent(),'Exit');
   if(touch)await page.locator('#training-exit').tap();else await page.locator('#training-exit').press('Enter');
   assert.equal(await page.locator('#rock-training-toggle').getAttribute('aria-checked'),'false');
   assert.equal(await page.evaluate(()=>window.__dinoGame.state),'attract','exit returns to start');
@@ -86,6 +87,25 @@ try{
   assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),false,'enabling mid-run does not relabel a normal round');
   await page.reload();await page.waitForFunction(()=>!!window.__dinoRunner);
   assert.equal(await page.locator('#rock-training-toggle').getAttribute('aria-checked'),'false');assert.equal(await page.evaluate(()=>window.__dinoGame.rockTraining),false);
+  if(name==='desktop'&&engine==='chromium'){
+   const audio=await page.evaluate(async()=>{
+    const sound=window.__dinoRunner.sound,old={context:sound.context,output:sound.output,enabled:sound.enabled,volume:sound.volume};
+    const render=async(failed,muted=false)=>{
+     const offline=new OfflineAudioContext(1,22050,44100);
+     sound.context={state:'running',currentTime:0,createOscillator:()=>offline.createOscillator(),createGain:()=>offline.createGain()};
+     sound.output=offline.createGain();sound.output.connect(offline.destination);sound.enabled=!muted;sound.volume=100;
+     sound.boss(true,failed,true);
+     const data=(await offline.startRendering()).getChannelData(0);
+     return {energy:data.reduce((sum,v)=>sum+v*v,0),tail:data.slice(9000).reduce((sum,v)=>sum+v*v,0)};
+    };
+    try{return {ok:await render(false),fail:await render(true),muted:await render(false,true)};}
+    finally{Object.assign(sound,old);}
+   });
+   assert(audio.ok.energy>0.01&&audio.fail.energy>0.01,'Both feedback tones generate audio');
+   assert.notEqual(audio.ok.energy,audio.fail.energy,'Distinct success/failure tones');
+   assert.equal(audio.ok.tail+audio.fail.tail,0,'Feedback ends within 205ms');
+   assert.equal(audio.muted.energy,0,'Feedback respects mute');
+  }
   assert.deepEqual(errors,[]);report.push({name,mode,speed,waves:6,highscoresUntouched:true,roundBoundary:true,reloadReset:true,errors});
   await context.close();console.log(name+': six training waves, switch, fixed pace, records and normal return passed');
  }

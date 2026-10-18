@@ -2525,7 +2525,7 @@
             <button id="settings-open" class="utility-button" type="button" aria-label="Settings" title="Settings" aria-haspopup="dialog">
               <span aria-hidden="true">⚙</span>
             </button>
-            <button id="training-exit" class="utility-button" type="button" hidden>Beenden</button>
+            <button id="training-exit" class="utility-button" type="button" hidden>Exit</button>
             <button id="quit-game" class="utility-button" type="button" aria-label="Quit" title="Quit" hidden>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                 <path d="M12 2v9M6.2 5.8a9 9 0 1 0 11.6 0" />
@@ -3308,12 +3308,14 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-19.3';
+        const BUILD = '2026-10-19.4';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
           warningMs: 1800,
           clearMs: 1400,
+          trainingWarningMs: 600,
+          trainingClearMs: 700,
           top: 28,
           openingTop: 60,
           openingBottom: 170,
@@ -4159,14 +4161,15 @@
               tone.stop(t + duration + 0.01);
             } catch (e) {}
           }
-          boss(clear = false, failed = false) {
+          boss(clear = false, failed = false, training = false) {
             const audio = this.context;
             if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
             try {
-              const notes = clear ? (failed ? [330, 220, 147] : [196, 293.66, 392]) : [100, 82, 65];
+              const notes = training ? (failed ? [330, 196] : [660, 880]) :
+                clear ? [196, 293.66, 392] : [100, 82, 65];
               notes.forEach((frequency, i) => {
-                const t = audio.currentTime + i * (clear ? 0.09 : 0.18),
-                  duration = clear ? 0.22 : 0.3,
+                const t = audio.currentTime + i * (training ? 0.08 : clear ? 0.09 : 0.18),
+                  duration = training ? 0.11 : clear ? 0.22 : 0.3,
                   tone = audio.createOscillator(), gain = audio.createGain();
                 tone.type = clear ? 'triangle' : 'sine';
                 tone.frequency.setValueAtTime(frequency, t);
@@ -5553,7 +5556,7 @@
               if (!corridorClear) return;
               this.phase = 'warning';
               this.result = null;
-              this.remaining = ROCK_BOSS.warningMs;
+              this.remaining = this.training ? ROCK_BOSS.trainingWarningMs : ROCK_BOSS.warningMs;
               return 'bossWarning';
             }
             if (this.phase === 'warning') {
@@ -5586,7 +5589,7 @@
             this.rock = null;
             this.completed++;
             this.phase = 'cleared';
-            this.remaining = ROCK_BOSS.clearMs;
+            this.remaining = this.training ? ROCK_BOSS.trainingClearMs : ROCK_BOSS.clearMs;
           }
         }
 
@@ -10117,14 +10120,14 @@
                 this.announce('Shield popped. Hit survived. Avoid the next obstacle!');
                 break;
               case 'bossWarning':
-                this.sound.boss();
+                if (!game.rockTraining) this.sound.boss();
                 this.announce('Stone Jaw! Make a short jump through the glowing opening.');
                 break;
               case 'bossEnter':
                 effects.burst(game.world.width - 8, GROUND_Y - 4, 10, 'rock');
                 break;
               case 'trainingResult':
-                this.sound.boss(true, !event.clean);
+                this.sound.boss(true, !event.clean, true);
                 this.announce(event.clean ? 'Good jump!' : 'Rock touched. Try again!');
                 break;
               case 'bossClear':

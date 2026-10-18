@@ -557,3 +557,9 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - User approved larger opening/thinner rock plus visible training exit. Applied develop-web-game skill. Shared geometry opening60..170 (+25% height), speed-scaled thickness6 instead of8. Visible Beenden button only while training; keyboard/touch exits to attract and switches training Off. BUILD2026-10-19.3/cachev24, delivery regenerated.
 - Chromium eight boss checks and three six-wave training layouts passed; exit tested with keyboard Enter and trusted touch, hidden again at attract. All six short-jump timing windows widened; normal6 133->183ms, relaxed4.2 83->133ms. Installed skill client passed; gameplay, exit UI and skill screenshots/state inspected. No physical Android test this iteration. Artifacts output/rock-easier.
 - Final WebKit delivery training/exit checks passed all three layouts. No outstanding implementation TODOs.
+
+
+## 2026-10-19: Training pace and short audio
+
+- Applied develop-web-game skill. Beenden renamed Exit. Training-only warning600ms/result700ms (1900ms less waiting per cycle), warning audio suppressed during practice. Success660/880Hz and failure330/196Hz use two short notes over200ms via existing gain/mute path. Normal boss timing and tones unchanged. BUILD2026-10-19.4/cachev25, release rebuilt and size documentation updated.
+- Chromium source and WebKit delivery pass six-wave training/Exit tests in desktop/portrait/landscape. Chromium real offline DSP verifies distinct audible result signals, under205ms duration and mute. Existing eight normal boss tests and installed skill client pass. Screenshots/skill state inspected under output/rock-pace. No physical-device test this iteration.

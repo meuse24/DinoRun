@@ -130,19 +130,20 @@ bridges described in FEATHER.md. The runner defaults to relay9224; optional
 DINO_CDP_URL/DINO_ANDROID_URL/DINO_ANDROID_SERIAL select existing safe bridges,
 server and device. DINO_TEST_OUTPUT chooses the report directory.
 
-## Debug rock training (build 2026-10-19.3)
+## Debug rock training (build 2026-10-19.4)
 
 Settings > Debug log > Rock training enables continuous practice from the next
-START. The visible Beenden button exits to the start screen and switches training
+START. The visible Exit button exits to the start screen and switches training
 Off. The Debug switch can also exit practice; reload resets it.
 Only rocks spawn at the selected mode's fixed starting speed (normal 6, relaxed
-4.2), with the regular warning and clearance pauses.
+4.2), with a 600ms warning and 700ms result pause. Normal play keeps its
+1800ms warning and 1400ms clearance. Training does not repeat the warning tone.
 
 Training collisions never kill the dinosaur. A rock remembers any contact with
 its floor or roof, then gives exactly one result after passing: a green check
-and rising notes for a clean passage, or a red X and falling notes for contact.
-The symbol stays for the existing 1.4-second clearance interval. No particles
-or death sequence accompany the result. Sound respects mute and effects volume.
+and two rising notes for a clean passage, or a red X and two falling notes for contact.
+The symbol stays for the 0.7-second clearance interval. No particles
+or death sequence accompany the result. Feedback lasts about200ms; sound respects mute and effects volume.
 No personal records, top-ten qualification, online submission or session stats
 are recorded. Normal play retains lethal collisions and shield behavior.
 
@@ -168,3 +169,8 @@ training/exit checks in three layouts pass Chromium source. Screenshots and
 skill client state inspected. Evidence: output/rock-easier. Phone layouts are
 emulated; no physical-device claim for this build.
 WebKit delivery also passes all three six-wave training/exit layouts.
+
+Training pace/Exit verified in Chromium source and WebKit release, three layouts
+each. Chromium OfflineAudioContext verifies both distinct feedback signals,
+duration under205ms and mute. Skill client and eight normal boss checks pass.
+Evidence: output/rock-pace. No physical phone test for this iteration.
