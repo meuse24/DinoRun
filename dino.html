@@ -179,6 +179,12 @@
         --t6-enter: 280ms;
         --t6-delay: 60ms;
         --t6-start: 240ms;
+        /* T1 load -> attract; T2 attract slides; T3 highscore pages. */
+        --t1-enter: 320ms;
+        --t2-exit: 180ms;
+        --t2-enter: 260ms;
+        --t2-delay: 60ms;
+        --t3-fade: 200ms;
       }
       @media (prefers-reduced-motion: reduce) {
         /* Movement collapses to zero; what remains is a short fade or nothing. */
@@ -197,6 +203,11 @@
           --t6-enter: var(--motion-reduced);
           --t6-delay: 0ms;
           --t6-start: var(--motion-reduced);
+          --t1-enter: var(--motion-reduced);
+          --t2-exit: var(--motion-reduced);
+          --t2-enter: var(--motion-reduced);
+          --t2-delay: 0ms;
+          --t3-fade: 0ms;
         }
       }
       /* Mechanism A keyframes. `translate`/`scale` compose with existing transforms;
@@ -214,7 +225,20 @@
       @keyframes motion-rise-in {
         from {
           opacity: 0;
-          translate: 0 calc(16px * var(--motion-scale));
+          translate: 0 calc(var(--rise, 16px) * var(--motion-scale));
+        }
+      }
+      /* Horizontal slide steps; --shift carries the direction of the index change. */
+      @keyframes motion-shift-in {
+        from {
+          opacity: 0;
+          translate: calc(var(--shift) * var(--motion-scale)) 0;
+        }
+      }
+      @keyframes motion-shift-out {
+        to {
+          opacity: 0;
+          translate: calc(var(--shift) * var(--motion-scale)) 0;
         }
       }
       @keyframes motion-rise-out {
@@ -240,6 +264,12 @@
         from {
           opacity: 0.6;
           scale: calc(1 - 0.08 * var(--motion-scale));
+        }
+      }
+      /* T1: START keeps its geometry; only its opacity settles from 0.6. */
+      @keyframes motion-dim-in {
+        from {
+          opacity: 0.6;
         }
       }
       @keyframes motion-pop-in {
@@ -299,6 +329,53 @@
       }
       :root.motion #round-panel[data-enter='attract'] :is(.menu-title, #attract-navigation, #install-game) {
         animation: motion-fade-in var(--t6-enter) var(--ease-out) both;
+      }
+      /* T1: the menu settles in over the already visible world; START starts at 0.6. */
+      :root.motion #round-panel[data-enter='load'] :is(.menu-title, #attract-content, #attract-navigation, #install-game) {
+        --rise: 12px;
+        animation: motion-rise-in var(--t1-enter) var(--ease-out) both;
+      }
+      :root.motion #round-panel[data-enter='load'] #start-game {
+        animation: motion-dim-in var(--t1-enter) var(--ease-out) both;
+      }
+      /* T2: slides share one grid cell, so the leaving one stays in place. */
+      #attract-content > .attract-slide {
+        grid-area: 1 / 1;
+      }
+      :root.motion .attract-slide[data-leaving] {
+        animation: motion-shift-out var(--t2-exit) var(--ease-in) both;
+      }
+      :root.motion .attract-slide[data-enter] {
+        animation: motion-shift-in var(--t2-enter) var(--ease-out) var(--t2-delay) both;
+      }
+      .attract-slide[data-leaving='next'],
+      .attract-slide[data-enter='prev'] {
+        --shift: -16px;
+      }
+      .attract-slide[data-leaving='prev'],
+      .attract-slide[data-enter='next'] {
+        --shift: 16px;
+      }
+      :root.motion .attract-dot span {
+        transition:
+          width var(--t2-enter) var(--ease-out),
+          opacity var(--t2-enter) var(--ease-out),
+          background-color var(--t2-enter) var(--ease-out);
+      }
+      /* T3: the next highscore page crossfades with a copy of the previous one. */
+      .attract-scoreboard {
+        position: relative;
+      }
+      .attract-score-ghost {
+        position: absolute;
+        margin: 0;
+        pointer-events: none;
+      }
+      :root.motion .attract-score-ghost[data-leaving] {
+        animation: motion-fade-out var(--t3-fade) linear both;
+      }
+      :root.motion #attract-score-list[data-enter='page'] {
+        animation: motion-fade-in var(--t3-fade) linear both;
       }
       /* raiseModalDialogs() reopens a dialog technically: never animate that. */
       dialog.no-motion,
@@ -1861,11 +1938,11 @@
         pointer-events: auto;
       }
       #round-panel #attract-score-source { margin: 0 0 8px; font: 700 12px/1.3 system-ui, sans-serif; opacity: 0.75; }
-      #attract-score-list { list-style: none; margin: 0; padding: 0; }
-      #attract-score-list li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; padding: 6px 0; border-top: 1px solid var(--menu-line); text-align: left; font: 800 18px/1.2 monospace; }
-      #attract-score-list li:first-child { color: #a34b19; }
-      #round-panel.night #attract-score-list li:first-child { color: #ffd257; }
-      #attract-score-list .attract-rank { opacity: 0.65; font-size: 13px; align-self: center; }
+      :is(#attract-score-list, .attract-score-ghost) { list-style: none; margin: 0; padding: 0; }
+      :is(#attract-score-list, .attract-score-ghost) li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; padding: 6px 0; border-top: 1px solid var(--menu-line); text-align: left; font: 800 18px/1.2 monospace; }
+      :is(#attract-score-list, .attract-score-ghost) li:first-child { color: #a34b19; }
+      #round-panel.night :is(#attract-score-list, .attract-score-ghost) li:first-child { color: #ffd257; }
+      :is(#attract-score-list, .attract-score-ghost) .attract-rank { opacity: 0.65; font-size: 13px; align-self: center; }
       #round-panel #attract-personal-best { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--menu-line); font: 700 12px/1.3 system-ui, sans-serif; }
       .attract-powerups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 850px; margin: auto; }
       .attract-powerup { padding: 24px 12px; border: 1px solid var(--menu-line); border-radius: 22px; background: var(--menu-panel); box-shadow: 0 4px 0 var(--menu-shadow); }
@@ -1935,7 +2012,7 @@
         .attract-kicker { display: none; }
         .attract-scoreboard { width: min(520px, 100%); padding: clamp(6px, 1cqw, 16px) clamp(14px, 2cqw, 28px); }
         #round-panel #attract-score-source { margin-bottom: 4px; font-size: clamp(10px, 1cqw, 14px); }
-        #attract-score-list li { font-size: clamp(14px, 1.6cqw, 22px); padding: clamp(2px, 0.4cqw, 6px) 0; }
+        :is(#attract-score-list, .attract-score-ghost) li { font-size: clamp(14px, 1.6cqw, 22px); padding: clamp(2px, 0.4cqw, 6px) 0; }
         #round-panel #attract-personal-best { margin-top: 4px; padding-top: 4px; font-size: clamp(10px, 1cqw, 14px); }
         .attract-powerups { gap: 6px; }
         .attract-powerup { padding: clamp(8px, 1.4cqw, 20px) clamp(4px, 1cqw, 14px); border-radius: 14px; }
@@ -1948,7 +2025,7 @@
       @media (max-height: 300px) and (orientation: landscape) {
         #round-panel .attract-heading h2 { font-size: 18px; margin-bottom: 4px; }
         .attract-scoreboard { padding: 4px 10px; }
-        #attract-score-list li { font-size: 12px; line-height: 1.05; padding: 1px 0; }
+        :is(#attract-score-list, .attract-score-ghost) li { font-size: 12px; line-height: 1.05; padding: 1px 0; }
         #round-panel #attract-personal-best { margin-top: 2px; padding-top: 2px; }
         #round-panel .attract-powerup p { font-size: 10px; }
         .attract-powerup svg { width: 26px; height: 26px; }
@@ -1957,7 +2034,7 @@
         #round-panel .attract-heading h2 { font-size: 22px; margin-bottom: 8px; }
         .attract-kicker { font-size: 10px; }
         .attract-scoreboard { padding: 8px 14px; }
-        #attract-score-list li { font-size: 16px; padding: 4px 0; }
+        :is(#attract-score-list, .attract-score-ghost) li { font-size: 16px; padding: 4px 0; }
         .attract-powerup { padding: 6px 12px; gap: 10px; }
         .attract-powerup svg { width: 36px; height: 36px; }
         .attract-powerup h3 { font-size: 15px; }
@@ -7415,8 +7492,10 @@
           updateRoundPanel(game, night) {
             const idle = game.state === 'attract',
               motion = this.motion;
-            // Inside a View Transition commit the new snapshot needs the final state.
-            const animate = !this.presenter.committing;
+            // Presentation commits (T7a, T9, T11) apply final states. The boot commit only
+            // skips T1 when it runs as a View Transition callback.
+            const committing = this.presenter.committing,
+              animate = !committing;
             const entering = [];
             if (idle !== this.shownIdle) {
               const first = this.shownIdle === undefined;
@@ -7424,7 +7503,9 @@
               if (idle) {
                 motion.cancelLeave(this.panel);
                 this.releasePanel();
-                if (!first && animate) entering.push([this.panel, 'attract']);
+                // T1 on the first frame after loading, T6 when a round returns.
+                if (first ? !(committing && this.transition?.current) : animate)
+                  entering.push([this.panel, first ? 'load' : 'attract']);
               } else if (!first && animate) {
                 this.leaveAttract();
                 entering.push([this.mobileHud, 'start']);
@@ -8607,7 +8688,7 @@
               featherEnabled: false, shieldEnabled: false });
             this.backdropRenderer = new Renderer(context, this.backdrop);
             this.dots.forEach((button, i) => button.addEventListener('click', () => {
-              this.select(i);
+              this.select(i, i < this.index ? 'prev' : 'next');
               runner.draw(1);
             }));
             this.pauseButton.addEventListener('click', () => {
@@ -8623,11 +8704,29 @@
             this.mode = this.runner.modeSelect.value;
             this.select(0);
           }
-          select(index) {
+          // `direction` animates the change (T2); resets and paused previews switch at once.
+          select(index, direction = null) {
+            const motion = this.runner.motion;
+            const animate = direction && index !== this.index && !this.paused && !document.hidden;
+            const previous = this.elements[this.index];
             this.index = index;
             this.elapsed = 0;
             this.scorePage = 0;
-            this.elements.forEach((element, i) => { element.hidden = i !== index; });
+            this.elements.forEach((element, i) => {
+              if (i === index) {
+                element.hidden = false;
+                if (animate) motion.enter(element, direction);
+                else motion.cancelLeave(element);
+              } else if (animate && element === previous) {
+                motion.leave(element, direction, () => {
+                  if (this.elements[this.index] !== element) element.hidden = true;
+                });
+                element.hidden = !motion.isLeaving(element) && this.elements[this.index] !== element;
+              } else {
+                motion.finishLeave(element);
+                element.hidden = true;
+              }
+            });
             this.dots.forEach((button, i) => {
               if (i === index) button.setAttribute('aria-current', 'true');
               else button.removeAttribute('aria-current');
@@ -8673,6 +8772,27 @@
             this.empty.hidden = entries.length !== 0;
             this.personal.textContent = 'Your best · ' + hudNumber(this.runner.readHighScore(mode));
           }
+          // T3: the previous page fades out as a static copy while the new one fades in.
+          turnScorePage() {
+            const motion = this.runner.motion;
+            const animate = motion.enabled && !this.rows.hidden && !document.hidden;
+            if (animate) {
+              const ghost = this.rows.cloneNode(true);
+              ghost.removeAttribute('id');
+              ghost.removeAttribute('aria-label');
+              ghost.className = 'attract-score-ghost';
+              ghost.setAttribute('aria-hidden', 'true');
+              Object.assign(ghost.style, {
+                top: this.rows.offsetTop + 'px',
+                left: this.rows.offsetLeft + 'px',
+                width: this.rows.offsetWidth + 'px',
+              });
+              this.rows.after(ghost);
+              motion.leave(ghost, 'page', () => ghost.remove());
+            }
+            this.renderScores();
+            if (animate) motion.enter(this.rows, 'page');
+          }
           resetDemo() {
             this.demoSeed = 937;
             const g = this.demo;
@@ -8702,10 +8822,10 @@
             if (!this.active || this.paused) return;
             if (this.wide) this.backdrop.advance(dt);
             this.elapsed += dt;
-            if (this.elapsed >= this.durations[this.index]) this.select((this.index + 1) % 3);
+            if (this.elapsed >= this.durations[this.index]) this.select((this.index + 1) % 3, 'next');
             if (this.index === 0) {
               const page = this.elapsed >= 4000 ? 1 : 0;
-              if (this.scorePage !== page) { this.scorePage = page; this.renderScores(); }
+              if (this.scorePage !== page) { this.scorePage = page; this.turnScorePage(); }
             }
             if (this.index !== 1 || this.runner.browser.motionQuery.matches) return;
             this.demoAcc += dt;

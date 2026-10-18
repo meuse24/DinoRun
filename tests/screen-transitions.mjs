@@ -642,6 +642,155 @@ try {
     await context.close();
   }
 
+  // Mechanism A on the attract screen (T1, T2, T3); START stays usable throughout.
+  for (const layout of ['desktop', 'touch']) {
+    const touch = layout === 'touch';
+    const context = await browser.newContext({ serviceWorkers: 'block',
+      viewport: touch ? { width: 390, height: 844 } : { width: 1280, height: 720 },
+      ...(touch ? { isMobile: true, hasTouch: true } : {}) });
+    await context.route(/^https?:/, route => route.abort());
+    const page = await context.newPage(), errors = [];
+    page.on('pageerror', e => errors.push(String(e)));
+    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    await page.addInitScript(() => {
+      const musicAudio = new EventTarget();
+      musicAudio.play = () => Promise.resolve(); musicAudio.pause = () => {};
+      window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, musicAudio };
+      try { localStorage.setItem('dino-fullscreen-disabled', 'true'); } catch {}
+      // Records the first entrance (T1) with the animations it started.
+      window.__enters = [];
+      new MutationObserver(records => {
+        for (const record of records) {
+          const value = record.target.getAttribute('data-enter');
+          if (value) window.__enters.push({ id: record.target.id, value,
+            names: record.target.getAnimations({ subtree: true }).map(a => a.animationName) });
+        }
+      }).observe(document, { subtree: true, attributeFilter: ['data-enter'] });
+    });
+    await page.goto(pathToFileURL(file).href);
+    await page.waitForFunction(() => !!window.__dinoRunner);
+    const tap = async selector => {
+      const box = await page.locator(selector).boundingBox();
+      const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+      if (touch) await page.touchscreen.tap(x, y); else await page.mouse.click(x, y);
+    };
+    const motion = selector => page.evaluate(selector => [...document.querySelectorAll(selector)]
+      .flatMap(el => el.getAnimations({ subtree: true }))
+      .filter(a => String(a.animationName || '').startsWith('motion-'))
+      .map(a => ({ name: a.animationName, target: a.effect.target.id || a.effect.target.className })), selector);
+    const hold = fraction => page.evaluate(fraction => {
+      for (const leave of window.__dinoRunner.motion.leaving.values()) clearTimeout(leave.timer);
+      for (const a of document.getAnimations()) {
+        if (!String(a.animationName || '').startsWith('motion-')) continue;
+        if (fraction === null) { a.play(); continue; }
+        a.pause(); a.currentTime = a.effect.getComputedTiming().endTime * fraction;
+      }
+    }, fraction);
+    const startAndReturn = async selector => {
+      await tap(selector);
+      assert.equal((await snap(page)).state, 'playing', 'START works during the transition');
+      await hold(null);
+      await page.evaluate(() => {
+        const r = window.__dinoRunner;
+        r.game.score = 0; r.game.gameOver(); r.returnToAttract();
+        return window.__dinoTest.transitionDone();
+      });
+    };
+    await page.evaluate(() => {
+      window.__snap = () => ({ state: window.__dinoGame.state });
+      const r = window.__dinoRunner;
+      r.attract.userPaused = false;
+      for (let i = 0; i < 10; i++) r.highscoreController.store.addLocal('normal', {
+        id: '00000000-0000-4000-8000-' + String(i + 1).padStart(12, '0'),
+        name: String.fromCharCode(65 + i).repeat(4), score: 900 - i * 50,
+        achievedAt: '2026-10-17T10:00:00Z', device: 'desktop', input: 'keyboard' });
+      r.attract.renderScores();
+    });
+
+    await check(`${layout}: T1 the menu settles in on load with START from 0.6`, async () => {
+      const enters = await page.evaluate(() => window.__enters);
+      const load = enters.find(e => e.id === 'round-panel' && e.value === 'load');
+      assert(load, 'T1 entrance recorded: ' + JSON.stringify(enters));
+      for (const name of ['motion-rise-in', 'motion-dim-in']) assert(load.names.includes(name), name);
+      await page.evaluate(() => window.__dinoRunner.motion.enter(document.getElementById('round-panel'), 'load'));
+      await hold(0);
+      const start = await page.evaluate(() => Number(getComputedStyle(document.getElementById('start-game')).opacity));
+      assert(start >= 0.59 && start <= 0.61, 'START begins at 0.6, got ' + start);
+      await hold(0.5);
+      await page.screenshot({ path: path.join(output, `${layout}-t1-mid.png`) });
+      await startAndReturn('#start-game');
+    });
+
+    await check(`${layout}: T2 slides move in the direction of the index change`, async () => {
+      for (const [index, direction, sign] of [[2, 'next', -1], [1, 'prev', 1]]) {
+        await tap(`[data-attract-slide="${index}"]`);
+        await hold(0.5);
+        const state = await page.evaluate(() => {
+          const slides = [...document.querySelectorAll('.attract-slide')];
+          const leaving = slides.find(s => s.dataset.leaving), entering = slides.find(s => s.dataset.enter);
+          return { leaving: leaving && { id: leaving.id, kind: leaving.dataset.leaving, inert: leaving.inert,
+            hidden: leaving.hidden, x: parseFloat(getComputedStyle(leaving).translate) || 0,
+            area: getComputedStyle(leaving).gridArea },
+            entering: entering && { id: entering.id, kind: entering.dataset.enter, inert: entering.inert },
+            current: window.__dinoRunner.attract.index };
+        });
+        assert.equal(state.current, index);
+        assert.equal(state.leaving?.kind, direction);
+        assert.equal(state.leaving.inert, true);
+        assert.equal(state.leaving.hidden, false);
+        assert.equal(Math.sign(state.leaving.x), sign, 'Leaving slide moves with the change: ' + state.leaving.x);
+        assert.equal(state.entering?.kind, direction);
+        assert.equal(state.entering.inert, false);
+        assert.deepEqual((await motion('.attract-slide')).map(a => a.name).sort(),
+          ['motion-shift-in', 'motion-shift-out']);
+        await page.screenshot({ path: path.join(output, `${layout}-t2-${direction}-mid.png`) });
+        await hold(null);
+        await page.evaluate(() => window.__dinoTest.transitionDone());
+      }
+      // Automatic rotation is forward; START works during the change.
+      await page.evaluate(() => {
+        const a = window.__dinoRunner.attract;
+        a.advance(a.durations[a.index]);
+      });
+      await hold(0.3);
+      assert.equal(await page.evaluate(() => document.querySelector('.attract-slide[data-leaving]')?.dataset.leaving), 'next');
+      await startAndReturn('#start-game');
+      // A paused preview switches at once.
+      await page.evaluate(() => { window.__dinoRunner.attract.userPaused = true; });
+      await tap('[data-attract-slide="2"]');
+      assert.equal(await page.evaluate(() => document.querySelectorAll('.attract-slide[data-leaving], .attract-slide[data-enter]').length), 0);
+      await page.evaluate(() => { window.__dinoRunner.attract.userPaused = false; window.__dinoRunner.draw(1); });
+    });
+
+    await check(`${layout}: T3 the highscore pages crossfade`, async () => {
+      await tap('[data-attract-slide="0"]');
+      await hold(null);
+      await page.evaluate(() => window.__dinoTest.transitionDone());
+      await page.evaluate(() => window.__dinoRunner.attract.advance(4000));
+      await hold(0.5);
+      const state = await page.evaluate(() => {
+        const ghost = document.querySelector('.attract-score-ghost'), list = document.getElementById('attract-score-list');
+        return { ghost: ghost && { kind: ghost.dataset.leaving, hidden: ghost.getAttribute('aria-hidden'),
+          first: ghost.querySelector('.attract-rank').textContent,
+          opacity: Number(getComputedStyle(ghost).opacity), top: ghost.getBoundingClientRect().top },
+          list: { kind: list.dataset.enter, first: list.querySelector('.attract-rank').textContent,
+            opacity: Number(getComputedStyle(list).opacity), top: list.getBoundingClientRect().top } };
+      });
+      assert.equal(state.ghost?.kind, 'page');
+      assert.equal(state.ghost.hidden, 'true');
+      assert.deepEqual([state.ghost.first, state.list.first], ['01', '06']);
+      assert(Math.abs(state.ghost.top - state.list.top) <= 1, 'The copy covers the list');
+      assert(state.ghost.opacity > 0.3 && state.ghost.opacity < 0.7, 'ghost ' + state.ghost.opacity);
+      assert(state.list.opacity > 0.3 && state.list.opacity < 0.7, 'list ' + state.list.opacity);
+      await page.screenshot({ path: path.join(output, `${layout}-t3-mid.png`) });
+      await startAndReturn('#start-game');
+      assert.equal(await page.locator('.attract-score-ghost').count(), 0);
+    });
+
+    assert.deepEqual(errors, [], layout + ' attract page errors');
+    await context.close();
+  }
+
   // Trusted input to the first rendered frame with the jump pose, real rAF loop.
   await check('START latency with and without transitions differs by at most one frame', async () => {
     const results = {};
@@ -679,6 +828,10 @@ try {
     }
     report.latency = results;
     console.log('  latency ms', JSON.stringify(results));
+    // Headless WebKit has no real compositor/VSync: its rAF timing is reference only.
+    // The physical-device measurement (tests/android-transitions.mjs) is authoritative.
+    results.assessed = engine !== 'webkit';
+    if (!results.assessed) return;
     assert(Math.abs(results.on.median - results.off.median) <= 1000 / 60 + 1, 'median');
     assert(Math.abs(results.on.p95 - results.off.p95) <= 1000 / 60 + 1, 'p95');
   });
