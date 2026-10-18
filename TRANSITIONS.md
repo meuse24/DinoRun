@@ -593,8 +593,35 @@ START-Latenz bei 30 Läufen mit/ohne Übergänge unterscheidet sich im Median
 um ≤ 5 ms; beim p95 liegt sie mit bis zu 16 ms knapp innerhalb eines Frames
 (Querformat). Rotation zurückgesetzt (auto 1, user 0), nur eigene Tabs und
 Helfer geschlossen. Berichte: `output/transitions/device-phase2`,
-`device-phase4`, `device-phase5`. Das Galaxy A53 war nicht angeschlossen und
-ist nicht gemessen.
+`device-phase4`, `device-phase5`.
+
+**Physisches Gerät (Galaxy A53 SM-A536B, Chrome 155.0.8059.79, kein
+Emulator), nach Phase 7 mit `release/dino.html`:**
+`game-over-flow.mjs --android` besteht in beiden Orientierungen. Bei
+`android-transitions.mjs` ist das Frame-Kriterium **nicht erfüllt, aber nicht
+durch die Übergänge verursacht**:
+
+- Im ersten Lauf hatte T4 im Hochformat (320×581) drei Frames mit 33 ms; in
+  der Baseline hatte T2 ebenfalls drei. Das Querformat lief danach nicht
+  mehr.
+- In einer Wiederholung bestand das Hochformat. Im Querformat (637×234)
+  lagen über der Grenze mit/ohne Übergänge: T2 5/7, T4 4/4, T6 4/3. T5 hatte
+  0/0, T7a 1/0.
+
+Fast alle langsamen Frames sind genau ein verworfener VSync (33 ms). Die
+Baseline ist genauso oft oder öfter betroffen. Das Gerät erreicht die Grenze
+in diesem Zustand also schon ohne Übergänge nicht. Die START-Latenz mit/ohne
+Übergänge unterscheidet sich in allen Läufen um höchstens einen Frame:
+
+| Lauf | mit Übergängen (Median / p95) | ohne (Median / p95) |
+|---|---|---|
+| Hochformat | 40,8 / 59,2 ms | 34,8 / 64,2 ms |
+| Hochformat, Wiederholung | 42,0 / 65,4 ms | 40,7 / 48,2 ms |
+| Querformat | 53,9 / 82,0 ms | 55,4 / 89,8 ms |
+
+Test und Grenzwert sind unverändert. Rotation zurückgesetzt (auto 1, user 0),
+nur eigene Tabs, Vorschau, Relay und Bridges beendet. Berichte:
+`output/transitions/device-a53`, `device-a53-rerun`.
 
 **Engine-Befunde:**
 
