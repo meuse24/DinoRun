@@ -14,7 +14,7 @@ The locally installed, exactly pinned development tools run in this order:
 
 1. Terser 5.51.2 compresses/mangles the three inline scripts. Property names,
    public hooks and the Chromium copyright/attribution are preserved.
-2. CSSO 5.0.5 minifies all three stylesheets, including the help template. Rule
+2. CSSO 5.0.5 minifies all four stylesheets, including the help template. Rule
    restructuring is disabled: its default merging incorrectly moved the
    `var(--bg)` fallback after `color-mix()` and changed button transparency.
 3. HTMLMinifier-Terser 7.2.0 minifies markup, preserving inline text spacing,
@@ -31,19 +31,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-18.5)
+## Size (UTF-8 bytes, build 2026-10-18.6)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 414,180 |
-| After Terser | 254,715 |
-| After CSSO | 223,473 |
-| Final HTML | 216,623 |
+| Readable source | 418,109 |
+| After Terser | 258,507 |
+| After CSSO | 226,287 |
+| Final HTML | 219,411 |
 
-Saved: **197,557 bytes (47.70%)**, before transport compression. The optional
+Saved: **198,698 bytes (47.52%)**, before transport compression. The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-68,566 bytes; Brotli quality 11 gives 60,582 bytes. These are measurements only;
+69,211 bytes; Brotli quality 11 gives 61,142 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
