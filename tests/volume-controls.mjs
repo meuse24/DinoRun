@@ -59,7 +59,7 @@ async function fixture(viewport,preset={},denied=false) {
       musicAudio=new Audio(); let paused=true, position=0, src='';
       Object.defineProperties(musicAudio,{
         paused:{get:()=>paused},currentTime:{get:()=>position,set:value=>{position=value;}},
-        src:{get:()=>src,set:value=>{src=value;}},
+        src:{get:()=>src,set:value=>{src=value;position=0;}},
         play:{value:()=>{paused=false;musicAudio.dispatchEvent(new Event('playing'));return Promise.resolve();}},
         pause:{value:()=>{paused=true;}},
       });
@@ -69,7 +69,8 @@ async function fixture(viewport,preset={},denied=false) {
   await context.route('**/*',route=>{
     requests.push(route.request().url());
     if(route.request().url()===url)return route.fulfill({contentType:'text/html',body:html});
-    if(route.request().url()===origin+'/dino-jump-jump.mp3')return route.fulfill({contentType:'audio/wav',body:wave});
+    if(['/dino-jump-jump.mp3','/dino-boom-in-the-dunes.mp3'].some(name=>route.request().url()===origin+name))
+      return route.fulfill({contentType:'audio/wav',body:wave});
     return route.fulfill({status:204});
   });
   const page=await context.newPage();
@@ -137,7 +138,45 @@ try {
       await page.locator('#volume-controls').scrollIntoViewIfNeeded();
       await page.screenshot({path:path.join(output,name+'.png')});
       assert.equal(s.game.state,'attract'); assert.equal(s.game.paused,true); assert.equal(s.game.score,0);
-      assert.deepEqual(s.game.audio,{enabled:true,musicVolume:27,effectsVolume:55});
+      assert.deepEqual(s.game.audio,{enabled:true,musicVolume:27,effectsVolume:55,track:'boom-in-the-dunes'});
+      const song=page.getByRole('combobox',{name:'Theme song'});
+      assert.equal(await song.inputValue(),'boom-in-the-dunes');
+      await page.evaluate(()=>{window.__dinoRunner.music.audio.currentTime=2;});
+      await song.focus(); await song.press('End'); await song.press('Enter');
+      await playing(page);
+      assert.equal(await song.inputValue(),'dino-jump-jump');
+      assert.equal(await page.evaluate(()=>window.__dinoRunner.music.audio.src.endsWith('dino-jump-jump.mp3')),true);
+      assert((await state(page)).position<1,'Switching starts the selected song from the beginning');
+      close((await state(page)).mediaVolume,0.27);
+      await page.reload(); await page.locator('#settings-open').click(); await playing(page);
+      assert.equal(await song.inputValue(),'dino-jump-jump','Song choice survives reload');
+      await page.locator('#sound-toggle').click();
+      await song.selectOption('boom-in-the-dunes');
+      assert.equal((await state(page)).mediaPaused,true,'Changing songs respects master mute');
+      await page.locator('#sound-toggle').click(); await playing(page);
+      await setRange(page,'music',0); await song.selectOption('dino-jump-jump');
+      assert.equal((await state(page)).mediaPaused,true,'Changing songs respects zero music volume');
+      await setRange(page,'music',27); await playing(page);
+      // A missing optional track must not prevent selecting the other one.
+      await page.evaluate(()=>window.__dinoRunner.music.audio.dispatchEvent(new Event('error')));
+      assert.equal(await page.evaluate(()=>window.__dinoRunner.music.unavailable),true);
+      await song.selectOption('boom-in-the-dunes'); await playing(page);
+      assert.equal(await page.evaluate(()=>window.__dinoRunner.music.unavailable),false);
+      await page.locator('#settings-close').click(); await page.locator('#start-game').click();
+      assert.equal((await state(page)).mediaPaused,true,'Gameplay pauses menu music');
+      await page.locator('#settings-open').click(); await playing(page);
+      await song.selectOption('dino-jump-jump'); await playing(page);
+      assert.equal((await state(page)).game.paused,true,'Song choice does not resume paused gameplay');
+      await page.locator('#settings-close').click();
+      await page.waitForFunction(()=>!window.__dinoRunner.paused && window.__dinoRunner.music.audio.paused);
+      assert.equal((await state(page)).mediaPaused,true,'Closing Settings resumes gameplay without menu music');
+      await page.locator('#settings-open').click();
+      await song.selectOption('boom-in-the-dunes'); await playing(page);
+      await song.scrollIntoViewIfNeeded();
+      const songBox=await song.boundingBox();
+      assert(songBox.height>=44 && songBox.width<=viewport.width,'Native song picker fits touch layouts');
+      await page.screenshot({path:path.join(output,name+'-songs.png')});
+      results.push({name:name+'-songs',checks:'passed'});
       if(name==='desktop' && await page.evaluate(()=>!!(window.OfflineAudioContext||window.webkitOfflineAudioContext))) {
         const audio=await page.evaluate(async()=>{
           const sound=window.__dinoRunner.sound;
@@ -184,17 +223,20 @@ try {
   }
   for(const [name,preset,denied,expected] of [
     ['saved-zero',{'dino-music-volume':'0','dino-effects-volume':'0'},false,[0,0]],
-    ['invalid-storage',{'dino-music-volume':'NaN','dino-effects-volume':'150'},false,[45,100]],
-    ['empty-storage',{'dino-music-volume':' ','dino-effects-volume':'-1'},false,[45,100]],
+    ['invalid-storage',{'dino-music-volume':'NaN','dino-effects-volume':'150','dino-music-track':'__proto__'},false,[45,100]],
+    ['empty-storage',{'dino-music-volume':' ','dino-effects-volume':'-1','dino-music-track':''},false,[45,100]],
     ['blocked-storage',{},true,[45,100]],
   ]) {
     const {context,page,errors}=await fixture({width:1280,height:800},preset,denied);
     try {
       let s=await state(page); assert.deepEqual([s.music,s.effects],expected);
+      assert.equal(await page.locator('#music-track').inputValue(),'boom-in-the-dunes');
+      await page.locator('#music-track').selectOption('dino-jump-jump');
       await setRange(page,'music',14); await setRange(page,'effects',36);
       s=await state(page); assert.deepEqual([s.music,s.effects],[14,36]);
       await page.reload(); await page.locator('#settings-open').click();
       s=await state(page); assert.deepEqual([s.music,s.effects],denied?[45,100]:[14,36]);
+      assert.equal(await page.locator('#music-track').inputValue(),denied?'boom-in-the-dunes':'dino-jump-jump');
       assert.deepEqual(errors,[]); results.push({name,checks:'passed'});
     }finally{await context.close();}
   }

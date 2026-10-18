@@ -11,7 +11,7 @@ const source = artifact.replace('<script>',
   'window.__dinoArtifactSha256 = ' + JSON.stringify(hash) + ';</script><script>');
 const assets = { 'service-worker.js': 'text/javascript', 'manifest.webmanifest': 'application/manifest+json',
   'icon-192.png': 'image/png', 'icon-512.png': 'image/png', 'icon-180.png': 'image/png',
-  'dino-jump-jump.mp3': 'audio/mpeg' };
+  'dino-jump-jump.mp3': 'audio/mpeg', 'dino-boom-in-the-dunes.mp3': 'audio/mpeg' };
 http.createServer((request, response) => {
   const name = new URL(request.url, 'http://localhost').pathname.slice(1);
   response.setHeader('Cache-Control', 'no-store');

@@ -12,7 +12,7 @@
   removed; the sprite artwork is represented as inline Canvas vector
   drawing commands; responsive sizing, Pointer Events gestures and a
   localStorage high score were added. Logo and guide are embedded in this file.
-  No external resource is required at runtime; dino-jump-jump.mp3 is optional menu music.
+  No external resource is required at runtime; the two MP3 menu songs are optional.
 
   Copyright 2014 The Chromium Authors
   Use of this source code is governed by a BSD-style license that can be
@@ -438,7 +438,8 @@
       }
 
       #settings button,
-      #mode-select {
+      #mode-select,
+      #music-track {
         min-height: 44px;
         border: 1px solid currentColor;
         border-radius: 22px;
@@ -638,7 +639,8 @@
         background: linear-gradient(90deg, transparent, #ffd257, #e67842, transparent);
       }
       #settings button,
-      #mode-select {
+      #mode-select,
+      #music-track {
         border: 1px solid var(--menu-line);
         background: var(--menu-panel);
         color: var(--menu-ink);
@@ -753,9 +755,17 @@
         cursor: pointer;
         touch-action: pan-y;
       }
-      .volume-row input:focus-visible {
+      .volume-row input:focus-visible,
+      #music-track:focus-visible {
         outline: 3px solid #e67842;
         outline-offset: 3px;
+      }
+      .music-track-row { grid-column: 1 / -1; }
+      #music-track {
+        display: block;
+        width: 100%;
+        min-height: 44px;
+        margin-top: 8px;
       }
       #volume-help {
         grid-column: 1 / -1;
@@ -2045,6 +2055,13 @@
             <button id="sound-toggle" type="button" role="switch" aria-checked="true">Sound</button>
           </div>
           <section id="volume-controls" aria-label="Volume" aria-describedby="volume-help">
+            <div class="volume-row music-track-row">
+              <label for="music-track">Theme song</label>
+              <select id="music-track">
+                <option value="boom-in-the-dunes">Boom in the Dunes</option>
+                <option value="dino-jump-jump">Dino Jump Jump</option>
+              </select>
+            </div>
             <div class="volume-row">
               <label for="music-volume">Music volume <output id="music-volume-value" for="music-volume" aria-hidden="true">45%</output></label>
               <input id="music-volume" type="range" min="0" max="100" step="1" value="45" aria-valuetext="45%">
@@ -2053,7 +2070,7 @@
               <label for="effects-volume">Effects volume <output id="effects-volume-value" for="effects-volume" aria-hidden="true">100%</output></label>
               <input id="effects-volume" type="range" min="0" max="100" step="1" value="100" aria-valuetext="100%">
             </div>
-            <p id="volume-help">Sound off mutes both. Your levels are saved in this browser.</p>
+            <p id="volume-help">Sound off mutes both. Your song and levels are saved in this browser.</p>
           </section>
           <div id="mode-control">
             <label for="mode-select">Game mode</label>
@@ -2683,7 +2700,7 @@
                     <p>
                       Get a top 10 score and enter four letters. Online scores show your name,
                       score, date and device to everyone. Use the gear for Relaxed mode, music
-                      and effects volume, sound and fullscreen.
+                      and effects volume, theme song, sound and fullscreen.
                     </p>
                   </section>
                   <section class="card wide">
@@ -2695,8 +2712,8 @@
                         target="_blank"
                         rel="noopener noreferrer"
                         >Chromium T-Rex Runner</a
-                      >. Thanks to OpenAI Codex, Anthropic Claude Code, Suno (song “Dino Jump
-                      Jump”), Playwright, Prettier, MDN and all testers.
+                      >. Thanks to OpenAI Codex, Anthropic Claude Code, Suno (songs “Dino Jump
+                      Jump” and “Boom in the Dunes”), Playwright, Prettier, MDN and all testers.
                     </p>
                   </section>
                 </div>
@@ -2755,7 +2772,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-17.5';
+        const BUILD = '2026-10-18.1';
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -3253,25 +3270,32 @@
         }
         const landscapeFullscreen = new LandscapeFullscreen();
 
-        // Audio: optional menu track and synthesized game sounds.
+        // Audio: optional menu tracks and synthesized game sounds.
+        const MENU_TRACKS = {
+          'boom-in-the-dunes': 'dino-boom-in-the-dunes.mp3',
+          'dino-jump-jump': 'dino-jump-jump.mp3',
+        };
+        const DEFAULT_MENU_TRACK = 'boom-in-the-dunes';
         const volumeLevel = (value) => clamp(Math.round(Number(value) || 0), 0, 100);
         const savedVolume = (key, fallback) => {
           const raw = preferences.get(key), value = Number(raw);
           return raw !== null && raw.trim() !== '' && Number.isFinite(value) && value >= 0 && value <= 100
             ? Math.round(value) : fallback;
         };
-        // Optional menu track: pause preserves position; only a new session resets it.
+        // Pause preserves position; switching songs or starting a new session resets it.
         class MenuMusic {
           constructor(audio = new Audio()) {
             this.audio = audio;
             this.wanted = null;
             this.unavailable = false;
             this.volume = savedVolume('dino-music-volume', 45);
+            const savedTrack = preferences.get('dino-music-track');
+            this.track = Object.hasOwn(MENU_TRACKS, savedTrack) ? savedTrack : DEFAULT_MENU_TRACK;
             audio.preload = 'none';
             audio.loop = true;
             audio.volume = this.volume / 100;
             audio.muted = this.volume === 0;
-            audio.src = 'dino-jump-jump.mp3';
+            audio.src = MENU_TRACKS[this.track];
             audio.addEventListener('error', () => {
               // A separately shared HTML may not include the optional song.
               this.unavailable = true;
@@ -3287,6 +3311,15 @@
             this.audio.volume = this.volume / 100;
             this.audio.muted = this.volume === 0;
             preferences.set('dino-music-volume', this.volume);
+          }
+          setTrack(track) {
+            if (!Object.hasOwn(MENU_TRACKS, track) || track === this.track) return;
+            this.audio.pause();
+            this.wanted = null;
+            this.unavailable = false;
+            this.track = track;
+            this.audio.src = MENU_TRACKS[track];
+            preferences.set('dino-music-track', track);
           }
           sync(wanted, retry = false) {
             wanted = wanted && this.volume > 0;
@@ -8285,6 +8318,14 @@
           bindSettingsEvents() {
             const runner = this.runner;
             runner.sound.button.addEventListener('click', () => runner.updateMusic(true));
+            const track = document.getElementById('music-track');
+            track.value = runner.music.track;
+            track.addEventListener('change', () => {
+              runner.music.setTrack(track.value);
+              track.value = runner.music.track;
+              runner.updateMusic(true);
+            });
+            track.addEventListener('keydown', (event) => event.stopPropagation());
             for (const [name, channel] of [['music', runner.music], ['effects', runner.sound]]) {
               const slider = document.getElementById(name + '-volume');
               const value = document.getElementById(name + '-volume-value');
@@ -8895,7 +8936,8 @@
           return JSON.stringify({
             coordinates: 'logical canvas pixels; origin top left, x right, y down',
             state: game.state, paused: runner.paused, mode: game.mode,
-            audio: { enabled: runner.sound.enabled, musicVolume: runner.music.volume, effectsVolume: runner.sound.volume },
+            audio: { enabled: runner.sound.enabled, musicVolume: runner.music.volume,
+              effectsVolume: runner.sound.volume, track: runner.music.track },
             attract: game.state === 'attract' ? {
               panel: runner.attract.slides[runner.attract.index], elapsedMs: runner.attract.elapsed,
               paused: runner.attract.paused,

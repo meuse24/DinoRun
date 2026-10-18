@@ -30,29 +30,30 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-17.5)
+## Size (UTF-8 bytes, build 2026-10-18.1)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 368,518 |
-| After Terser | 225,073 |
-| After CSSO | 200,902 |
-| Final HTML | 194,113 |
+| Readable source | 370,338 |
+| After Terser | 226,289 |
+| After CSSO | 202,027 |
+| Final HTML | 195,138 |
 
-Saved: **174,405 bytes (47.33%)**, before transport compression. The optional
-song is not counted or altered. `release/size-report.json` contains these stages,
+Saved: **175,200 bytes (47.31%)**, before transport compression. The optional
+songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-64,023 bytes; Brotli quality 11 gives 56,515 bytes. These are measurements only;
+64,281 bytes; Brotli quality 11 gives 56,804 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
 
 - Copy/open `release/dino.html` directly for offline `file://` play. It has no
   required external JavaScript, CSS or image files. To use menu music, optionally
-  place `dino-jump-jump.mp3` beside it.
+  place `dino-boom-in-the-dunes.mp3` (default) and/or `dino-jump-jump.mp3` beside
+  it. Choose the song in Settings → Theme song; the choice is saved locally.
 - On the existing website, use it as the replacement **dino.html in the original
   directory**. Keep the existing PHP API, configuration/data, service worker,
-  manifest/icons and optional song in their existing locations. This preserves
+  manifest/icons and both optional songs in their existing locations. This preserves
   relative API/PWA URLs. The generated `release` folder alone is not a complete
   PHP/PWA deployment. Nothing is uploaded or deployed by the build.
 - Do not edit the generated HTML. Rebuild after changing the source. The source

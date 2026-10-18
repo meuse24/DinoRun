@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dino-run-v10';
+const CACHE_NAME = 'dino-run-v11';
 const CACHE_PREFIX = 'dino-run-';
 const GAME_URL = new URL('./dino.html', self.registration.scope).href;
 const STATIC_URLS = [
@@ -7,16 +7,18 @@ const STATIC_URLS = [
   './icon-512.png',
   './icon-180.png',
   './dino-jump-jump.mp3',
+  './dino-boom-in-the-dunes.mp3',
 ].map((path) => new URL(path, self.registration.scope).href);
-const MUSIC_URL = new URL('./dino-jump-jump.mp3', self.registration.scope).href;
+const MUSIC_URLS = ['./dino-jump-jump.mp3', './dino-boom-in-the-dunes.mp3']
+  .map((path) => new URL(path, self.registration.scope).href);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       Promise.all([
-        cache.addAll([GAME_URL, ...STATIC_URLS.filter((url) => url !== MUSIC_URL)]),
-        // A shared HTML/game installation may omit the optional menu track.
-        cache.add(MUSIC_URL).catch(() => {}),
+        cache.addAll([GAME_URL, ...STATIC_URLS.filter((url) => !MUSIC_URLS.includes(url))]),
+        // Either optional song may be absent without blocking offline installation.
+        ...MUSIC_URLS.map((url) => cache.add(url).catch(() => {})),
       ]),
     ),
   );
@@ -66,7 +68,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(url.href).then(async (cached) => {
       if (!cached) return fetch(request);
-      if (url.href !== MUSIC_URL || !request.headers.has('range')) return cached;
+      if (!MUSIC_URLS.includes(url.href) || !request.headers.has('range')) return cached;
 
       // Audio players often ask for byte ranges, even when the whole song is cached.
       const match = /^bytes=(\d*)-(\d*)$/.exec(request.headers.get('range'));

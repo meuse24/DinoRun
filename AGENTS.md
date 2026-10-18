@@ -66,6 +66,9 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/volume-controls.mjs [game.html]`: music/effects sliders, native
   keyboard/touch input, persistence, master mute and rendered audio scaling.
   Accepts `DINO_BROWSER=webkit`; see `VOLUME.md` for Windows audio harness limits.
+- `node tests/theme-songs.mjs [game.html]`: actual MP3 decoding, saved theme-song
+  selection, offline switching and cached byte-range responses in Chromium.
+  Both optional MP3 files are served from an isolated local fixture.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
 - Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.
   Keep the game in one self-contained HTML, with no required sibling assets for
