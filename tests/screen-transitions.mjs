@@ -791,6 +791,181 @@ try {
     await context.close();
   }
 
+  // Mechanism B: native dialog transitions (T7b, T8, T10, T12, T13, T14).
+  for (const layout of ['desktop', 'portrait']) {
+    const touch = layout === 'portrait';
+    const { context, page, errors } = await openGame(browser, { touch,
+      viewport: touch ? { width: 390, height: 844 } : { width: 1280, height: 720 } });
+    await page.evaluate(() => {
+      // Running dialog/backdrop transitions; `hold` pauses them at a fraction.
+      window.__dialogMotion = (id, fraction) => {
+        const dialog = document.getElementById(id);
+        const list = document.getAnimations().filter(a => a.effect?.target === dialog);
+        if (fraction !== undefined) for (const a of list) {
+          a.pause(); a.currentTime = a.effect.getComputedTiming().endTime * fraction;
+        }
+        const style = getComputedStyle(dialog), backdrop = getComputedStyle(dialog, '::backdrop');
+        return { open: dialog.open, display: style.display, opacity: Number(style.opacity),
+          translate: style.translate, scale: style.scale, backdrop: Number(backdrop.opacity),
+          // WebKit reports the ::backdrop pseudo-element as '' (the element itself is null).
+          running: list.map(a => (a.transitionProperty || a.animationName) +
+            (a.effect.pseudoElement === '' ? '::backdrop' : a.effect.pseudoElement || '') +
+            ':' + Math.round(a.effect.getComputedTiming().endTime)).sort() };
+      };
+      window.__release = () => { for (const a of document.getAnimations()) if (a.playState === 'paused') a.play(); };
+    });
+    const dialogMotion = (id, fraction) => page.evaluate(([id, fraction]) => window.__dialogMotion(id, fraction), [id, fraction]);
+    // Without `overlay` (WebKit 26.5, Firefox) dialogs open animated but close at once.
+    const exits = await page.evaluate(() => CSS.supports('overlay: auto'));
+    report.dialogExits = { ...report.dialogExits, [layout]: exits };
+    const assertExit = (state, message) => {
+      if (exits) assert.notEqual(state.display, 'none', message);
+      else assert.equal(state.display, 'none', 'Fallback closes at once: ' + message);
+    };
+    await done(page);
+
+    await check(`${layout}: T10 Settings opens and closes animated, also by Escape`, async () => {
+      await page.locator('#settings-open').click();
+      const opening = await dialogMotion('settings', 0.5);
+      assert.equal(opening.open, true);
+      assert(opening.running.some(r => r.startsWith('opacity:')), JSON.stringify(opening.running));
+      assert(opening.running.some(r => r.startsWith('opacity::backdrop')), 'Backdrop fades');
+      assert(opening.backdrop > 0.05 && opening.backdrop < 0.95, 'mid backdrop ' + opening.backdrop);
+      assert(opening.opacity > 0.05 && opening.opacity < 0.95, 'mid opacity ' + opening.opacity);
+      if (touch) assert.notEqual(opening.translate, 'none', 'Bottom sheet rises: ' + opening.translate);
+      else assert(Number(opening.scale) < 1 && Number(opening.scale) > 0.96, 'scale ' + opening.scale);
+      await page.screenshot({ path: path.join(output, `${layout}-t10-mid.png`) });
+      await page.evaluate(() => window.__release());
+      await done(page);
+      await page.keyboard.press('Escape');
+      const closing = await dialogMotion('settings');
+      assert.equal(closing.open, false);
+      assertExit(closing, 'Native Escape still animates the exit');
+      if (exits) assert(closing.running.some(r => r.startsWith('opacity:')));
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+      await done(page);
+      const closed = await dialogMotion('settings');
+      assert.equal(closed.display, 'none');
+      assert.equal(await page.evaluate(() => document.getElementById('settings').open), false, 'No reopening');
+    });
+
+    await check(`${layout}: raiseModalDialogs reopens without visible motion`, async () => {
+      await page.locator('#settings-open').click();
+      await done(page);
+      const raised = await page.evaluate(() => {
+        window.__dinoTest.raiseModalDialogs();
+        return window.__dialogMotion('settings');
+      });
+      assert.equal(raised.open, true);
+      assert.deepEqual(raised.running, []);
+      assert.equal(raised.opacity, 1);
+      await page.locator('#settings-close').click();
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+      await done(page);
+    });
+
+    await check(`${layout}: T14 install help closes animated after appinstalled`, async () => {
+      await page.evaluate(() => {
+        document.getElementById('install-help').showModal();
+        window.__dinoRunner.updatePause();
+      });
+      assert.equal((await dialogMotion('install-help')).running.length > 0, true);
+      await done(page);
+      await page.evaluate(() => window.dispatchEvent(new Event('appinstalled')));
+      const closing = await dialogMotion('install-help');
+      assert.equal(closing.open, false);
+      assertExit(closing, 'appinstalled closes animated');
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+      await done(page);
+      assert.equal((await dialogMotion('install-help')).display, 'none');
+    });
+
+    await check(`${layout}: T7b late name entry opens synchronously, T8 closes to attract`, async () => {
+      const opened = await page.evaluate(() => {
+        const r = window.__dinoRunner, g = r.game, c = r.highscoreController;
+        c.store.local = () => Array.from({ length: 10 }, () => ({ score: 100 }));
+        c.store.cachedOnline = () => null;
+        c.online.normal = { state: 'idle' };
+        c.api.list = () => new Promise(resolve => { window.__qualify = resolve; });
+        g.start(0); g.recordAtStart = 100; g.score = 12; g.gameTime = 4000; g.gameOver();
+        for (let i = 0; g.inDeathScene && i < 400; i++) window.advanceTime(1000 / 60);
+        return window.__dinoTest.transitionDone();
+      }).then(() => page.evaluate(async () => {
+        window.__qualify({ entries: [] });
+        await null; await null;
+        return { motion: window.__dialogMotion('scores', 0.5),
+          current: window.__dinoRunner.transition.current?.type ?? null };
+      }));
+      assert.equal(opened.motion.open, true, 'T7b opens at once (no View Transition)');
+      assert.equal(opened.current, null);
+      assert.notEqual(opened.motion.translate, 'none');
+      await page.screenshot({ path: path.join(output, `${layout}-t7b-mid.png`) });
+      await page.evaluate(() => window.__release());
+      await done(page);
+      await page.locator('#entry-cancel').click();
+      const closing = await page.evaluate(() => ({ motion: window.__dialogMotion('scores'),
+        state: window.__dinoGame.state, panel: document.getElementById('round-panel').dataset.enter ?? null,
+        active: document.activeElement?.id }));
+      assert.equal(closing.state, 'attract');
+      assertExit(closing.motion, 'T8 exit runs');
+      assert.equal(closing.panel, 'attract', 'The menu returns as in T6');
+      assert.equal(closing.active, 'start-game');
+      const box = await page.locator('#start-game').boundingBox();
+      if (touch) await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+      else await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      assert.equal((await snap(page)).state, 'playing', 'START works while the dialog leaves');
+      await page.evaluate(() => {
+        const r = window.__dinoRunner;
+        r.game.score = 0; r.game.gameOver(); r.returnToAttract();
+        return window.__dinoTest.transitionDone();
+      });
+    });
+
+    await check(`${layout}: T12 goodbye and T13 new session`, async () => {
+      await page.locator('#quit-game').click();
+      const bye = await dialogMotion('goodbye', 0.5);
+      assert.equal(bye.open, true);
+      assert(bye.running.includes('opacity::backdrop:400'), JSON.stringify(bye.running));
+      assert(bye.running.includes('scale:360'), JSON.stringify(bye.running));
+      await page.screenshot({ path: path.join(output, `${layout}-t12-mid.png`) });
+      await page.evaluate(() => window.__release());
+      await done(page);
+      await page.locator('#new-session').click();
+      const fresh = await page.evaluate(() => ({ motion: window.__dialogMotion('goodbye'),
+        panel: document.getElementById('round-panel').dataset.enter ?? null }));
+      assert.equal(fresh.motion.open, false);
+      if (exits) assert(fresh.motion.running.includes('opacity:200'), JSON.stringify(fresh.motion.running));
+      else assert.equal(fresh.motion.display, 'none');
+      assert.equal(fresh.panel, 'load');
+      const box = await page.locator('#start-game').boundingBox();
+      if (touch) await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+      else await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+      assert.equal((await snap(page)).state, 'playing', 'START works during T13');
+      await page.evaluate(() => {
+        const r = window.__dinoRunner;
+        r.game.score = 0; r.game.gameOver(); r.returnToAttract();
+        return window.__dinoTest.transitionDone();
+      });
+    });
+
+    await check(`${layout}: reduced motion dialogs only fade briefly`, async () => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.locator('#settings-open').click();
+      const reduced = await dialogMotion('settings', 0.5);
+      assert(['none', '0px', '0px 0px'].includes(reduced.translate), reduced.translate);
+      assert(['none', '1'].includes(reduced.scale), reduced.scale);
+      assert(reduced.running.every(r => Number(r.split(':').at(-1)) <= 120), JSON.stringify(reduced.running));
+      await page.evaluate(() => window.__release());
+      await page.locator('#settings-close').click();
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await done(page);
+    });
+
+    assert.deepEqual(errors, [], layout + ' dialog page errors');
+    await context.close();
+  }
+
   // Trusted input to the first rendered frame with the jump pose, real rAF loop.
   await check('START latency with and without transitions differs by at most one frame', async () => {
     const results = {};

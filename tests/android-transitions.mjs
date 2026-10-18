@@ -77,6 +77,12 @@ try {
       document.documentElement.classList.toggle('motion', on);
     }, transitions);
     await page.evaluate(() => window.__dinoTest.transitionDone());
+    // T2: trusted touch on a slide dot; the preview must be running for the animation.
+    await page.evaluate(() => { window.__dinoRunner.attract.userPaused = false; });
+    const t2 = page.evaluate(() => window.__record(500));
+    await touch('[data-attract-slide="2"]');
+    result.t2 = await t2;
+    await page.evaluate(() => window.__dinoTest.transitionDone());
     // T4: trusted touch on START, then T5 (crash) and T6 (automatic return).
     const t4 = page.evaluate(() => window.__record(500));
     await touch('#start-game');
@@ -95,7 +101,7 @@ try {
     });
     await page.evaluate(() => window.__dinoTest.transitionDone());
     await page.screenshot({ path: path.join(output, `${layout}${label}-attract.png`) });
-    for (const name of ['t4', 't5', 't6']) {
+    for (const name of ['t2', 't4', 't5', 't6']) {
       const deltas = result[name];
       result[name + label] = { frames: deltas.length, over33: deltas.filter(d => d > 33).length,
         median: percentile(deltas, 0.5), max: Math.max(...deltas),
@@ -103,7 +109,7 @@ try {
       if (!transitions) delete result[name];
     }
     }
-    result.failures = ['t4', 't5', 't6'].filter(name => result[name].over33 > 2);
+    result.failures = ['t2', 't4', 't5', 't6'].filter(name => result[name].over33 > 2);
     // Latency: START touch to the first frame with the jump pose, transitions on/off.
     for (const transitions of [true, false]) {
       await page.evaluate(on => {

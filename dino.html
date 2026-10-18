@@ -185,6 +185,18 @@
         --t2-enter: 260ms;
         --t2-delay: 60ms;
         --t3-fade: 200ms;
+        /* Dialogs (mechanism B): T7b/T8 scores, T10 settings, T12/T13 goodbye, T14 install. */
+        --t7b-enter: 260ms;
+        --t8-exit: 180ms;
+        --t10-enter: 240ms;
+        --t10-sheet: 260ms;
+        --t10-exit: 160ms;
+        --t12-enter: 360ms;
+        --t12-backdrop: 400ms;
+        --t13-exit: 200ms;
+        --t14-enter: 240ms;
+        --t14-exit: 160ms;
+        --dialog-backdrop: 200ms;
       }
       @media (prefers-reduced-motion: reduce) {
         /* Movement collapses to zero; what remains is a short fade or nothing. */
@@ -208,6 +220,17 @@
           --t2-enter: var(--motion-reduced);
           --t2-delay: 0ms;
           --t3-fade: 0ms;
+          --t7b-enter: var(--motion-reduced);
+          --t8-exit: var(--motion-reduced);
+          --t10-enter: var(--motion-reduced);
+          --t10-sheet: var(--motion-reduced);
+          --t10-exit: var(--motion-reduced);
+          --t12-enter: var(--motion-reduced);
+          --t12-backdrop: var(--motion-reduced);
+          --t13-exit: var(--motion-reduced);
+          --t14-enter: var(--motion-reduced);
+          --t14-exit: var(--motion-reduced);
+          --dialog-backdrop: var(--motion-reduced);
         }
       }
       /* Mechanism A keyframes. `translate`/`scale` compose with existing transforms;
@@ -361,6 +384,83 @@
           width var(--t2-enter) var(--ease-out),
           opacity var(--t2-enter) var(--ease-out),
           background-color var(--t2-enter) var(--ease-out);
+      }
+      /* Mechanism B: showModal()/close() stay synchronous; every closing path animates.
+         Each dialog sets its entry/exit time, offset and start scale. */
+      #scores {
+        --dialog-in: var(--t7b-enter);
+        --dialog-out: var(--t8-exit);
+        --dialog-y: 24px;
+      }
+      #settings {
+        --dialog-in: var(--t10-enter);
+        --dialog-out: var(--t10-exit);
+        --dialog-scale: 0.96;
+      }
+      #goodbye {
+        --dialog-in: var(--t12-enter);
+        --dialog-out: var(--t13-exit);
+        --dialog-scale: 0.94;
+        --backdrop-in: var(--t12-backdrop);
+      }
+      #install-help {
+        --dialog-in: var(--t14-enter);
+        --dialog-out: var(--t14-exit);
+        --dialog-scale: 0.96;
+      }
+      @media (max-width: 600px) and (orientation: portrait) {
+        /* Phone portrait: Settings rises as a bottom sheet. */
+        #settings {
+          --dialog-in: var(--t10-sheet);
+          --dialog-y: 32px;
+          --dialog-scale: 1;
+        }
+      }
+      :root.motion dialog {
+        --dialog-from-translate: 0 calc(var(--dialog-y, 0px) * var(--motion-scale));
+        --dialog-from-scale: calc(1 - (1 - var(--dialog-scale, 1)) * var(--motion-scale));
+      }
+      :root.motion dialog[open] {
+        transition:
+          opacity var(--dialog-in) var(--ease-out),
+          translate var(--dialog-in) var(--ease-out),
+          scale var(--dialog-in) var(--ease-out);
+      }
+      :root.motion dialog[open]::backdrop {
+        transition: opacity var(--backdrop-in, var(--dialog-backdrop)) var(--ease-out);
+      }
+      @starting-style {
+        :root.motion dialog[open] {
+          opacity: 0;
+          translate: var(--dialog-from-translate);
+          scale: var(--dialog-from-scale);
+        }
+        :root.motion dialog[open]::backdrop {
+          opacity: 0;
+        }
+      }
+      /* Exits need the dialog to stay in the top layer; without `overlay` (Firefox)
+         a dialog closes at once but still opens animated. */
+      @supports (overlay: auto) {
+        :root.motion dialog:not([open]) {
+          opacity: 0;
+          translate: var(--dialog-from-translate);
+          scale: var(--dialog-from-scale);
+          pointer-events: none;
+          transition:
+            opacity var(--dialog-out) var(--ease-in),
+            translate var(--dialog-out) var(--ease-in),
+            scale var(--dialog-out) var(--ease-in),
+            overlay var(--dialog-out) allow-discrete,
+            display var(--dialog-out) allow-discrete;
+        }
+        :root.motion dialog:not([open])::backdrop {
+          opacity: 0;
+          transition:
+            opacity var(--dialog-out) var(--ease-in),
+            overlay var(--dialog-out) allow-discrete,
+            display var(--dialog-out) allow-discrete;
+        }
       }
       /* T3: the next highscore page crossfades with a copy of the previous one. */
       .attract-scoreboard {
@@ -9433,6 +9533,8 @@
             landscapeFullscreen.activate(true);
             this.unlockAudio();
             this.draw(1);
+            // T13: the attract menu settles in again as on loading, START usable at once.
+            this.motion.enter(this.sessionView.panel, 'load');
             gameEl.focus({
               preventScroll: true,
             });
@@ -9598,6 +9700,8 @@
             deathTimeMs: game.trex.deathTime,
           });
         };
+        // Lets tests reproduce the technical dialog reopening after fullscreen changes.
+        if (window.__dinoTest) window.__dinoTest.raiseModalDialogs = raiseModalDialogs;
         // Resolves once no View Transition, exit or motion animation is running.
         if (window.__dinoTest)
           window.__dinoTest.transitionDone = () =>
