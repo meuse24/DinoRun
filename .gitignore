@@ -3,3 +3,8 @@
 /highscores.config.php
 /node_modules/
 /output/
+# Private local files: admin password note, local config copy with a password hash,
+# and the 23 MB source WAV of dino-boom-in-the-dunes.mp3 (see VOLUME.md).
+/adminphppasswort.txt
+/highscores.config.example - Kopie.php
+/Theme_song2.wav
