@@ -73,6 +73,12 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   automatic attract return, name save/cancel, delayed qualification, Off and
   session statistics. Default runs desktop/touch layouts; `--android` uses the
   authorized phone, normal rAF, trusted touch and the safe USB preview/relay.
+- `node tests/screen-transitions.mjs [game.html]`: screen transitions (CSS,
+  dialog and View Transition paths), input during transitions, focus, close
+  paths, reduced motion and latency; accepts `DINO_BROWSER=webkit`. Other
+  suites turn transitions off unless `DINO_TRANSITIONS=1`. See `TRANSITIONS.md`.
+- `node tests/android-transitions.mjs`: physical-Android frame times during
+  transitions and START latency with/without them; same bridges as above.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
 - Set `DINO_TEST_OUTPUT` to direct comparison artifacts to a separate directory.
   Keep the game in one self-contained HTML, with no required sibling assets for
