@@ -1,6 +1,6 @@
 // Physical Android: frame times during screen transitions and trusted-touch START
 // latency with and without transitions. Requires the safe preview, USB bridges and
-// the scoped CDP relay from FEATHER.md. Never contacts the live highscore API.
+// the scoped CDP relay from doc/FEATHER.md. Never contacts the live highscore API.
 // node tests/android-transitions.mjs; DINO_ANDROID_URL, DINO_CDP_URL optional.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

@@ -1,5 +1,5 @@
 // Physical Android Stone Jaw check: normal rAF, trusted CDP touch, safe USB preview.
-// Start android-preview.cjs [artifact] and android-cdp-relay.mjs as in FEATHER.md.
+// Start android-preview.cjs [artifact] and android-cdp-relay.mjs as in doc/FEATHER.md.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';

@@ -1,4 +1,4 @@
-// Screen transitions (TRANSITIONS.md): hit-testing during document View Transitions,
+// Screen transitions (doc/TRANSITIONS.md): hit-testing during document View Transitions,
 // the full/basic/fallback call forms, deferred commits, close paths, Help navigation,
 // safety net, external skips and unchanged simulation.
 // Usage: node tests/screen-transitions.mjs [game.html]; DINO_BROWSER=chromium|webkit.

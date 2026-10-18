@@ -2,7 +2,7 @@
 
 Die bearbeitbare Quelle ist [`../dino.html`](../dino.html). Das Build-Skript
 [`../scripts/build-release.mjs`](../scripts/build-release.mjs) erzeugt daraus
-[`dino.html`](dino.html) in diesem Verzeichnis. Die Quelle bleibt unverändert;
+[`release/dino.html`](../release/dino.html) im Release-Verzeichnis. Die Quelle bleibt unverändert;
 JavaScript, CSS und Hilfe bleiben in der ausgelieferten HTML-Datei eingebettet.
 
 ## 1. Voraussetzungen und Installation
@@ -176,7 +176,7 @@ sowie 96 pixelgleiche Vergleichsszenen. Zusätzlich wurde die lesbare Quelldatei
 über den vorhandenen Server auf Port 8765 auf dem Galaxy A53 geprüft: Rotation,
 Start aus allen Ansichten, Schutzblase, Feder, Touchsteuerung, Neustart und
 Offline-Neuladen bestehen in Hoch- und Querformat. Die kompakte Datei wurde bei
-diesem neuen Handytest nicht direkt geladen. Details stehen in `../ATTRACT.md`.
+diesem neuen Handytest nicht direkt geladen. Details stehen in [ATTRACT.md](ATTRACT.md).
 
 Build `2026-10-17.2` nutzt im Querformat die gesamte verfügbare Breite und ist
 vertikal kompakter: Vorschau links, START rechts. Quelle und kompakte Datei

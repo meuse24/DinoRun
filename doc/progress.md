@@ -570,3 +570,11 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Applied develop-web-game skill. Removed the training exception from regular acceleration; both modes now share the existing speed increment/cap. No changes to score isolation, collision feedback or training intervals. BUILD2026-10-19.5/cachev26 and rebuilt delivery.
 - Chromium training tests pass desktop/portrait/landscape with six real-input encounters. Assert increasing speed between rocks, exact selected-mode per-frame acceleration and stable maximum speed; survival, result sounds, Exit and records remain covered. Artifacts output/rock-acceleration. No physical phone test this iteration.
 - Final WebKit release passes all three training layouts; installed skill client passed and screenshots/state inspected. No outstanding implementation TODOs.
+
+
+## 2026-10-19: Consolidate Markdown documentation
+
+- Moved all16 tracked project Markdown files into doc/, including release/MINIFIZIERUNG.md and root AGENTS.md, as requested. Dependency and generated output directories were not moved.
+- Updated the minification guide's relative release link, doc/progress.md location and external test/comment references. Existing sibling documentation links still resolve in doc/. Commands remain relative to the project root. No game, delivery or runtime behavior changes.
+- Moving AGENTS.md means it no longer supplies automatically discovered repository-wide agent instructions; this consequence was communicated to the user. Future progress records belong here in doc/progress.md.
+- Validation: all16 tracked Markdown files are under doc/, all13 local Markdown links resolve, git diff --check clean. No gameplay tests needed for documentation moves and comments.

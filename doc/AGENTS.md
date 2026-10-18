@@ -1,5 +1,9 @@
 # Repository Guidelines
 
+Project documentation lives in `doc/`. Commands and plain project paths below
+are relative to the repository root unless stated otherwise. This relocated
+file is documentation; it is no longer automatically loaded as root AGENTS.md.
+
 ## Project Structure & Module Organization
 
 - `dino.html` contains the UI, styles, and Canvas 2D game code, including `Game`, `Renderer`, `Horizon`, and `Runner`.
@@ -10,7 +14,7 @@
   Web password changes persist a guarded hash in `data_dir/admin-password.php`;
   replacing the configured bootstrap hash resets it and revokes sessions.
   See `ADMIN.md`; keep password hashes and runtime state out of Git.
-- `tests/` contains browser regression scripts. `output/` holds generated screenshots and JSON reports. `progress.md` records findings and validation.
+- `tests/` contains browser regression scripts. `output/` holds generated screenshots and JSON reports. `doc/progress.md` records findings and validation.
 - `highscores-data/` holds mutable scores, locks, rate-limit data, and secrets.
 
 ## Build, Test, and Development Commands

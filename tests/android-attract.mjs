@@ -1,5 +1,5 @@
 // Physical Android: trusted touch and normal rAF, no device emulation.
-// Use the safe android-preview.cjs server and USB bridges documented in FEATHER.md.
+// Use the safe android-preview.cjs server and USB bridges documented in doc/FEATHER.md.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
