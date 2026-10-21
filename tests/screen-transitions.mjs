@@ -764,12 +764,12 @@ try {
       });
       assert.deepEqual(unfocused, { paused: true, state: 'running' }, 'A visible unfocused menu keeps breathing');
       // All idle heading gestures follow the same Pause control as the demo.
-      await tap('#attract-pause');
+      await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
       assert.equal(await page.locator('.brand-float').evaluate(el =>
         getComputedStyle(el).animationPlayState), 'paused');
       assert.equal(await page.locator('.title-breath').evaluate(el =>
         getComputedStyle(el).animationPlayState), 'paused');
-      await tap('#attract-pause');
+      await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
       assert.equal(await page.locator('.brand-float').evaluate(el =>
         getComputedStyle(el).animationPlayState), 'running');
       await startAndReturn('#start-game');
@@ -777,7 +777,7 @@ try {
 
     await check(`${layout}: T2 slides move in the direction of the index change`, async () => {
       for (const [index, direction, sign] of [[2, 'next', -1], [1, 'prev', 1]]) {
-        await tap(`[data-attract-slide="${index}"]`);
+        await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, index < r.attract.index ? 'prev' : 'next'); r.draw(1); }, index);
         await hold(0.5);
         const state = await page.evaluate(() => {
           const slides = [...document.querySelectorAll('.attract-slide')];
@@ -810,14 +810,14 @@ try {
       assert.equal(await page.evaluate(() => document.querySelector('.attract-slide[data-leaving]')?.dataset.leaving), 'next');
       await startAndReturn('#start-game');
       // A paused preview switches at once.
-      await page.evaluate(() => { window.__dinoRunner.attract.userPaused = true; });
-      await tap('[data-attract-slide="2"]');
+      await page.evaluate(() => { window.__dinoTest.transitionDone(); window.__dinoRunner.attract.userPaused = true; });
+      await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, index < r.attract.index ? 'prev' : 'next'); r.draw(1); }, 2);
       assert.equal(await page.evaluate(() => document.querySelectorAll('.attract-slide[data-leaving], .attract-slide[data-enter]').length), 0);
       await page.evaluate(() => { window.__dinoRunner.attract.userPaused = false; window.__dinoRunner.draw(1); });
     });
 
     await check(`${layout}: T3 the highscore pages crossfade`, async () => {
-      await tap('[data-attract-slide="0"]');
+      await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, index < r.attract.index ? 'prev' : 'next'); r.draw(1); }, 0);
       await hold(null);
       await page.evaluate(() => window.__dinoTest.transitionDone());
       await page.evaluate(() => window.__dinoRunner.attract.advance(4000));

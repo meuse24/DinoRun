@@ -70,6 +70,13 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/android-coins.mjs [game.html]`: physical Android trusted touch,
   actual coin audio signal, payment and ten browser/fullscreen orientation states.
   Own safe server on8878, scoped CDP relay9224; restores rotation and origin state.
+- `node tests/level-bonus.mjs [game.html]`: safe level/checkpoint transitions,
+  real obstacle accounting, score caps, coin audio, lives, pause and three layouts.
+  Accepts `DINO_BROWSER=webkit`; see `doc/LEVEL-BONUS.md`.
+- `php tests/bonus-score.php`: bonus-inclusive server validation boundaries.
+- `node tests/android-level-bonus.mjs [game.html]`: physical Android automatic
+  attract loop, bonus pause/rotation/resume, touch and actual audio signal;
+  own safe server on8879 and scoped CDP relay, restores device/origin settings.
 - `node tests/effects-setting.mjs [game.html]`: saved Arcade effects switch,
   Canvas/CSS gating, Help propagation and synthetic performance-probe decisions
   in desktop/touch layouts. Accepts `DINO_BROWSER`; see `doc/ARCADE.md`.

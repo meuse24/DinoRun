@@ -64,6 +64,8 @@ try {
     assert.equal(await page.locator('#scores-open').count(), 0);
     assert.equal((await state(page)).state, 'attract');
     assert.equal((await state(page)).attract.panel, 'scores');
+    assert.equal(await page.locator('#attract-navigation, #attract-pause, .attract-dot').count(), 0,
+      'Attract is an automatic loop without navigation or pause controls');
     assert.equal(await page.locator('#attract-score-empty').isVisible(), true);
     await page.screenshot({ path: path.join(output, `${name}-empty.png`) });
     await page.evaluate(() => {
@@ -146,11 +148,11 @@ try {
     await checkStart();
     await page.screenshot({ path: path.join(output, `${name}-demo.png`) });
     // Explicit pause freezes both slide timer and the independent simulation.
-    await page.locator('#attract-pause').click();
+    await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
     const frozen = (await state(page)).attract;
     await advance(page, 120);
     assert.deepEqual((await state(page)).attract, frozen);
-    await page.locator('#attract-pause').click();
+    await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
     await advance(page, 485);
     assert.equal((await state(page)).attract.panel, 'powerups');
     await checkStart();
@@ -232,7 +234,7 @@ try {
     assert.deepEqual(demoActions, { jumped: true, ducked: true }, 'Demo demonstrates both controls');
     // Every slide can start a real, empty round via the same touch/mouse target.
     for (const index of [0, 1, 2]) {
-      await page.locator(`[data-attract-slide="${index}"]`).click();
+      await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, 'next'); r.draw(1); }, index);
       if (options.hasTouch) await page.locator('#start-game').tap();
       else await page.locator('#start-game').click();
       await advance(page, 1);
@@ -261,8 +263,9 @@ try {
     await page.evaluate(() => { window.__dinoRunner.attract.userPaused = null; window.__dinoRunner.draw(1); });
     const reduced = (await state(page)).attract;
     await advance(page, 600);
-    assert.deepEqual((await state(page)).attract, reduced, 'Reduced motion defaults to paused preview');
-    await page.locator('[data-attract-slide="1"]').click();
+    assert.notEqual((await state(page)).attract.panel, reduced.panel, 'Reduced motion keeps the automatic loop');
+    assert.equal((await state(page)).attract.demo.score, 225, 'Reduced-motion demo stays still');
+    await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, 'next'); r.draw(1); }, 1);
     await checkStart();
     await page.screenshot({ path: path.join(output, `${name}-reduced-demo.png`) });
     if (name === 'desktop') {

@@ -18,12 +18,12 @@ round through the existing mouse/touch/keyboard/gamepad input paths. No demo
 score, obstacle or power-up carries over. The separate Highscores button is gone;
 automatic name entry after a qualifying real round remains available.
 
-Three labelled navigation dots select a panel. Pause freezes the preview clock
-and demo; Settings, Help, focus loss and backgrounding use the existing browser
-pause lifecycle. Rotation never moves keyboard focus or announces each panel
-through a live region. Reduced motion defaults to paused rotation and a static
-demo; panels and START remain manually usable. Explicit Play can resume panel
-rotation while reduced motion continues to keep the demo still.
+The panels rotate automatically in a loop; navigation dots and the preview pause
+button were removed in build2026-10-21.10. Settings, Help, focus loss and
+backgrounding suspend the loop through the existing browser pause lifecycle.
+Rotation never moves keyboard focus or announces each panel through a live region.
+Reduced motion keeps the automatic loop with static transitions and a still demo.
+START appears with credits; at zero, the prominent INSERT COIN occupies its slot.
 
 ## Boundaries
 

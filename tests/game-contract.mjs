@@ -30,6 +30,7 @@ const jsNumber = name => Number(ruleSource.match(new RegExp(`\\b${name} = ([\\d.
 assert.equal(jsNumber('FPS'), phpNumber('DINO_STEPS_PER_SECOND'));
 assert.equal(jsNumber('CHILI_MULTIPLIER'), phpNumber('DINO_TURBO'));
 assert.equal(jsNumber('POINTS_PER_PX'), phpNumber('DINO_POINTS_PER_PX'));
+assert.equal(jsNumber('SCORE_BONUS_RATE'), phpNumber('DINO_SCORE_BONUS_RATE'));
 assert.equal(jsNumber('HIGHSCORE_API_VERSION'), phpNumber('DINO_API_VERSION'));
 assert.equal(jsNumber('HIGHSCORE_LIST_SIZE'), phpNumber('DINO_LIST_SIZE'));
 const phpSpeeds = Object.fromEntries([...php.match(/const DINO_MAX_SPEED = \[(.+)\];/)[1]

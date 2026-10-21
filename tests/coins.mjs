@@ -101,9 +101,9 @@ try {
     if (name === 'desktop') {
       assert(coinNames.includes('motion-coin-count') && coinNames.includes('motion-coin-flip'), 'Counter and coin have event feedback: ' + JSON.stringify(coinNames));
       await page.evaluate(() => window.__dinoTest.transitionDone());
-      await tap('#attract-pause');
+      await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
       assert.equal(await page.locator('#insert-coin > span').evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
-      await tap('#attract-pause');
+      await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
       await page.evaluate(() => window.__dinoRunner.effectsSetting.set(false, false));
       assert.equal(await page.locator('#insert-coin svg').evaluate(el => el.getAnimations().length), 0, 'Effects switch gates coin motion');
       assert.equal(await page.locator('#coin-count').evaluate(el => getComputedStyle(el).fontFamily.includes('Dino Pixel')), true);

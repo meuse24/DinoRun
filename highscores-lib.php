@@ -27,6 +27,7 @@ const DINO_TURBO = 1.18;
 const DINO_DEVICES = ['phone', 'tablet', 'desktop'];
 const DINO_INPUTS = ['keyboard', 'touch', 'mouse', 'gamepad'];
 const DINO_POINTS_PER_PX = 0.025;
+const DINO_SCORE_BONUS_RATE = 0.1;
 const DINO_STEPS_PER_SECOND = 60;
 // Mirrored in dino.html (BLOCKED_NAMES). Extend server-side via config 'blocked_names'.
 const DINO_BLOCKED_NAMES = [
@@ -133,11 +134,11 @@ function dino_is_time($value): bool
     return is_string($value) && preg_match('/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/', $value) === 1;
 }
 
-// Generous upper bound: whole round at top speed with Chili boost, plus one point for rounding.
+// Whole round at top speed with Chili, plus capped section bonuses and rounding.
 function dino_max_score(string $mode, int $durationMs): int
 {
     $steps = intdiv($durationMs * DINO_STEPS_PER_SECOND + 999, 1000);
-    return (int) floor($steps * DINO_MAX_SPEED[$mode] * DINO_TURBO * DINO_POINTS_PER_PX) + 1;
+    return (int) floor($steps * DINO_MAX_SPEED[$mode] * DINO_TURBO * DINO_POINTS_PER_PX * (1 + DINO_SCORE_BONUS_RATE)) + 1;
 }
 
 // Score descending, then earlier date, then ID. dino.html uses the same rule.

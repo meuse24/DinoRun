@@ -65,7 +65,7 @@ try {
     await page.locator('#start-game').evaluate(button => {
       for (const animation of button.getAnimations({ subtree: true })) animation.play();
     });
-    await tap('#attract-pause');
+    await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
     const paused = await page.locator('#start-game').evaluate(button => ({
       label: getComputedStyle(button.querySelector('.action-label')).animationPlayState,
       light: getComputedStyle(button, '::before').animationPlayState,
@@ -73,7 +73,7 @@ try {
       glow: getComputedStyle(document.querySelector('#round-panel .title-breath'), '::before').animationPlayState,
     }));
     assert.deepEqual(paused, { label: 'paused', light: 'paused', sheen: 'paused', glow: 'paused' });
-    await tap('#attract-pause');
+    await page.evaluate(() => { const r = window.__dinoRunner; r.attract.userPaused = !r.attract.paused; r.draw(1); });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     assert.deepEqual(await page.locator('#start-game').evaluate(button => [
       getComputedStyle(button.querySelector('.action-label')).animationName,

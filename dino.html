@@ -373,7 +373,7 @@
       :root.motion #round-panel[data-leaving='start'] #start-game {
         animation: motion-press-out var(--t4-start-exit) var(--ease-in) both;
       }
-      :root.motion #round-panel[data-leaving='start'] :is(.menu-title, #attract-navigation, #install-game) {
+      :root.motion #round-panel[data-leaving='start'] :is(.menu-title, #install-game) {
         animation: motion-fade-out var(--t4-exit) var(--ease-in) both;
       }
       :root.motion #mobile-hud[data-enter='start'] {
@@ -405,11 +405,11 @@
       :root.motion #round-panel[data-enter='attract'] #start-game {
         animation: motion-start-in var(--t6-start) var(--ease-pop) both;
       }
-      :root.motion #round-panel[data-enter='attract'] :is(.menu-title, #attract-navigation, #install-game) {
+      :root.motion #round-panel[data-enter='attract'] :is(.menu-title, #install-game) {
         animation: motion-fade-in var(--t6-enter) var(--ease-out) both;
       }
       /* T1: the menu settles in over the already visible world; START starts at 0.6. */
-      :root.motion #round-panel[data-enter='load'] :is(.menu-title, #attract-content, #attract-navigation, #install-game) {
+      :root.motion #round-panel[data-enter='load'] :is(.menu-title, #attract-content, #install-game) {
         --rise: 12px;
         animation: motion-rise-in var(--t1-enter) var(--ease-out) both;
       }
@@ -433,12 +433,6 @@
       .attract-slide[data-leaving='prev'],
       .attract-slide[data-enter='next'] {
         --shift: 16px;
-      }
-      :root.motion .attract-dot span {
-        transition:
-          width var(--t2-enter) var(--ease-out),
-          opacity var(--t2-enter) var(--ease-out),
-          background-color var(--t2-enter) var(--ease-out);
       }
       /* Mechanism B: showModal()/close() stay synchronous; every closing path animates.
          Each dialog sets its entry/exit time, offset and start scale. */
@@ -2103,14 +2097,14 @@
         }
         :root.motion #stage.heading-paused #round-panel :is(.heading-ink, .heading-breath, .heading-wave-char),
         :root.motion #stage.game-paused #game-over-overlay :is(.heading-ink, .heading-breath, .heading-wave-char),
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel :is(.heading-ink, .heading-breath, .heading-wave-char) {
+        :root.motion #stage[data-attract-paused] #round-panel :is(.heading-ink, .heading-breath, .heading-wave-char) {
           animation-play-state: paused !important;
         }
         :root.motion #stage.idle #round-panel:not([hidden]) .brand-float {
           animation: heading-logo-float var(--heading-logo-duration) var(--heading-idle-easing) infinite;
         }
         :root.motion #stage.heading-paused .brand-float,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) .brand-float {
+        :root.motion #stage[data-attract-paused] .brand-float {
           animation-play-state: paused !important;
         }
       }
@@ -2344,10 +2338,6 @@
       #round-panel .attract-demo-caption { margin: 0; font: 700 14px/1.4 system-ui, sans-serif; }
       .attract-demo-label { position: absolute; bottom: 0; left: 0; right: 0; font: 800 10px/1.3 system-ui, sans-serif; letter-spacing: 0.14em; opacity: 0.7; }
       #attract-footer { width: min(460px, 100%); justify-self: center; pointer-events: auto; }
-      #attract-navigation { display: flex; align-items: center; justify-content: center; margin-bottom: 8px; }
-      #round-panel #attract-navigation button { display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0; border: 0; background: transparent; color: var(--menu-ink); box-shadow: none; border-radius: 12px; font: 900 20px/1 system-ui, sans-serif; }
-      .attract-dot span { display: block; width: 8px; height: 8px; border-radius: 8px; background: currentColor; opacity: 0.35; }
-      .attract-dot[aria-current="true"] span { width: 24px; opacity: 1; background: #e67842; }
       #round-panel #start-game {
         width: 100%;
         min-height: 72px;
@@ -2398,7 +2388,6 @@
         #attract-content { grid-column: 1; grid-row: 2; }
         #attract-footer { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 30%; min-width: 200px; padding-bottom: 48px; }
         #round-panel #start-game { min-height: clamp(60px, 6cqw, 80px); font-size: clamp(25px, 2.6cqw, 36px); }
-        #attract-navigation { margin-bottom: 4px; }
         #round-panel .attract-heading h2 { font-size: clamp(21px, 2.5cqw, 32px); margin: 0 0 6px; }
         .attract-kicker { display: none; }
         .attract-scoreboard { width: min(520px, 100%); padding: clamp(6px, 1cqw, 16px) clamp(14px, 2cqw, 28px); }
@@ -2715,16 +2704,16 @@
           transform-origin: right center;
           animation: arcade-score-pop 420ms ease-out;
         }
-        :root.motion:not(.effects-off) #stage.heading-paused #start-game .action-label,
-        :root.motion:not(.effects-off) #stage.heading-paused #start-game::before,
-        :root.motion:not(.effects-off) #stage.heading-paused #start-game::after,
+        :root.motion:not(.effects-off) #stage.heading-paused #round-panel #start-game .action-label,
+        :root.motion:not(.effects-off) #stage.heading-paused #round-panel #start-game::before,
+        :root.motion:not(.effects-off) #stage.heading-paused #round-panel #start-game::after,
         :root.motion:not(.effects-off) #stage.heading-paused #round-panel h1 .title-breath::before,
         :root.motion:not(.effects-off) #stage.heading-paused #round-panel h1 .title-word::after,
-        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #start-game .action-label,
-        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #start-game::before,
-        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #start-game::after,
-        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-breath::before,
-        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-word::after,
+        :root.motion:not(.effects-off) #stage[data-attract-paused] #round-panel #start-game .action-label,
+        :root.motion:not(.effects-off) #stage[data-attract-paused] #round-panel #start-game::before,
+        :root.motion:not(.effects-off) #stage[data-attract-paused] #round-panel #start-game::after,
+        :root.motion:not(.effects-off) #stage[data-attract-paused] #round-panel h1 .title-breath::before,
+        :root.motion:not(.effects-off) #stage[data-attract-paused] #round-panel h1 .title-word::after,
         :root.motion:not(.effects-off) #stage.game-paused :is(#hud-score, #round-score) { animation-play-state: paused; }
       }
 
@@ -2756,8 +2745,6 @@
       @media (max-height: 300px) and (orientation: landscape) {
         #attract-footer { top: 4px; transform: none; padding-bottom: 0; }
         #stage.idle #round-panel #install-game { top: auto; bottom: 2px; left: 4px; right: auto; z-index: 2; }
-        #attract-navigation { margin: 0; height: 36px; }
-        #round-panel #attract-navigation button { min-height: 36px; min-width: 40px; }
         #attract-footer { --coin-gap: 6px; }
         #round-panel #insert-coin { font-size: 12px; }
       }
@@ -2804,9 +2791,9 @@
         :root.motion #stage.heading-paused #coin-controls *,
         :root.motion #stage.heading-paused #coin-controls *::before,
         :root.motion #stage.heading-paused #coin-controls *::after,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #coin-controls *,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #coin-controls *::before,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #coin-controls *::after { animation-play-state: paused !important; }
+        :root.motion #stage[data-attract-paused] #coin-controls *,
+        :root.motion #stage[data-attract-paused] #coin-controls *::before,
+        :root.motion #stage[data-attract-paused] #coin-controls *::after { animation-play-state: paused !important; }
       }
       /* Screen headings (Settings, Highscores, name entry, Help, Bye, Install):
          the same outlined, extruded lettering as the title, in the menu orange. */
@@ -2971,12 +2958,6 @@
               </section>
             </div>
             <div id="attract-footer">
-              <div id="attract-navigation" role="group" aria-label="Preview controls">
-                <button class="attract-dot" type="button" aria-label="Show highscores" aria-current="true" data-attract-slide="0"><span></span></button>
-                <button class="attract-dot" type="button" aria-label="Show demo gameplay" data-attract-slide="1"><span></span></button>
-                <button class="attract-dot" type="button" aria-label="Show power-ups" data-attract-slide="2"><span></span></button>
-                <button id="attract-pause" type="button" aria-label="Pause preview" aria-pressed="false">Ⅱ</button>
-              </div>
               <div id="coin-controls">
                 <div class="credit-meter"><span class="coin-mark" aria-hidden="true">¢</span><span class="credit-label">CREDITS</span><output id="coin-count" aria-live="off" aria-label="0 credits">00</output></div>
                 <button id="insert-coin" type="button" aria-label="Insert coin. Add one credit">
@@ -3749,6 +3730,14 @@
                       2,250, 3,500 points and beyond; each interval grows by 250 points.
                       Milestones reached at full lives are used, not saved. The HUD shows hearts and the next 1UP score.
                     </p>
+                    <p id="level-bonus-help">
+                      <strong>Level bonus:</strong> after each speed level, finish the current obstacles
+                      and land safely for a short automatic tally. Each cleanly passed obstacle group
+                      earns 1 point (up to 10), plus 5 for no hits, capped at 20 points and 10% of
+                      that section's distance score. Shield contacts count as hits; burnt or hit
+                      obstacles do not count as clean passes. At top speed, checkpoints continue
+                      every 30 seconds of running. Bonus coins add score, not play credits.
+                    </p>
                     <p id="shield-bubble-help">
                       <strong>Shield bubble:</strong> collect it to survive one cactus, bird or boss hit.
                       It stays around your dino until it pops. You can hold only one shield.
@@ -3836,8 +3825,10 @@
         // Shared by the simulation and the highscore plausibility bound (highscores-lib.php).
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
+        const SCORE_BONUS_RATE = 0.1;
+        const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.9';
+        const BUILD = '2026-10-21.10';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4697,6 +4688,23 @@
               };
               tone.start(t);
               tone.stop(t + 0.05);
+            } catch (e) {}
+          }
+          bonus(index) {
+            const audio = this.context;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
+            try {
+              const t = audio.currentTime, frequency = 880 * Math.pow(2, index / 12);
+              for (const [ratio, level] of [[1, 0.085], [2.76, 0.025]]) {
+                const tone = audio.createOscillator(), gain = audio.createGain();
+                tone.type = 'sine'; tone.frequency.setValueAtTime(frequency * ratio, t);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(level, t + 0.002);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+                tone.connect(gain); gain.connect(this.output);
+                tone.onended = () => { tone.disconnect(); gain.disconnect(); };
+                tone.start(t); tone.stop(t + 0.13);
+              }
             } catch (e) {}
           }
           crash() {
@@ -6251,6 +6259,7 @@
             shieldEnabled = true,
             bossEnabled = true,
             rockTraining = false,
+            bonusEnabled = true,
             width = BASE_W,
           } = {}) {
             this.world = { width: BASE_W };
@@ -6263,6 +6272,8 @@
             this.shield = new ShieldBubble(shieldEnabled, this.world);
             this.boss = new RockBoss(bossEnabled, this.world, rockTraining);
             this.meter = new DistanceMeter();
+            this.bonusEnabled = bonusEnabled;
+            this.resetBonus();
             this.resetLives();
             this.listeners = new Set();
             this.state = 'attract';
@@ -6341,6 +6352,7 @@
             if (!this.playing) {
               this.state = 'playing';
               this.resetLives();
+              this.resetBonus();
               this.clearJumpBuffer();
               this.gameTime = 0;
               this.countdown = countdown;
@@ -6397,6 +6409,7 @@
           // A round preserves simulationTime and attractTime; a session clears them.
           resetRound(countdown = 0) {
             this.resetLives();
+            this.resetBonus();
             this.clearJumpBuffer();
             this.acc = 0;
             this.gameTime = 0;
@@ -6425,7 +6438,7 @@
             this.pendingJumpReleased = false;
           }
           jump() {
-            if (!this.playing || this.trex.ducking) return;
+            if (!this.playing || this.bonus || this.trex.ducking) return;
             const airborne = this.trex.jumping && this.feather.charged;
             if (airborne ? this.trex.airJump() : this.trex.startJump(this.speed)) {
               if (airborne) this.feather.consume();
@@ -6449,6 +6462,55 @@
             this.nextLifeScore = LIVES.firstScore;
             this.recoveryRemaining = 0;
           }
+          resetBonus() {
+            this.bonusScore = 0;
+            this.bonus = null;
+            this.pendingBonus = null;
+            this.section = { level: 1, baseScore: 0, cleared: 0, clean: true, time: 0 };
+          }
+          queueBonus() {
+            if (!this.bonusEnabled || this.rockTraining || this.pendingBonus || this.bonus || this.crashed) return;
+            const levelUp = this.level > this.section.level;
+            const checkpoint = this.speed >= this.config.maxSpeed && this.gameTime - this.section.time >= LEVEL_BONUS.checkpointMs;
+            if (!levelUp && !checkpoint) return;
+            const baseScore = Math.floor(this.distance * POINTS_PER_PX);
+            const budget = Math.min(LEVEL_BONUS.max, Math.floor(Math.max(0, baseScore - this.section.baseScore) * SCORE_BONUS_RATE));
+            const obstacles = Math.min(this.section.cleared, LEVEL_BONUS.obstacles, budget);
+            const clean = this.section.clean ? Math.min(LEVEL_BONUS.clean, budget - obstacles) : 0;
+            this.pendingBonus = { level: this.level, checkpoint: !levelUp, cleared: this.section.cleared,
+              obstacles, clean, total: obstacles + clean };
+            this.section = { level: this.level, baseScore, cleared: 0, clean: true, time: this.gameTime };
+          }
+          beginBonusIfSafe() {
+            if (!this.pendingBonus || this.crashed || this.trex.jumping || this.boss.reserved
+              || this.horizon.obstacles.length || this.turbo.pickup || this.turbo.remaining > 0
+              || this.feather.pickup || this.shield.pickup) return;
+            this.bonus = { ...this.pendingBonus, elapsed: 0, paid: 0, tick: 0 };
+            this.pendingBonus = null;
+            this.clearJumpBuffer();
+            this.emit('bonusStart', { ...this.bonus });
+          }
+          updateBonus(dt) {
+            const bonus = this.bonus;
+            bonus.elapsed = Math.min(LEVEL_BONUS.duration, bonus.elapsed + dt);
+            const tick = clamp(Math.floor((bonus.elapsed - 350) / 150), 0, 6);
+            if (tick > bonus.tick) {
+              bonus.tick = tick;
+              const paid = Math.floor(bonus.total * tick / 6), points = paid - bonus.paid;
+              bonus.paid = paid;
+              this.bonusScore += points;
+              this.score = Math.floor(this.distance * POINTS_PER_PX) + this.bonusScore;
+              this.awardLives();
+              this.highScore = Math.max(this.highScore, this.score);
+              if (points) this.emit('bonusTick', { index: tick, points, score: this.score });
+            }
+            this.meter.update(dt, this.score);
+            if (bonus.elapsed >= LEVEL_BONUS.duration) {
+              this.bonus = null;
+              this.emit('bonusEnd', { total: bonus.total });
+            }
+            this.emit('step', { dt, played: false, landed: false });
+          }
           awardLives() {
             if (!this.playing || this.rockTraining) return;
             while (this.score >= this.nextLifeScore) {
@@ -6462,6 +6524,7 @@
           }
           takeHit(obstacle) {
             if (!this.playing || this.rockTraining || this.recoveryRemaining > 0) return false;
+            this.section.clean = false;
             this.lives = Math.max(0, this.lives - 1);
             if (this.lives === 0) this.gameOver(obstacle);
             else {
@@ -6476,6 +6539,8 @@
             this.lives = 0;
             this.recoveryRemaining = 0;
             this.crashObstacle = obstacle?.type.name || null;
+            this.pendingBonus = null;
+            this.bonus = null;
             this.clearJumpBuffer();
             this.gameOverTime = 0;
             this.turbo.stop(this.trex);
@@ -6533,6 +6598,7 @@
             if (Math.abs(dt - STEP) > TIME_EPSILON)
               throw new RangeError('Use Game.advance(dt) for variable frame times');
             this.simulationTime += dt;
+            if (this.playing && this.bonus) { this.updateBonus(dt); return; }
             if (this.state === 'attract') this.attractTime += dt;
             if (this.crashed) this.gameOverTime += dt;
             const wasPlaying = this.playing;
@@ -6562,7 +6628,7 @@
                 if ((mark ? before + TIME_EPSILON < mark : before === 0) && this.gameTime + TIME_EPSILON >= mark)
                   this.emit('countdown', { value: (this.countdown - mark) / COUNTDOWN_STEP_MS });
               if (this.gameTime + TIME_EPSILON >= this.clearTime) {
-                const bossEvent = this.boss.update(dt, this.speed * this.turbo.multiplier,
+                const bossEvent = this.pendingBonus && this.boss.phase === 'idle' ? null : this.boss.update(dt, this.speed * this.turbo.multiplier,
                   !this.horizon.obstacles.length && !this.turbo.pickup && !this.feather.pickup
                     && !this.shield.pickup && this.turbo.remaining <= 0
                     && Math.abs(this.trex.x - TREX_START_X) <= 1);
@@ -6574,7 +6640,7 @@
                 this.speed,
                 this.horizon.obstacles,
                 this.shield.pickup,
-                this.boss.reserved,
+                this.boss.reserved || !!this.pendingBonus,
               ))
                 this.emit(event.type, event);
               const travelSpeed = this.speed * this.turbo.multiplier;
@@ -6583,7 +6649,7 @@
                 this.horizon.updateScenery(dt, travelSpeed);
               else {
                 this.distance += travelSpeed;
-                this.score = Math.floor(this.distance * POINTS_PER_PX);
+                this.score = Math.floor(this.distance * POINTS_PER_PX) + this.bonusScore;
                 // A milestone reached on the contact frame can save the last life.
                 this.awardLives();
                 this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
@@ -6594,15 +6660,15 @@
                   this.speed,
                   this.config.gapMultiplier,
                   // Keep a clear corridor behind visible collectibles too.
-                  this.boss.reserved
+                  this.boss.reserved || !!this.pendingBonus
                     || (!!this.feather.pickup && this.feather.pickup.x > this.world.width + 10 - FEATHER.spawnGap)
                     || (!!this.shield.pickup && this.shield.pickup.x > this.world.width + 10 - SHIELD.spawnGap),
                 );
                 if (this.feather.update(
-                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.shield.pickup, this.boss.reserved,
+                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.shield.pickup, this.boss.reserved || !!this.pendingBonus,
                 )) this.emit('feather');
                 if (this.shield.update(
-                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.feather.pickup, this.boss.reserved,
+                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.feather.pickup, this.boss.reserved || !!this.pendingBonus,
                 )) this.emit('shield');
                 this.night = Math.floor(this.score / 700) % 2 === 1;
                 this.nightAlpha += clamp(
@@ -6613,7 +6679,12 @@
                 // Turbo adds at most 3.34 px of player movement per step; keep collision bounds in mind.
                 for (let i = this.horizon.obstacles.length - 1; i >= 0; i--) {
                   const obstacle = this.horizon.obstacles[i];
+                  if (!obstacle.bonusCleared && obstacle.x + obstacle.width * obstacle.size < this.trex.x) {
+                    obstacle.bonusCleared = true;
+                    this.section.cleared++;
+                  }
                   if (!boxesCollide(this.trex, obstacle)) continue;
+                  if (!this.trex.turbo || obstacle.type.name === 'ptero') this.section.clean = false;
                   if (this.trex.turbo && obstacle.type.name !== 'ptero') {
                     this.emit('destroy', {
                       x: obstacle.x + (obstacle.width * obstacle.size) / 2,
@@ -6637,6 +6708,7 @@
                     if (boxesCollide(this.trex, rock)) rock.failed = true;
                     if (rock.x + rock.width < this.trex.x) this.clearBoss(!rock.failed);
                   } else if (boxesCollide(this.trex, rock)) {
+                    this.section.clean = false;
                     if (this.recoveryRemaining > 0) this.clearBoss(false, 'recovery');
                     else if (this.shield.consume()) {
                       this.emit('shieldPop', { obstacle: 'rockBoss' });
@@ -6659,6 +6731,8 @@
                   });
                 }
                 if (!this.rockTraining) this.highScore = Math.max(this.highScore, this.score);
+                this.queueBonus();
+                this.beginBonusIfSafe();
               }
             }
             this.meter.update(dt, this.score);
@@ -6852,6 +6926,10 @@
             trex.idleProgress = idleProgress;
             trex.idleTime = this.idleTime;
             trex.gameTime = this.lerp(game.previous.gameTime, game.gameTime);
+            if (game.bonus) {
+              trex.idlePose = 'grin';
+              trex.idleProgress = clamp(game.bonus.elapsed / LEVEL_BONUS.duration, 0, 1);
+            }
             ctx.fillStyle = bg;
             ctx.fillRect(0, 0, this.world.width, HEIGHT);
             const shake = this.deathShake(game) || this.eventShake(game);
@@ -6899,12 +6977,42 @@
             if (game.playing) this.drawCallouts(this.effects);
             ctx.restore();
             if (game.playing) {
-              this.drawRecord(this.effects);
+              if (!game.bonus) this.drawRecord(this.effects);
               if (!this.compactHud) this.drawTurboMeter(this.turboView);
               if (game.countingDown) this.drawCountdown(game);
               this.drawBossNotice(game.boss);
-              this.drawBanner(this.effects, game);
+              if (game.bonus) this.drawBonus(game.bonus);
+              else this.drawBanner(this.effects, game);
             }
+          }
+          drawBonus(bonus) {
+            const ctx = this.ctx, cx = this.world.width / 2;
+            const moving = !this.game.trex.reducedMotion.matches && this.effects.lettering;
+            const enter = clamp(bonus.elapsed / 220, 0, 1), leave = clamp((bonus.elapsed - 1560) / 240, 0, 1);
+            const y = 62 + (moving ? (1 - easeOutBack(enter)) * -12 : 0);
+            ctx.save();
+            ctx.globalAlpha = moving ? Math.min(1, enter * 2) * (1 - leave) : 1;
+            const width = Math.min(340, this.world.width - 24), rowSize = this.compactHud ? 14 : 12;
+            ctx.fillStyle = '#102d4beF'; ctx.strokeStyle = '#ffd257'; ctx.lineWidth = 1.5;
+            roundedRect(ctx, cx - width / 2, y, width, 108, 10); ctx.fill(); ctx.stroke();
+            this.drawArcade(bonus.checkpoint ? 'CHECKPOINT!' : 'LEVEL ' + bonus.level, 'level', cx, y + 18, 0.9);
+            this.drawPixelText('CLEARED ' + bonus.cleared, cx - width / 2 + 14, y + 36, rowSize, '#fffbe8', null);
+            this.drawPixelText('+' + bonus.obstacles, cx + width / 2 - 14, y + 36, rowSize, '#ffd257', null, 'right');
+            this.drawPixelText(bonus.clean ? 'NO HITS' : 'NO HITS -', cx - width / 2 + 14, y + 56, rowSize, '#fffbe8', null);
+            this.drawPixelText('+' + bonus.clean, cx + width / 2 - 14, y + 56, rowSize, '#ffd257', null, 'right');
+            this.drawPixelText('BONUS +' + bonus.paid, cx, y + 82, 15, '#ffd257', '#081330', 'center');
+            if (moving && bonus.total) for (let i = 0; i < 6; i++) {
+              if (Math.floor(bonus.total * (i + 1) / 6) === Math.floor(bonus.total * i / 6)) continue;
+              const p = (bonus.elapsed - 150 - i * 150) / 350;
+              if (p < 0 || p > 1) continue;
+              const endX = this.compactHud ? cx : this.world.width - 42, endY = this.compactHud ? 6 : 21;
+              const x = cx + (endX - cx) * p, coinY = y + 86 + (endY - y - 86) * p - Math.sin(p * Math.PI) * 18;
+              ctx.save(); ctx.translate(x, coinY); ctx.scale(0.35 + Math.abs(Math.cos(p * Math.PI * 2)) * 0.65, 1);
+              ctx.fillStyle = '#ffd257'; ctx.strokeStyle = '#a54b2b'; ctx.lineWidth = 1;
+              ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+              ctx.fillStyle = '#a54b2b'; ctx.fillRect(-0.6, -2.5, 1.2, 5); ctx.restore();
+            }
+            ctx.restore();
           }
           eventShake(game) {
             const effects = this.effects;
@@ -9670,11 +9778,11 @@
             hex.slice(20),
           ].join('-');
         }
-        // Generous bound: the whole round at top speed with Chili boost, plus one for rounding.
+        // Whole round at top speed with Chili, plus capped section bonuses and rounding.
         function maxPlausibleScore(mode, durationMs) {
           const steps = Math.ceil((durationMs * FPS) / 1000);
           return (
-            Math.floor(steps * GAME_MODES[mode].maxSpeed * CHILI_MULTIPLIER * POINTS_PER_PX) + 1
+            Math.floor(steps * GAME_MODES[mode].maxSpeed * CHILI_MULTIPLIER * POINTS_PER_PX * (1 + SCORE_BONUS_RATE)) + 1
           );
         }
         // "10 Oct 2026": English and unambiguous everywhere. Assembled from parts because en-GB
@@ -10492,8 +10600,6 @@
             this.slides = ['scores', 'demo', 'powerups'];
             this.durations = [8000, 10000, 9000];
             this.elements = this.slides.map((name) => document.getElementById('attract-' + name));
-            this.dots = [...document.querySelectorAll('[data-attract-slide]')];
-            this.pauseButton = document.getElementById('attract-pause');
             this.rows = document.getElementById('attract-score-list');
             this.source = document.getElementById('attract-score-source');
             this.empty = document.getElementById('attract-score-empty');
@@ -10503,29 +10609,21 @@
             this.active = false;
             this.demoSeed = 937;
             const random = () => ((this.demoSeed = (Math.imul(this.demoSeed, 1664525) + 1013904223) >>> 0) / 4294967296);
-            this.demo = new Game({ random, cosmeticRandom: random,
+            this.demo = new Game({ random, cosmeticRandom: random, bonusEnabled: false,
               width: runner.game.world.width, featherEnabled: false, shieldEnabled: false, bossEnabled: false });
             this.demoRenderer = new Renderer(context, this.demo);
             this.demoRenderer.effects.rng = new RandomSource(random);
             this.demoRenderer.compactHud = true;
             // A separate idle backdrop lets wide previews fit the available
             // height without stretching artwork or resizing the real game.
-            this.backdrop = new Game({ width: runner.game.world.width,
+            this.backdrop = new Game({ width: runner.game.world.width, bonusEnabled: false,
               random: () => 0.5, cosmeticRandom: () => 0.5,
               featherEnabled: false, shieldEnabled: false, bossEnabled: false });
             this.backdropRenderer = new Renderer(context, this.backdrop);
-            this.dots.forEach((button, i) => button.addEventListener('click', () => {
-              this.select(i, i < this.index ? 'prev' : 'next');
-              runner.draw(1);
-            }));
-            this.pauseButton.addEventListener('click', () => {
-              this.userPaused = !this.paused;
-              runner.draw(1);
-            });
             this.reset();
           }
           get paused() {
-            return this.userPaused ?? this.runner.browser.motionQuery.matches;
+            return this.userPaused ?? false;
           }
           reset() {
             this.mode = this.runner.modeSelect.value;
@@ -10553,10 +10651,6 @@
                 motion.finishLeave(element);
                 element.hidden = true;
               }
-            });
-            this.dots.forEach((button, i) => {
-              if (i === index) button.setAttribute('aria-current', 'true');
-              else button.removeAttribute('aria-current');
             });
             if (index === 0) {
               this.renderScores();
@@ -10688,12 +10782,7 @@
                 this.runner.motion.enter(row, 'saved');
               }
             }
-            if (this.renderedPaused !== this.paused) {
-              this.renderedPaused = this.paused;
-              this.pauseButton.setAttribute('aria-pressed', String(this.paused));
-              this.pauseButton.setAttribute('aria-label', this.paused ? 'Play preview' : 'Pause preview');
-              this.pauseButton.textContent = this.paused ? '▶' : 'Ⅱ';
-            }
+            this.runner.sessionView.stage.toggleAttribute('data-attract-paused', this.paused);
           }
           resize() {
             this.wide = matchMedia('(orientation: landscape)').matches;
@@ -11401,6 +11490,20 @@
                 this.sessionView.dismiss('shield');
                 this.announce('Shield popped. Hit survived. Avoid the next obstacle!');
                 break;
+              case 'bonusStart':
+                effects.banner = null;
+                effects.callouts.length = 0;
+                this.shownLevel = game.level;
+                this.sessionView.hintUntil = 0;
+                this.announce((event.checkpoint ? 'Checkpoint' : 'Level ' + event.level) +
+                  '. ' + event.cleared + ' obstacles cleared. Bonus ' + event.total + ' points.');
+                break;
+              case 'bonusTick':
+                this.sound.bonus(event.index);
+                break;
+              case 'bonusEnd':
+                this.announce('Bonus added. Keep running!');
+                break;
               case 'bossWarning':
                 if (!game.rockTraining) this.sound.boss();
                 this.announce('Stone Jaw! Make a short jump through the glowing opening.');
@@ -11469,7 +11572,7 @@
                 effects.update(event.dt, game.trex, game.playing, game.speed, event.landed);
                 // Level banners are cosmetic; the simulation only exposes its speed level.
                 // A visible coach hint shares the banner's place; the level waits for it.
-                if (game.playing && !game.rockTraining && !game.countingDown && game.level > this.shownLevel
+                if (!game.bonusEnabled && game.playing && !game.rockTraining && !game.countingDown && game.level > this.shownLevel
                   && game.simulationTime >= this.sessionView.hintUntil) {
                   this.shownLevel = game.level;
                   effects.announce('LEVEL ' + game.level, 'SPEED UP!');
@@ -11477,7 +11580,7 @@
                 this.sound.updateSteps(
                   event.dt,
                   game.speed,
-                  game.playing && !game.trex.jumping && !game.trex.ducking,
+                  game.playing && !game.bonus && !game.trex.jumping && !game.trex.ducking,
                 );
                 break;
             }
@@ -11698,6 +11801,9 @@
             } : null,
             score: game.score, speed: game.speed, night: game.nightAlpha,
             credits: runner.credits.balance,
+            bonusScore: game.bonusScore,
+            bonus: game.bonus ? { ...game.bonus } : null,
+            pendingBonus: game.pendingBonus ? { ...game.pendingBonus } : null,
             lives: game.lives, maxLives: LIVES.max, nextLifeScore: game.nextLifeScore, recoveryMs: game.recoveryRemaining,
             player: {
               x: game.trex.x, y: game.trex.y, velocity: game.trex.velocity,

@@ -1,5 +1,15 @@
 # Arcade typography and feedback
 
+## Level bonus (build 2026-10-21.10)
+
+Level crossings now lead to a safe1.8-second performance tally with clean-pass
+and no-hit points. Gold coin sprites arrive at the score on the payment beats,
+with six short ascending metallic pings at most. Existing fonts, static glow and
+cached lettering are reused. Reduced motion/Effects off keep the same award
+without flight or entrance movement. See [LEVEL-BONUS.md](LEVEL-BONUS.md).
+The attract carousel now loops without navigation dots or a pause button;
+Settings, Help and backgrounding still suspend it.
+
 ## Coin controls (build 2026-10-21.6)
 
 INSERT COIN and the credit meter reuse the display/pixel fonts, layered gold

@@ -79,10 +79,10 @@ try {
       document.documentElement.classList.toggle('motion', on);
     }, transitions);
     await page.evaluate(() => window.__dinoTest.transitionDone());
-    // T2: trusted touch on a slide dot; the preview must be running for the animation.
+    // T2: trigger the same slide transition as automatic rotation; no navigation UI.
     await page.evaluate(() => { window.__dinoRunner.attract.userPaused = false; });
     const t2 = page.evaluate(() => window.__record(500));
-    await touch('[data-attract-slide="2"]');
+    await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, 'next'); r.draw(1); }, 2);
     result.t2 = await t2;
     await page.evaluate(() => window.__dinoTest.transitionDone());
     // T4: trusted touch on START, then T5 (crash) and T6 (automatic return).

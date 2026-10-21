@@ -32,20 +32,20 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.9)
+## Size (UTF-8 bytes, build 2026-10-21.10)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 546,603 |
-| After Terser | 355,739 |
-| After CSSO | 315,760 |
-| Final HTML | 307,991 |
+| Readable source | 552,894 |
+| After Terser | 358,797 |
+| After CSSO | 319,045 |
+| Final HTML | 311,132 |
 
-Saved: **238,612 bytes (43.65%)**, before transport compression. About 31 KB
+Saved: **241,762 bytes (43.73%)**, before transport compression. About 31 KB
 are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-107,620 bytes; Brotli quality 11 gives 96,732 bytes. These are measurements only;
+108,757 bytes; Brotli quality 11 gives 97,666 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -62,7 +62,7 @@ this build does not configure a server or create required compressed sidecars.
 - Do not edit the generated HTML. Rebuild after changing the source. The source
   game/build identifier stays unchanged because this is packaging of that game.
 - Hosted updates now pin HTML to the active worker's cache. Publish the generated
-  HTML together with the updated root worker (v35 for this build). Increment both
+  HTML together with the updated root worker (v36 for this build). Increment both
   BUILD and CACHE_NAME on future releases. See [UPDATES.md](UPDATES.md) for the
   staging/consent contract, first-upgrade limitation and upload order.
 
@@ -105,7 +105,18 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.9)
+## Current delivery verification (2026-10-21.10)
+
+Delivery: 311132 bytes, SHA-256
+`ed56c93a53e643b477f2aa563180c9d9304e0b7594ad30198060d9b2ba8d49a8`.
+Worker cache v36. Safe level/checkpoint bonus tally, bounded earned points,
+synchronized coin flight/audio and automatic attract loop without preview controls.
+See [LEVEL-BONUS.md](LEVEL-BONUS.md) for rules and test evidence.
+**Publish the updated `highscores-lib.php` before or with the HTML and worker**:
+it accepts the new bonus-inclusive score bound. Existing score data is retained.
+No upload or deployment is part of the build.
+
+## Previous delivery verification (2026-10-21.9)
 
 Delivery: 307991 bytes, SHA-256
 `f30ce710622a30c73c4a4c9546086041cdf95039cf08a97d33b29b400b1a84cf`.

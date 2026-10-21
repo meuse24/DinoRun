@@ -104,16 +104,16 @@ try {
     await reset();
     // Older Android Chrome can retain :active on Start after the previous
     // orientation's touch. Compare its resting position, not the intentional
-    // 2px pressed transform. Toggle the real preview pause control twice to
-    // clear it without tapping through the pointer-transparent title.
+    // 2px pressed transform. Open/close Settings with trusted touch to clear it
+    // without tapping through the pointer-transparent title.
     const initialStart = await page.locator('#start-game').evaluate(button => ({
       active: button.matches(':active'), transform: getComputedStyle(button).transform,
       rect: button.getBoundingClientRect().toJSON(),
     }));
-    await touch(page.locator('#attract-pause'));
-    await page.waitForFunction(() => window.__dinoRunner.attract.paused);
-    await touch(page.locator('#attract-pause'));
-    await page.waitForFunction(() => !window.__dinoRunner.attract.paused);
+    await touch(page.locator('#settings-open'));
+    await page.waitForFunction(() => window.__dinoRunner.paused);
+    await touch(page.locator('#settings-close'));
+    await page.waitForFunction(() => !window.__dinoRunner.paused);
     await page.waitForFunction(() => !document.getElementById('start-game').matches(':active'));
     const start = await checkStart();
     await page.screenshot({ path: path.join(output, `${name}-scores.png`) });
@@ -122,12 +122,12 @@ try {
     await checkStart(start);
     assert.equal((await state()).score, 0);
     await page.screenshot({ path: path.join(output, `${name}-demo.png`) });
-    await touch(page.locator('#attract-pause'));
-    await page.waitForFunction(() => window.__dinoRunner.attract.paused);
+    await touch(page.locator('#settings-open'));
+    await page.waitForFunction(() => window.__dinoRunner.paused);
     const frozen = (await state()).attract;
     await page.waitForTimeout(250);
     assert.deepEqual((await state()).attract, frozen);
-    await touch(page.locator('#attract-pause'));
+    await touch(page.locator('#settings-close'));
     await page.waitForFunction(() => window.__dinoRunner.attract.index === 2);
     await checkStart(start);
     assert.equal(await page.locator('.attract-powerup:visible').count(), 3);
@@ -141,7 +141,7 @@ try {
     await page.waitForFunction(() => !window.__dinoRunner.paused);
     await page.waitForFunction(() => window.__dinoRunner.attract.index === 0);
     for (const index of [0, 1, 2]) {
-      await touch(page.locator(`[data-attract-slide="${index}"]`));
+      await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, 'next'); r.draw(1); }, index);
       await page.waitForFunction(i => window.__dinoRunner.attract.index === i, index);
       await checkStart(start);
       await touch(page.locator('#start-game'));
