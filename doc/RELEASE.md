@@ -14,7 +14,8 @@ The locally installed, exactly pinned development tools run in this order:
 
 1. Terser 5.51.2 compresses/mangles the three inline scripts. Property names,
    public hooks and the Chromium copyright/attribution are preserved.
-2. CSSO 5.0.5 minifies all four stylesheets, including the help template. Rule
+2. CSSO 5.0.5 minifies all six stylesheets (including the embedded fonts and
+   the help template). Rule
    restructuring is disabled: its default merging incorrectly moved the
    `var(--bg)` fallback after `color-mix()` and changed button transparency.
 3. HTMLMinifier-Terser 7.2.0 minifies markup, preserving inline text spacing,
@@ -31,19 +32,20 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.2)
+## Size (UTF-8 bytes, build 2026-10-21.3)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 457,006 |
-| After Terser | 283,765 |
-| After CSSO | 249,303 |
-| Final HTML | 242,053 |
+| Readable source | 509,858 |
+| After Terser | 329,080 |
+| After CSSO | 292,071 |
+| Final HTML | 284,581 |
 
-Saved: **214,953 bytes (47.04%)**, before transport compression. The optional
+Saved: **225,277 bytes (44.18%)**, before transport compression. About 31 KB
+are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-74,926 bytes; Brotli quality 11 gives 65,883 bytes. These are measurements only;
+102,096 bytes; Brotli quality 11 gives 92,080 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -103,7 +105,19 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.2)
+## Current delivery verification (2026-10-21.3)
+
+Delivery: 284581 bytes, SHA-256
+`2731337d73f57b1647b8eaf1f293113690700f72581ee170fd43dd2d684d3250`.
+Chromium compares all 64 source/release scenes pixel-identically. The arcade
+suite passes Chromium source/delivery and WebKit source/delivery in three
+layouts; Chromium attract (10 layouts), round-end flow (source and delivery),
+86 transition checks, lifecycle/offline 7, architecture 11, skill client, boss,
+shield, feather, rock training, volume and update suites pass; WebKit attract
+passes 10 layouts. Details: [ARCADE.md](ARCADE.md). No physical-device test or
+deployment in this iteration.
+
+## Previous delivery verification (2026-10-21.2)
 
 Delivery: 242053 bytes, SHA-256
 `fd2ba41cedfc72c8b2b44e9b2d1a2896221b822b31087910ce2f0f48ba8ecb2d`.
@@ -230,6 +244,13 @@ Previously tested delivery SHA-256:
 - Screenshots inspected, phone rotation settings restored, own test tab closed,
   USB bridges removed and temporary server stopped. No live score submissions.
 - Reports/screenshots: `output/release`; aggregate `verification.json`.
+
+## Arcade fonts and event lettering (2026-10-21.3)
+
+Embedded Lilita One/Press Start 2P (OFL), pixel HUD with milestone digit wave,
+cached Canvas callouts, LEVEL banners, short event shake, title letter drop,
+GAME OVER slam and score tally. Worker cache is v29; publish the rebuilt HTML
+and worker together using [UPDATES.md](UPDATES.md). See [ARCADE.md](ARCADE.md).
 
 ## Arcade presentation (2026-10-21.2)
 

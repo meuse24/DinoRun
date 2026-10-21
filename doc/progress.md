@@ -613,3 +613,11 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Chromium attract10 layouts, round-end flow3 layouts, lifecycle/offline7 and installed skill client passed. Final Chromium transition86 and source/release64 pixel-identical comparisons passed; WebKit delivery attract10 layouts, lifecycle/offline7 and round-end flow3 layouts passed. Release rebuilt:457006->242053 bytes (47.04% saved), SHA256 fd2ba41cedfc72c8b2b44e9b2d1a2896221b822b31087910ce2f0f48ba8ecb2d. No deployment or physical-device test.
 
 - Final review: inspected Chromium and WebKit menu/night/record and compact/portrait Game-over captures. All requested work is complete; no remaining implementation TODO. Tests use isolated fixtures with live scores disabled. Ready to commit; publish separately if requested.
+
+## 2026-10-21: Arcade fonts and event lettering (second pass)
+
+- User request: more arcade feeling for animated lettering, sizes and effects (glow, motion), researched against strong web games; clean Git first and commit; first attempt (build .2) judged moderate. Applied develop-web-game workflow (implement, Playwright screenshots, inspect, fix).
+- Build 2026-10-21.3/cache v29: embedded Lilita One + Press Start 2P (OFL, attribution asserted by build), CSS arcade layer (title letter drop/halo/twinkles, START beat/light/sweep, pixel kickers and score digits, GAME OVER slam/tally), Canvas lettering sprite cache, pixel HUD with milestone digit wave, callouts, LEVEL banner, event shake. Gameplay, scoring and audio unchanged.
+- Fixed during review: title halo offset, ghosted day HUD shadow, hard-edged score glow, fallback face on first Canvas frame (preload), Windows CRLF introduced by edit scripts (restored LF).
+- Passed: arcade-type (Chromium source/delivery, WebKit source/delivery), attract (Chromium, WebKit), game-over-flow (source, delivery), screen-transitions 86, game-contract 7, architecture 11, skill client, rock-boss, shield-bubble, jump-feather, rock-training, volume-controls, update-notice, release 64 pixel-identical. Release 284581 bytes, SHA-256 2731337d73f57b1647b8eaf1f293113690700f72581ee170fd43dd2d684d3250.
+- TODO for next agent: measure Android frame times with the new callouts/banner (tests/android-attract.mjs, android-transitions.mjs); consider a short score count-up sound tick; no deployment done.

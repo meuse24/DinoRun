@@ -64,8 +64,8 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   power-up preview, persistent Start target, isolated demo, online/local scores,
   pause, reduced motion and ten desktop/touch layouts, including full-width
   landscape and paused orientation changes. Accepts `DINO_BROWSER`.
-- `node tests/arcade-type.mjs [game.html]`: arcade typography, anchored START
-  effects, preview pause, readable score milestones, dark colors and dynamic
+- `node tests/arcade-type.mjs [game.html]`: embedded arcade faces, callouts/banners,
+  anchored START effects, preview pause, readable score milestones, dark colors and dynamic
   reduced motion in desktop/touch layouts. Accepts `DINO_BROWSER`; see
   `doc/ARCADE.md` for design references and verification.
 - `node tests/android-preview.cjs` and `node tests/android-feather.mjs`: run the

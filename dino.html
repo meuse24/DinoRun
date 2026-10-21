@@ -17,6 +17,10 @@
   Copyright 2014 The Chromium Authors
   Use of this source code is governed by a BSD-style license that can be
   found in the Chromium source tree's LICENSE file.
+
+  Embedded fonts: Lilita One, Copyright 2011 Juan Montoreano; Press Start 2P,
+  Copyright 2012 The Press Start 2P Project Authors. Both are licensed under the SIL Open Font License,
+  Version 1.1 (https://openfontlicense.org).
 -->
 <!doctype html>
 <html lang="en">
@@ -144,6 +148,20 @@
       })();
     </script>
     <title>Dino Run</title>
+    <style id="arcade-fonts">
+      /* Lilita One (c) 2011 Juan Montoreano and Press Start 2P (c) 2012 The Press Start 2P Project Authors,
+         both SIL Open Font License 1.1 (openfontlicense.org), embedded for file:// play. */
+      @font-face {
+        font-family: 'Dino Display';
+        font-display: block;
+        src: url(data:font/woff2;base64,d09GMgABAAAAACmwAA8AAAAAYAQAAClUAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGhYbhFIcGAZgAIE8EQgKgaQMgYJtC4MuAAE2AiQDhlgEIAWDZAeDYwwHG7BMs6KGsl56RwaCjYMAWQujKFmbfvFfJm9KX9BJk6DJcUUJjKMEdj5chK6ho+JEFeSHUCatu/1+tRYeobFPcuH5fr/fr73PxU2bZTyS8cRQSd7w6dbM2n/tN03a/AzPu63nAGQIfD6gsAUUVFDEMXGxBAcg4p45Z9NVNvbZXDY0M63OsjkcdXV3Xd1orbuy6QlWXJjkyJ7wVatS9Ap3lv6fP2DNPR8SDSSEMEgTX0BYfj99U3NGOpyJiwLLB2QIEezu2NrkFJ96dVqVYV7y917ztysZ7lhSZBkhALRQho+f+v5STVuPDzVIQcZjQfY63PuqtUPLMCCNNPluN5lMdt1j/f1UpXqZdudCcbJZAVwAtYCWFSDpaTTvfynjd0qOM/a3O2xn7Y7JwnoFqCwAWu500zXm8SJQQAoYLsCs/r/7qS0LXSFn7KzrSQlgzDdJ4X0YsNCsxsKAUHN2V2Mti0lMH9sjh6k2s8N37vBEJBKSuCeTZDKdZpY8kaA38Qzmr9nvEO1YY4ww8Dzv6Rd/frrynfN1ESSELpxXT9VDNtO8bwsSRS9iEIG1AgL4Aq4iwt/tbg+8iUeMxdxPTRmwwQH4XHizv1UVNkUawRXIc+Hp/O/IX5Gnje3oDq5pNZPNhp/2qRJFzQJ/UnHGDXekeOKFL/4EEIRWjFQWtF9A03oBZcRJrII4GX+WYCBJpl6xZYER0fBJlzYkuY5QooySFaXQfiQEu0Wy+6RCXsHQgq0CIkAXMlwxUqxDcSAzCfGUYtBBYtoFBKlWSvaaTIESnRAmlX2flAypBTQQATqIhThK5YEIz+AhyOK6YniDjGJJpPlCfAeJsaSjZC/SLKi1hFvggjvJXyhIkbzKUAaDJ/Qll1i+ZkUF1Mrs164lI6BU1d2W1E1SutqbI2CuVCgpZp+ocJFU+CH/3RdAQcZUNR+rpeFQzQfvonKwFRCgVy0G2ICzyHsyvgHKsWAJyGB2t1sa/I41gVDch2S14RwBZsvvj2UI+d0YT7wJqDRAqOYC8605dNPh2k/hzoLDZi08ZupSv/b7J5lL57K5PK4TN4Cr5PYueDzS7CyARLbrn8di2UUw157LXMU/1X539sZu+cr/+x/85XuBEfTjCA5iP9ZjGYSPjp7zzIJMQ5HYWQhZroCcBmQtEP2ZlfgeZ8YR19nGG9xQ5HAFUNuIzCJLYe1isXDMwExKlN0kpcHz46Gog1BUdDCcsDkZHajjhKNMSqonRcVo3EUiRBt9Zem/qFocjqFPfkgB5r9EkqXAzT2sLJeyXxuGAygcmp9l/etYKc/4GgizRNy1S9oMk9F9tWzWfZjHEmXxggqnym9+Qz01ZSNsI/p775VXU6U7YI5K7wKSVhs9rpvRtgPXO35Ih5B8jvrDfFVurrkPEHEM+ByI3G9otYMrsKX2PwUXPfufDSOi0bqEToooQQAXd7dIbranXnqgX9s1rQVYV2UoLUBQRAmAVIsxh7fkxcP0o9rjHGFRQBIRtgCTfqccV+sVQREtv0ZZTkBU4pdFCEisKERiBXAR4FHacSQxySNTqRm2Xp8r+wRmYkP7PGOATfV/2paVrNLI00DsqCLmXDjDdL2DiTK3YMUZahj7TZbD75AZuv67lHJ1rF0YhiOwcfolJZYqP2UeunriEuMLkhqmao1QrmvZWMqNmRpqS9ZTuhzzfaa9WLCdwV/MYLooEnnOg4DDlkLSN3nAIVQczsi4ewyqy1mY1tv4tT/52sMAQhOQ6W7q+UvhC3m7IGmeq2MnHIHz85BsS8I0VpiW1BRKYnquMcRkpB4/CvJbLmS069T7kkY4dPJR/N3SV7GuNtMlaaoU9zzmm86tosC64FTGPxlw/TIRKghK3uhZyoXUx3S9Yb6/0xGYsAwHy1VIqqCxzGFAmlZnU4HipdockwbKnETWPXCBdXlIdknJoakgG0qqQMww2nF2KqKyM97sGub0pkbOgdhPCxSfao/+yMHENGZmPzgVkn/S+6OnfQohyPIJUQM5fPrCDZZYzQy0PoBkyKGKt+ovvNkJyS5gHtkz1Md6UEE4IO9Lugvj2wUOc2hqorscBO6EixmQDRIYfJe0MBqua/kNzkU1gKRdCIm1GNzIUW+zMCTp5mF25yGUFPfpIQdhOFUeBdk2LdC4KeEPBxw+bmxhezNcwHpHv39eUtbBRJ7bYvZTZmleR+qbWrsr7+CUf1yfp4scrFsKqgJf1+ZF5dPDt65FS7HIww1/d46ub4Jh2ByOTJSxY3dl+h9N9emYYbq6dxITVsZRbfiPZrXWtrllFR2c7oekig6cpbjiOVj1hBxw74VXaexwwU2PZj5iF2tCdV/XAgJU2i6BdxLnGp/TLFcby6gnOcAhEOgxXUN73HhHGr3XtaSkKnwd6yxhganGeQZOs2Pa+7Jcoj/Uxm1f/vFY5c9CQRaUP84kcZjWDJxl/8NaCfPjAj3t77qZLNB5rTaeCuWBUujJ7LOTMwTaEe1KCuGJaJuUjxRW+0pHwY4ZyOkhsoa0ECz3N0uaBoGjnyur4KZcNsaai94yh8xytXcOy3c+BX1TDlohcrxeYkxy2HFGbrvOVFTgq53w0oeyZsgete8JEZGoM6P/LArCpinZdFNxhqikbhaxkZjSYvsNziwSfaZP6Vhzi64/t7MoGsvzLbGlf5zQgf1fR55udjBxzuBh4/hLGZDkx1vsrh6hrf2mJnhkrvqlOQrEnGzV09wk4dJBRK8Hhk+GSboIF4QN+ZqLRhW8dKsuCP5Fi9M1Puk05bPSbF95D2dbIroAd1XJN12qd6oP6q5AKFI6UqZ7gEyvcktTU7Mei65ECAhdfB+S83JAsLT8KuBRNKmhRGd5hqOTWuKQo85WL0hk8u1ugeJnjamMPU7jCaxLN7cbo2J7UJdjcJtb3Em8almdDJJ2Os83vWLmPiTOFGtmemsRG29w3lmdmVE3s4M1S5I5fIRxovqnsa/6GTSK/Hn4+iNbGTfZT5xGrimQG6/oYM9pERudZ1Hnuy5quZ5aMVn8656Z6k9WnsNVSabLkF7Yw9B0l3zGJPUZfMvqfN0l68R4O31ZoKm7KckFZoAYmwiIN4iWjTHmUrKHg9KS5pCvY/fCS3STq2sHd8nmC3guZxySPSPplSfW68crEo8wOGuDgUz30Rxezt6LStcrhJ6StKcQ79NpEFhhTJItcDJa3qBdrvZi0wL7kAGNj0sOwoxM68Y6OczxJXE+aiPTs0qU5HlloHSzTLC78/EiWihendjM/sOjMY9taLKfCYzdX3IlPXyW7/nNGZC+z4SpwVC2m7BYIVP82LMYLHuLYrMiOpezfkh+6imteyiJRUiQDt9rX8338wfofrV/H5uMhRDuCNHfaYLWqSO51sQk3e5mGJ7ARuCXlUhO2Obq2TNLSBpNV/Qsd81bMTvU0H4Okh6zgdCSGr1eHG8FUxB5sDuQ6GyfDdPdt6dmnWc6GjkjfPSdhUsYeCqCMdtXUNm606AWkl/uFbg49og63s4Ta7ELKRYLGFu/C/+iFXarS+elz9yItZF5hs9H1HHig6QKONyUQXHTBoqbCo8f7XVt5D+jaFnCUEZn+EiBUhG9L+M9gYlqdZhzuNKYh+Tdq6NyGtxD2g4+/ukLeYP9YrYgzSgcecJWHsa7GpiguM+Y3uUyHSteYkwPVmY6+IBD8qEqX4HkU0m+nFhQkHSZ6bUVgQIDdHZWlARryQFNu8FI4s+u+9qrrS1vZzfXdN+IrQzn3EFwKlSeNnmb8ObG1M7y/E5IJjc57aB8Nd/ZmejkjmLp5D2sk6Sz93C/4WC1P6muwBYrDz09FDcf0j5VoO5uHTMu642m21vBxD/1uvMhs0PgN0Ww0b3G+KvHnZZ5phoIR+OyKtVCPOJkI2DlRI8WbRWqO9aKO0HCGVGB9aV2EHjmlB/VVU6/D1jT7G+zqWG60JKSYyKCIr8zcM+uMKvfqyTKGac9WYj3pW6JyLDrdqYKybP02M839gqcnU/0hiN/vjHLhMrHtqP5CK8jkdU5wJiKfyTLVzjz27nSdCpFgfOtDTgQ3byCxs4TEQxbA32ZrsIVbKNwWnqCsRQ+XIO6R25l+jkkk44m0cFid+BVo9h+EfJow0Cyeyh/OeVo/iCbznDA+nw/hHSf6Z2lPv0IgwzWVau+RFKqj+mY55a/VG5hI9NLi2L5OFdR2Xp3vsYzemsxB3DE1Y15jBVZhDiilMaW/FOBc+kzHXtP4PJ8JoKR2IpPHhA+EmpJPVAV2bTuDtPVseMdoW9mPwFhnKH8hvQsMw1ufFV8vLXwr85djhhnj+cIVL4LHZWmFhpQ8zsQU208w3a5FzD/2W5UPKbpwPlXlOrO2upP5zzlQSDXnEjvsCqQkLCUKvzOdnEm0HBJjYVPp+PXtJUitMhbBUgHv4Wn9FhSCX0+czsbf5rxBjltM0jkam79hru9VQtcXuaQTEBDhbB4EUkJ9m3D/19OorIlp0auIEGOABRnQYCoa77Ip+GTGTOQZkPLk37nrRMuRusJbtk90VB2IgoVTkqwx0ogRGTTkDE1pa8UBEC91O/LAyK3dIjFWSbGlJkYHhZJifr/e9iOX4e3k3J7rJKzBJ5kIU5rTmxTQcNQChq1aWD3Ec9309Xk30JY3FySln7FLkd+oTH5tn0g3SuabDxZ8InhChWNCxxWpE5hyW2UVW1s8ygjtyu3ZX8JOLw1Flan3Nle5fBhsvDhtlKssGMmYAhfjjb8Wee1V12AsDkcVrAkHlx6GOJkjGk4F6QIPb7ETP0p0OrRfPv8N4d0/T08TLAER4uxfv5GSdKuc5WdQrCOkqR3MIFapEDgy8x667aZya3v69p0q8KBh2xYyqEgLV60oS8pGvyl/l06+KX+6AWUuuFjZR+a55FONCMPBh7bfbG3GVjd3qSq60NJpjpqKer6rZHBmdQ2t31g6EPThyTKAntNTadjVSJwmiP9KLcA73iVMvMa/7UICMT4vwmsWSunWnLtoIJk57IlBSrFu2sX5gLp5bX5ViMLdcZ207N0SuWF8CxO/fHiUxxHMkQIc4GrlpqOc+cI+yUsmkGwrYxl2fmMwBv8+ZOUf24BgfXMlXSVBxrfc1pBfTcxCY2eS6ZoWXIS/utGxhR/xqGnfsFiRWL/PY2xEzS1rT4I45GMncCqKv3Nz7RaPhuwi6P/orGUqZcWsXH8d/8tAcfMgIFQjbfs9lEehHkLrgYc+QiHy/LIlGpFuPUkp5iJZP6TYDvR+KH2Bs8i9FkJNEpqWyF0PGp0oAo5ruwZSUNIWWr+10UVuoLWArRqrLOMoxL5pJ7dJfqm+hspsFX7LsbHkcsR8GubYdSICHUCuQITWwZur5skDU8yJy+TWBMkISyAfWst2zQnHxT6ujcMzriSWvQs8Rx4LfDbl25PKb67x2Vujd/eaDu7WI9zayS2ZKmTHLmtjFdQddPeNR6rMujkovM1juU10pW1Xev/W+wvmKMSplqe7zpZLmrsOk0YcPvfX2tZwuNzRHlVJp5V5TjqXErB/CKMihSJmvyFFG6ymOfr6mfvqDZIkxBlU7ibyZXV2dhAkqtS7WL3uHKOGnvKzeVS6VUwc8mcNRqX1WFOP2vKrD4Tlh7G2eqy9UhZ3zxX8TsxjlOnYa9fmzsxgru3SF4g9TmaZiudZUaV2E9esLdk+ruJ87BbPPUNBc/aKwbigoNVI3MrbtTlmKFQTnLT6YOSzGkp77EjRLSkhIOtu5mTwyR4gpTAd+IX/Lv6L4PRnTvt+OOFl92L3HqTwcHM3b3dzzGC35OHi8GXnemHipOHX/Mpb6Z6M3eDg8luve5FlrZ/+wGVoIFK8cQ5ZVXZaivHc1YhydqACu+KBPjiQ8hLVRaL+TeTS/IitFCt6kDdoP1gPgCZ8n37SS3BzOAW0v4+0uVJwvnLpL4D7fwH9rUT1K/O2EKxiPPvvNFJ8UJbBTWD66NLcBHy3wTuWKJGkcfQowjAykHpWNOhe3xwMMvTNYn91LjbESsAZ9FbhrO3HpvZOFi8pX8n3it+myzOKDNv8zKDHCJ0HXpTAtiZDjeJJCgGCwai+LaKXCfzo6cm5vWQZ6yyv0NZUY2LJLrHlxPrj+nDrqKUMZ8AHMZkqDdYrgoVEfxvWwpwOqZ7/xjjsL1LpJ+32JDSJhkr0asaC0JbZU0Z7TWt+vliwHPBrMeEgTasEc2ez8e3XO51jnVM/nWhbxWqDQFWHAbjNXfAgVOwiW6jxp0HEQ4lhc03ls/7K6TFl5CLt1ComZE2XEO8Gaz0gvyd2eDA91rvNFx9cGBeemFKWee85wv3bTq+a2rROrl4YK1RyomPluO4ZTiGCvjh9NdGZNZ7XlxnZzncJKYB0ZIhFaBNZPc0v+qoO5upUwTsmV9yrSEX/DSz1Cvdz53F87Jk+Sh5biWPqW9gT6JEKaSAxkM6fNTtcBa7qLLmlwXt/yzYuun84jvdB/zZdpnLckShHaFy1SYwrRKtxbcg0CvS+IA1xmFybaXu3AmZrz66MWGGjq2i5D+dfUjtfUYGr7aqGoIeNfsC87J6qQ+rRiafsmMXZL4xcfWRGdq5g5IH/rqoh50kOtUJtzCGrHqt+V0GTafEJlaUZ5icBBHq9a84bJwWo7iK3I3YbKO+/SCdGXip71L/ztHnT0+vHjhk0zQ/ibP/0fP5SoWqtHdtup69nM+4tpI43KbQZlZXZCzddajnLSvRqNz8oq+DKo6GHR3gBngZG6AsEkq487Yym9OTpb9a9e+yIdkc3I1KQXEYReJbSMBEFiZ5W4QlbK9LK38NxcPzsPnYf15yti9EZIby9a7kLwtIrnPVka7gpwtlIrVXPglx7TUUoDbujzD62fWcgnA4RgRZWC+JXbT/hOnw2YWAlUjrIe/dumvrwYqAPs8zM66UZIKvn/HM/lBQtxtWU7pwc3NHoBSeK1aBj3fiLKTb5VMGKCfywN5T0AA0XNUEbSQ2f8D/29D+RODXEa/agp13LDrxP8HZZoKVn7yBHrNy4NTxjYfOblBX0NUoMcuQALlV0IOj9Pti4guAkQhdg572PO2Haz3lGuVVzws8ZSXNgYIH1X25GqhYIBYUQwYo2UvslQwpctVQsWX6HMb6gE0SyyFKniL8J8NCNWtg+j28JfsQ72cvyBvO8wZfbSm9CsZsha5AoHG2VNueb2lxyP8q1dLtl3tOcOVnYuUDImgqo1ynvNxAKnOSiuaSvKirwRuQRCavaFwbOI/eusF2GV6L8cietqi67ZsEBZiM8oCswO75jvkYPHM5NhoNzBTKz217fH1JJ0ibCXpOLGbZVs8A+CQMbqH7h7OODjEOHS0Z6D+FD03YKo/LCzZvCzWDLosUcheP079mQWNNplz/rN7dMIjT2egIW2z53w0WLoCVepR9j4aWlOxP4xRFmChX33I3rNxeTu4+bhvMcdW8t+WMTEIP3/EM6mawe+5o63j96ZMxrmm/cujrEBl6QbgLiPzPLdXT7ECom3mvnmroX9BQHNHItrey4rsWt7/PE1BDqx9m31gfFltS29lkEZQJa/xjWQaQTiBfIk83QKWObo6l0CBSbS1o2Et+QL6ev3KexbZFlaecd/88OTJFmkcFmMOIeBtmeZR52DCcWsdKQCH614bkxtksxsgBecClsJon3VW0P2ZVdMFB/330BBSjSNKwLrjI1qElRUHSQh5hKBLv3zCkB9i1bbSSFWdjvT/piE6QYsOdO6A7rbiwsY5lRvlsTNquFSTacNoGlXvB0g3nqlkxKMfb2z9C+YM+O/JJb+/t9k7CcJoHI66DSARUynOLWEqpkkNlvtgX2cMWFtTlPrKU7XbtaLcGNv9FMUBOsu/HBqv5B+ajvb/PYiWygI4P47SrDU9RVB3L01WA1c7Pukd4nAiszrPx8Cz6foHa0/EUlwDI/OjqxA0zpHOh5M8+fUjtBcK1vzEg5HsPPhP7IpVoh2SM1Y4ksw17Fg1KigdCbLouG1NTtvAgoZqnYPvgXlU8yNLmFGh2nvfF0PEcJ/Rlap3j22imFHiM4A7ZnttLmvjQMW/Fm2ivmz7QtzN3Od8HtQXgzudsnfRfgst3VIWOzOt607ZycsFi1zbOVSmhL9+dA5yHCHqGGokk8GktTMmjQLGD89Ke3D213Z+bO9IYQ9xevzzPH0LiATTYQ//nUmfHuwUrr8zJ0+44qWIjuep3oK0pcLmdizO8h8rxcQCmMg9CO8GDWpxo2HajytHBOEQWCL0oJlKo2i40GzeAA0+yilo+LV78TCf7V1cf87PWbj0cGh3OjPIVsvfCSYq8kFU43rnTR8EkEr0Xfwh1lxJHulLBikowlPmgYxIsUU4eXOoF8DfCZhj1CjWMDFTcKzArB5y7iRxCUHRN8anzk9mr5xG1pb4rMEPI1aghIB4kpsRZYuZlHy/blDR/cq09HGNNzyzMfvjQ9ggO/IVC5+sBaj8hK84SBT5Y531ovswBGgrF9GE1NAcV58z3iHDHzHvr/0iP2n1VivWHSBoCM4g8IsfSRkmnNzNtOacZUYMrnxyOTisR4/pwDjI+RqoAtLkfW7qnmrs/NndPeWSOVI4AqyFUH8qKZ79EIn4YKGZhnCzDPTeVN8yUL44X/ieKhr4NWFCQC/PM4E+r1JKlbxe2P432arU9aDtSTzPmtG9/wf3n5N8CgAKolGQLZBSD6MSaEyo5zo9QSx0DRoUckt7TGm/rFATCBg1SdzaF4Nsiq9GVRK8v5NCpLpqqvTIGjAttUGR9khuKsks01e4uzEOAhMDF5Vihsz3JKlIO1juRvJ8YijVDPZAGCN9gD2IFMq79VBjmACaCzgtzGA/kKabBRXVWSmYFQLwXnkVoTN4xoswsYc/zosdtwPMt2rfFLuuJ+3130SPZI7dHDolPHZMSgJXEGBtNmUcxakHie1+3dQGNP5qeAGQ9ihYS5L1HfohaZkZ5VzypnbbIrkarkN5e2wH6LXbYWfNK+cY3oD315SZESQqSHD8OXEwo11o4BOWegAVn/zuEJWoYaBUulOCcQ4FO/wEeX0U7i+LgOUzbPEVPs+C9vUffl/TpZ0GzSq18EdbxzkGiksf9putdD+zg1sB8ESHzDnQHowM6enXfuDwl1J9CXRMVEj4rPz7t5PelD9DeCzY15daxp8kohT/Q/imwgXlvFZxoASX0E9EKtx7DevyRZW3llCKkTO54URMCQh0qDtbHnMwXmHwO9oNDVhv53uzw/z5u4d3KyQpgaML0LpPBFD+KvBSxcI3topVzbDSXDmoI18Ail1SE4e1BUpPAVVBMim8NWc/rNRpR8WZ8HI1Ki7MNImGKH2QH1fH6voZk8EKY2SdqZBly4ZUychy4v6W6TRETo8SPx3fFxPjOg41GBZ45gVcaDOaFuXq9F37MDe9p0HstSIiJ6aodwHsFeWYKeLlKZa5SLZUBn6mOC1DB0Xjq+0KzXahds1yPq84uZYihyUDSCsKSNyVtgippOpTgGCuHYPSHRUZih7yDkOFLFGYA3NhcgBHC/zGXg7SkQbLdWIVHCptQEsWJdvbReaRGe2rdrBJSesrrYtoZVIF7zpok+hwHQZbLfKOzX7goNdrjbzcVL21uZafFinBxcSRH63PeTSdlu7rSVVJ/0C9ELkH0oJcgnix7DAJMGY83bfpVFP2f1tb+ppbBltYjn+cwIhNzAW1Ci08xfP1ZB8JbpAxIIQg3RfeY9WFcB7AsUSzdEbYiWl5kb+fGLCE78drnfNJ6hCndsxvcSdALCaqHxcSNeJG5IPtVL/Xh3gtmuDMfzlu4tH15HpzfCZtbb3WWB2YMFD/oK/6r02knCFrj7ASqR4VtCInm9KeYvc5zkyrBd/g6WmDPCrdJx2XhbAmEgsp2TZCl0IHhAIQn9xiSlhuSdxmSl+N+Sz+nP5p+VA8yLdE16LyesYx6FitEZ3EqrDe7ajSTs+U3SsjjHjAprzFtFuoornMytUnRuVYQ3Y91GioQUHm6ACz/kQtgLoUDElbQpByCiz0G2UFFEz/QycGN3hiBhpodyJO63fg7+l6hlgwqiOhJhpN5R5IV5lk2B6vsi4wu01j/QaTaR9wdTj6/mwBGyMRIfdVQWVnhIXKnUiTrpMhQsF2Vvacd6QXeeyV5pQr/AsqXkavywfT9QuAC5tb7MBwoJym+ckeji63otV7sPg2eHghFN6P/lhKKCZtJQF3FnMf5ImKdbz0RPGTmw/UFcF778oVL8+D8erJ574WH1N4Htzr3HXxei9QiOUpcsMxGUTyigwVFp5x6LMHZdJDvl+dBH7VIR+x+DC/hJOTdNbf3yl1wKisgHiGi4D6EG7Q/IyQGU8iA71+0A7+TCjf6+qWUAbJcSh/uWb1Q7wJpn5++ckvVYQASm1DCWbyV1V6p8Awc5uk7wst2TJ8cmNskx5IK9HlnLTH5LLLiJfqJXBTXa8qxyTnvkjg0B0ZbtmpbtNQFzUUJ0KT4zTD7JCZ8QDYy3sSEziGaE+X5I0eulvHyA9LKPZXViMVyuC1bQ9rfxRNM1n6q4V8og5QTOce73iGz34LayvBsCcGajrJJpNj4DnSsxi8fUh0+u1Bb4W0RP0estWIqgc/9HJPYT1bTgYfv6yLpY0wENZNvxN8krODFd0CS+98fS7ESVKz7UIWncIdQLSMCBTdYXcxZ4Wyx8cX8k0QktEH8gRXSMiaEOoETJNeg7OmKpELn6/G2XLJ/4irVU4rxmiD9WFiAglwoxc0FnHhvzAzvPrVs+TPKcFtfmJx0gnSIEM02YJbtkoeWpNgthkE2/leNiqdekqilScrvFzLCQ0qqG+99ksxyhgdeAnjeyKZuliJLrpnh+HqyubyistLa1hXAZlNERYWZsP///TDaDN9lZflMMzN/WAJgnjo7s+DoULd3tEvsBqzTA1sS2TWuLL15oH9lwAJhdAkenmpLjejVlw5kH4gopK+YCHm5M9ALLzeVg4aj5Afke3UxywWZE2RdKrRXYqL4j/ASzHfkQAJOfpCc4tLhsdIhabhOgX8zGaPNPuW0wM/PJf66N1bPAyA5iU/LtkIbdiysrzuzCF1IQCywz7Ab6399ECxHx3g4iT/jY7jUkbVqgZhyHz/Gv6r84xf2lzERKMD149rzFuU9qkno880IZXvu31ZYnl75AsImmcaiCBjj5vgE1VigMwy9rR6nKhV5ZoYhx4Tir2a2GaaIFAJuV24/GVYfdHvtslZ9kNP+Hr4wlaJJz1ZtO+WDticE7asxnhba2fim+es1AnF6UY5627FwvPcjZnhIjluCiDSjnU4TiQSZIk/uIURN9e2jQfOWKZ3fDzFQmAjSZlZITgyuYNHjgwms/6EIZfGn8wf8QKqZ3H9Zk1Kve0rxewH4KxqiRG28x15a4laTMTYDqN+QAwgQvBCdTQRJsZ6u8T0EGd48KeO0/vsWcp5v4eDpRGZOjV1PeECiT3BMpYlo3X7ymZZ4ZFHbt7QVVjeMlWWaxZKAyrtyD/4HJxxSLrbfBjrNOoMrHE9DoAMIH46cDOw4IZEoPgnGjkmGDhRNHYrrEwiDayCC63wIfdemIlZb96CU/d/I1UiknJ8CLlF6YpgxPRTEF0jyDVFNF9+Exa6BUymMopHB3c/ClV+bu4slkd8XY3iNNyBv7p/iTU1/DBKdQ9S3Y10LGx/sJDjLVSDVOsh9eAcwMTqggQ9qYUxKiyVRxLPGw08ARLHiCpvi8U1YxZPwp77NGivfRxj3fGa1q2YmPixoW1yOM+6lmwTRuPTzzJ0ksSz0IWHPTONaD4Egf3ZqOsAjLMAfezNK4fm5J3n44i6kbfbpHjiRc2x4sfRABuUo5VS2JDUsYVuwOf9kuT003sLyO7/tzlH39Sf6Z+T28vM2ECLFk2YXQXfmaG0aMCiPu3RAa5ROoHM0MAFEiBPYPCpvR7ctA4lTk/C6c4wNYYETpL0KsWkvWDJ81VVzsk2N9BjlVc7IqcEnkLBQx6fCNjDOrYOfgd0TrVGIhqDkdw8Q+zim/ifcdTvQ7fi/0TozIQADJbg1+LT7KqyJxv/hiQ03ku10f2KsHC4okviqo/gMO6JdBv6MgDaKX08UZhD6PKJN9ltwljZnaVpIWC6JnnfwbOSB04tURSLwNg2qh95K4XL4Lrmc7Pb1JVwDoTaLdgQZgpx3IbeRakiECGG4JlOyUbhuja8pH7wS+Eq87DHmoo7MlO7WBOzKb2+VhPl0jmYZjaOZWTS6CLkA5O0HT7ss+f5Z6wnxpqvqkoxbJnaCca573gneWyvTbuR9YtxJwK5P/kgIdtbcfoYGze8s1037az8L2Cc+7ztbuxaeyuyJxCW1Cr/2/y6TGDpJn1q22WIbBQFku7Di10oaI/KOO80KXrI/e1Ft6CKE/e67ILGIrsOPsh+3qzNI+/+TOHaf9qoX6QjQqHDv0NYV8yBik2ppgCZogi6Tbdq3XUI3C7bu/9p4ISbZDP9Q6Fu2euv3P383Bt6PXouKUHjQZhK/WVImUXUBtG+QtVkhhLVfe3LtBPs99r7CWF14+YM9ZxnPwGAg6ktR+Gub10gyf57uCxZA3rokQWSlpQL2Y91d4ZTD1jdKIdD/Z2hFWLQI80o2RBd6Pcj4ra+Te1MnFMJuOBPA336s7XVBYjvePl1iFUkCXbtEMuvbectzl7L2UFvSvy6z6g2gJivmWbGvOcKRbKoS63Of1tW/5dzQSe4aPDTaGYPdo+jT93qtEy5RIf/rMopR/g3cgwq6d/GuUxBFZIRnLcdE1c9ITVZ0IiFZ2fCr7RnGZF2G3Iv2KGmiA6rEbYZf9kwCOZ+lMUkbHlLvHna9EF6T2th3KwO54MP92s7s5PUhNK0BFoCw+m9pDWcIQf+BNV8AeP5CX4Npb/EEd+JtBPBEQSYxWyeI9JVRbmPxxGOdy2UKSp9y9V9WSSDxhrAXJjkY79j4bSRWQr3DMrZHRhLGkjnqwTtbUniCnBzQRXzXIagfORGRi4dWX3IKwfcj+wIw8iaSIkAKW/nAKyXFzvEsQvjLIWw5gg6T54FdIZlvyLxPUil2i8g8BPIWtM6ROUh0S8jqImsEuwBuncMuhiwYy2kIncduLaw5R6kPqYLrPDk6n6FIkPOxO0JcC3fTaULgr54Uuw89b3SfoluPnDXRfiIRIpFgFweTSCQ5MjghchZE5wp2FtDtQfYcmhXguEShcdfvsJqHoFEwcodmMXY1ZlbMsOsockgi4vsSq/sSWg3Int6KiLzKqSFx+8bwEIyUR7FL3BsVtwVEmSiWyVcPLPNoCiI6HPF6C3CV3DE4W0bU75KehvEZmF4uVRHCWg5/8dtmEy8egnwhydbpRxrSnLut5BrCXimcLQ+OVkMYRFcTt7aJ7fV9JuUM02Q+pflYwpWwoH2w+3rBRCHsnbwcToBBTEhI35jOSw2HN784XSn2IYn2sYj1qNgIine5H4ViZkkLoF4F77wkRaJuCW/zmN5SAX6QtFMY6H99BfM5Ph1LoWDxii2IhgyiXCq2NToO9WSCFeJ4vX7OuYISIZTDJYo/+yWGRpmHO8wSN6JRl7gTjBf5WwmYUnOEKgTgnlgtR5Uil2qc+W5U0xxD5SkqoKSeWtSBiYpIyvJlmTzxildJqNx1uXhUkvSQMnRq2XCZ6Gpeo8fzik8uFwB353AXWEmyN8jjoFhXFqg1hzp2laSrQrkKje55Qaum5iIih7NWNdfNsbkLlDnFPB5aSaUdGrs5CuG6kb3IJs6Ie17vAwrRI6/uAarTlBsdtYXLJabjpawTc+H5b+FhyXGDdggZVa6f3Vnj3v1SonjhjQ+++OFPAIFAkIAhQ4GKHfbQoMOACQs2HLg4wIOPAEecECLCGRdcESMZz+rfgwcyPPHCGx988cOfAAIJQk4wIYQKE05BSUVNI4KWTqQo0WLoGRjFMoljFi9BoiTJUqRKky5Dpiw7LdJu1DrPdVhmic322zUr1i202r/+s9R6Xc77wwdbHPDJR9N2OOSqyw7LlmOFXNflueKa22646ZYX8k26Y9wRBd5b6Z4pdxV65Y1uxYqUKDVHmW3KVapQpVqtGnXqvdSgSaNmrVqM2G6uNvPM99pbJ/2i34D7HnrgqEHHDbvgmCEXdepz2hk/z5oN7z5q/4qkC2Xe4IUprf/GmTzibPvXeikAAA==) format('woff2');
+      }
+      @font-face {
+        font-family: 'Dino Pixel';
+        font-display: block;
+        src: url(data:font/woff2;base64,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) format('woff2');
+      }
+    </style>
     <style>
       :root {
         color-scheme: light dark;
@@ -2089,92 +2107,6 @@
           animation-play-state: paused !important;
         }
       }
-      /* Arcade lettering: static depth/glow; only transform and opacity animate.
-         Keep the button itself anchored so every frame has the same hit target. */
-      #round-panel h1 .title-word {
-        color: #ffd257;
-        -webkit-text-stroke: 1px #173f69;
-        paint-order: stroke fill;
-        text-shadow: 0 2px 0 #173f69, 0 4px 0 #173f69, 0 6px 0 #a54b2b,
-          0 0 18px #ffd25760;
-        letter-spacing: -0.035em;
-      }
-      #round-panel h1 .title-word:last-child { color: #fff4d2; }
-      #round-panel .attract-heading h2,
-      .menu-header h1.menu-title,
-      #game-over-overlay h2 {
-        font-weight: 950;
-        letter-spacing: -0.035em;
-        text-shadow: 0 2px 0 #ffffff90, 0 0 14px #ffd25745;
-      }
-      #round-panel.night .attract-heading h2 {
-        color: #fff4d2;
-        text-shadow: 0 3px 0 #173f69, 0 0 18px #ffd25760;
-      }
-      #game-over-overlay h2 {
-        color: #ffd257;
-        text-transform: uppercase;
-        font-size: clamp(28px, 5.4cqw, 58px);
-        text-shadow: 0 3px 0 #a54b2b, 0 0 18px #ffd25760;
-      }
-      #game-over-overlay #round-score {
-        font: 900 clamp(18px, 2.6cqw, 26px)/1.3 monospace;
-        font-variant-numeric: tabular-nums;
-        color: #fff4d2;
-      }
-      #round-panel #start-game { position: relative; overflow: hidden; isolation: isolate; }
-      #start-game .action-label {
-        display: inline-block;
-        color: #fff4d2;
-        text-shadow: 0 2px 0 #173f69, 0 3px 0 #173f69;
-        font-size: 1.12em;
-      }
-      #start-game::after {
-        content: '';
-        position: absolute;
-        inset: -50% auto -50% -65%;
-        width: 32%;
-        background: linear-gradient(90deg, transparent, #fff4d260, transparent);
-        transform: skewX(-20deg);
-        opacity: 0;
-        pointer-events: none;
-      }
-      #mobile-hud #hud-score {
-        font: 900 clamp(15px, 4.4vw, 18px)/1.3 monospace;
-        letter-spacing: -0.04em;
-      }
-      #mobile-hud[data-milestone] #hud-score { color: #a54b2b; }
-      #mobile-hud.night[data-milestone] #hud-score { color: #ffd257; }
-      @keyframes arcade-start-beat {
-        0%, 12%, 24%, 100% { transform: none; }
-        18% { transform: scale(1.055); }
-      }
-      @keyframes arcade-start-sheen {
-        0%, 70%, 100% { opacity: 0; transform: translateX(0) skewX(-20deg); }
-        74% { opacity: 0.75; }
-        90% { opacity: 0; transform: translateX(600%) skewX(-20deg); }
-      }
-      @keyframes arcade-score-pop {
-        0%, 100% { transform: none; }
-        28% { transform: translateY(-2px) scale(1.12); }
-      }
-      @media (prefers-reduced-motion: no-preference) {
-        :root.motion #stage.idle #start-game .action-label {
-          animation: arcade-start-beat 4.8s ease-in-out infinite;
-        }
-        :root.motion #stage.idle #start-game::after {
-          animation: arcade-start-sheen 5.6s ease-in-out infinite;
-        }
-        :root.motion #mobile-hud[data-milestone] #hud-score {
-          transform-origin: right center;
-          animation: arcade-score-pop 360ms ease-out;
-        }
-        :root.motion #stage.heading-paused #start-game .action-label,
-        :root.motion #stage.heading-paused #start-game::after,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game .action-label,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game::after,
-        :root.motion #stage.game-paused #hud-score { animation-play-state: paused; }
-      }
       /* Dialog raises are technical reopens, not another heading entrance. */
       dialog.no-motion .heading-ink,
       dialog[data-heading-pending] .heading-ink,
@@ -2532,6 +2464,261 @@
         }
         #update-message { margin: 2px 0 0; }
         .update-actions { flex: none; margin-left: auto; }
+      }
+    </style>
+    <style id="arcade-styles">
+      /* Arcade layer: embedded display and pixel faces, outlined lettering with
+         stacked extrusion and static glow. Only transform, translate, scale and
+         opacity animate; every target keeps its anchored hit box. */
+      :root {
+        --font-display: 'Dino Display', system-ui, sans-serif;
+        --font-pixel: 'Dino Pixel', ui-monospace, monospace;
+        --arcade-gold: #ffd257;
+        --arcade-cream: #fff4d2;
+        --arcade-ink: #173f69;
+        --arcade-ember: #a54b2b;
+      }
+      .menu-title,
+      #round-panel h1,
+      #round-panel .attract-heading h2,
+      .attract-powerup h3,
+      #round-panel #start-game,
+      #round-feedback,
+      dialog h2 {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-synthesis: none;
+        letter-spacing: 0.015em;
+      }
+      .menu-title,
+      #round-panel .attract-heading h2,
+      dialog h2 {
+        text-shadow: 0 0.05em 0 #79362099, 0 0.09em 0 #79362055, 0 0 0.45em #ffd25750;
+      }
+      #round-panel.night .attract-heading h2 {
+        color: var(--arcade-cream);
+        -webkit-text-stroke: 0.06em var(--arcade-ink);
+        paint-order: stroke fill;
+        text-shadow: 0 0.06em 0 var(--arcade-ink), 0 0.1em 0 var(--arcade-ink), 0 0 0.5em #ffd25770;
+      }
+      .attract-kicker,
+      #round-panel .attract-demo-label {
+        font-family: var(--font-pixel);
+        font-weight: 400;
+        font-size: 9px;
+        line-height: 1.6;
+        letter-spacing: 0.08em;
+        color: #c85f2c;
+      }
+      #round-panel.night :is(.attract-kicker, .attract-demo-label) { color: var(--arcade-gold); }
+
+      /* Title: outlined gold/cream letters on a navy and ember extrusion. */
+      #round-panel h1 .title-word {
+        position: relative;
+        color: var(--arcade-gold);
+        -webkit-text-stroke: 0.085em var(--arcade-ink);
+        paint-order: stroke fill;
+        text-shadow: 0 0.035em 0 var(--arcade-ink), 0 0.07em 0 var(--arcade-ink),
+          0 0.105em 0 var(--arcade-ember), 0 0.14em 0 var(--arcade-ember),
+          0 0.2em 0.1em #173f6950, 0 0 0.42em #ffd25780;
+        letter-spacing: 0.035em;
+      }
+      #round-panel h1 .title-word:last-child { color: var(--arcade-cream); }
+      #round-panel h1 .title-breath { position: relative; isolation: isolate; }
+      #round-panel h1 .title-breath::before {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        inset: -40% -10%;
+        background: radial-gradient(closest-side, #ffd25770, #ffd25728 55%, transparent);
+        opacity: 0.55;
+        pointer-events: none;
+      }
+      /* Twinkles: four-point stars at the title corners. */
+      #round-panel h1 .title-word::after {
+        content: '';
+        position: absolute;
+        width: 0.36em;
+        height: 0.36em;
+        background: #fffdf2;
+        clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+        opacity: 0;
+        pointer-events: none;
+      }
+      #round-panel h1 .title-word:first-child::after { left: -0.12em; bottom: 0.1em; }
+      #round-panel h1 .title-word:last-child::after { right: -0.22em; top: 0.02em; }
+
+      /* START: display face, cream label with depth, inner light and sweep. */
+      #round-panel #start-game {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        letter-spacing: 0.07em;
+      }
+      #start-game .action-label {
+        display: inline-block;
+        font-size: 1.15em;
+        color: var(--arcade-cream);
+        -webkit-text-stroke: 0.08em var(--arcade-ink);
+        paint-order: stroke fill;
+        text-shadow: 0 0.05em 0 var(--arcade-ink), 0 0.1em 0 var(--arcade-ink), 0 0 0.35em #fff4d290;
+      }
+      #round-panel #start-game::before {
+        content: '';
+        position: absolute;
+        z-index: -1;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(ellipse 60% 90% at 50% 35%, #fff4d2b0, transparent 70%);
+        opacity: 0;
+        pointer-events: none;
+      }
+      #start-game::after {
+        content: '';
+        position: absolute;
+        inset: -50% auto -50% -65%;
+        width: 32%;
+        background: linear-gradient(90deg, transparent, #fff4d290, transparent);
+        transform: skewX(-20deg);
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* Scoreboards: pixel digits, display names. */
+      :is(#attract-score-list, .attract-score-ghost) li { font-family: var(--font-display); font-weight: 400; letter-spacing: 0.02em; }
+      :is(#attract-score-list, .attract-score-ghost) li > span:last-child,
+      :is(#attract-score-list, .attract-score-ghost) li > .attract-rank {
+        font-family: var(--font-pixel);
+        font-size: 0.62em;
+        align-self: center;
+        letter-spacing: 0;
+      }
+      :is(#attract-score-list, .attract-score-ghost) li > .attract-rank { font-size: 0.5em; }
+      :is(#attract-score-list, .attract-score-ghost) li:first-child > span:last-child { text-shadow: 0 0 0.6em #ffd25790; }
+
+      /* Portrait HUD shares the Canvas HUD pixel face. */
+      #mobile-hud :is(#hud-mode, #hud-record, #hud-score) {
+        font-family: var(--font-pixel);
+        font-weight: 400;
+        letter-spacing: 0;
+      }
+      #mobile-hud :is(#hud-mode, #hud-record) { font-size: clamp(9px, 2.7vw, 11px); }
+      #mobile-hud #hud-score { display: inline-block; font-size: clamp(12px, 3.6vw, 15px); line-height: 1.3; }
+      #mobile-hud[data-milestone] #hud-score { color: var(--arcade-ember); text-shadow: 0 0 6px #ffd257; }
+      #mobile-hud.night[data-milestone] #hud-score { color: var(--arcade-gold); text-shadow: 0 0 8px #ffd25790; }
+
+      /* Game over: outlined gold heading, pixel score tally. */
+      #game-over-overlay h2 {
+        color: var(--arcade-gold);
+        text-transform: uppercase;
+        font-size: clamp(30px, 5.8cqw, 62px);
+        letter-spacing: 0.04em;
+        -webkit-text-stroke: 0.07em #0b1f38;
+        paint-order: stroke fill;
+        text-shadow: 0 0.05em 0 var(--arcade-ember), 0 0.1em 0 var(--arcade-ember), 0 0 0.45em #ffd25780;
+      }
+      #game-over-overlay #round-score {
+        display: inline-block;
+        margin-top: 6px;
+        font: 400 clamp(14px, 2.1cqw, 22px)/1.4 var(--font-pixel);
+        color: var(--arcade-cream);
+        text-shadow: 0 2px 0 #0b1f38, 0 0 10px #fff4d260;
+      }
+      #game-over-overlay #round-feedback {
+        font-size: clamp(15px, 2.2cqw, 22px);
+        color: #91e6be;
+        text-shadow: 0 2px 0 #0b1f38;
+      }
+
+      @keyframes arcade-letter-drop {
+        0% { translate: 0 -0.9em; scale: 1.2 0.8; opacity: 0; }
+        50% { translate: 0 0.06em; scale: 1.12 0.86; opacity: 1; }
+        72% { translate: 0 -0.08em; scale: 0.94 1.08; }
+        100% { translate: 0 0; scale: 1; opacity: 1; }
+      }
+      @keyframes arcade-letter-slam {
+        0% { translate: 0 -0.25em; scale: 2.4; opacity: 0; }
+        55% { translate: 0 0.03em; scale: 0.88; opacity: 1; }
+        78% { scale: 1.07; }
+        100% { translate: 0 0; scale: 1; opacity: 1; }
+      }
+      @keyframes arcade-glow {
+        0%, 100% { opacity: 0.4; transform: scale(0.94); }
+        50% { opacity: 0.9; transform: scale(1.05); }
+      }
+      @keyframes arcade-twinkle {
+        0%, 64%, 100% { opacity: 0; transform: scale(0.2) rotate(0deg); }
+        74% { opacity: 1; transform: scale(1) rotate(45deg); }
+        86% { opacity: 0; transform: scale(0.3) rotate(90deg); }
+      }
+      @keyframes arcade-start-beat {
+        0%, 34%, 100% { transform: none; }
+        8% { transform: scale(1.13, 0.9); }
+        16% { transform: scale(0.95, 1.08); }
+        25% { transform: scale(1.03); }
+      }
+      @keyframes arcade-start-glow {
+        0%, 40%, 100% { opacity: 0; }
+        10% { opacity: 1; }
+      }
+      @keyframes arcade-start-sheen {
+        0%, 52%, 100% { opacity: 0; transform: translateX(0) skewX(-20deg); }
+        56% { opacity: 0.85; }
+        78% { opacity: 0; transform: translateX(600%) skewX(-20deg); }
+      }
+      @keyframes arcade-score-pop {
+        0%, 100% { transform: none; }
+        25% { transform: translateY(-3px) scale(1.2); }
+        55% { transform: translateY(1px) scale(0.96); }
+      }
+      @keyframes arcade-tally-in {
+        0% { opacity: 0; transform: translateY(8px) scale(0.6); }
+        60% { opacity: 1; transform: translateY(-2px) scale(1.12); }
+        100% { opacity: 1; transform: none; }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        :root.motion #round-panel[data-enter] .title-word .heading-wave-char {
+          animation: arcade-letter-drop 620ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--wave-i, 0) * 55ms) both,
+            heading-ripple var(--heading-idle-duration) var(--heading-idle-easing) calc(var(--wave-i, 0) * var(--heading-wave-phase)) infinite;
+        }
+        :root.motion #game-over-overlay[data-enter='death'] .heading-wave-char {
+          animation: arcade-letter-slam 420ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--t5-delay, 0ms) + var(--wave-i, 0) * 45ms) both,
+            heading-ripple var(--heading-idle-duration) var(--heading-idle-easing) calc(var(--wave-i, 0) * var(--heading-wave-phase)) infinite;
+        }
+        :root.motion #game-over-overlay[data-enter='death'] #round-score {
+          animation: arcade-tally-in 380ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--t5-delay, 0ms) + 380ms) both;
+        }
+        :root.motion #stage.idle #round-panel h1 .title-breath::before {
+          animation: arcade-glow 3.2s ease-in-out infinite;
+        }
+        :root.motion #stage.idle #round-panel h1 .title-word::after {
+          animation: arcade-twinkle 3.6s ease-out infinite;
+        }
+        :root.motion #stage.idle #round-panel h1 .title-word:last-child::after { animation-delay: 1.8s; }
+        :root.motion #stage.idle #start-game .action-label {
+          animation: arcade-start-beat 2.4s ease-in-out infinite;
+        }
+        :root.motion #stage.idle #round-panel #start-game::before {
+          animation: arcade-start-glow 2.4s ease-out infinite;
+        }
+        :root.motion #stage.idle #start-game::after {
+          animation: arcade-start-sheen 4.8s ease-in-out infinite;
+        }
+        :root.motion #mobile-hud[data-milestone] #hud-score {
+          transform-origin: right center;
+          animation: arcade-score-pop 420ms ease-out;
+        }
+        :root.motion #stage.heading-paused #start-game .action-label,
+        :root.motion #stage.heading-paused #start-game::before,
+        :root.motion #stage.heading-paused #start-game::after,
+        :root.motion #stage.heading-paused #round-panel h1 .title-breath::before,
+        :root.motion #stage.heading-paused #round-panel h1 .title-word::after,
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game .action-label,
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game::before,
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game::after,
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-breath::before,
+        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-word::after,
+        :root.motion #stage.game-paused :is(#hud-score, #round-score) { animation-play-state: paused; }
       }
     </style>
   </head>
@@ -3410,6 +3597,8 @@
       /*
        * Core behavior and constants adapted from Chromium's T-Rex Runner.
        * Copyright 2014 The Chromium Authors. BSD-style license.
+       * Embedded fonts: Lilita One, Copyright 2011 Juan Montoreano; Press Start 2P,
+       * Copyright 2012 The Press Start 2P Project Authors. Both SIL Open Font License 1.1 (openfontlicense.org).
        */
       (() => {
         'use strict';
@@ -3450,7 +3639,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.2';
+        const BUILD = '2026-10-21.3';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -3479,6 +3668,24 @@
         const FEATHER_COLORS = ['#60dcdf', '#baf7ef', '#ecffff'];
         const SPARK_COLORS = ['#ffb83e', '#ed6431', '#fff0a5'];
         const CONFETTI_COLORS = ['#e67842', '#ffd257', '#45b86f', '#7278bd', '#fff'];
+        // Embedded faces (see the arcade-fonts style); fallbacks keep text readable meanwhile.
+        const FONT_DISPLAY = "'Dino Display', system-ui, sans-serif";
+        const FONT_PIXEL = "'Dino Pixel', ui-monospace, monospace";
+        // Canvas lettering styles: size, two-stop fill, outline, extrusion and glow.
+        const ARCADE_TEXT = {
+          callout: { size: 15, fill: ['#fffbe8', '#ffd257'], glow: '#ffd257' },
+          feather: { size: 15, fill: ['#f2ffff', '#60dcdf'], glow: '#baf7ef' },
+          shield: { size: 15, fill: ['#f7f1ff', '#ba9dff'], glow: '#e7daff' },
+          chili: { size: 16, fill: ['#fff3c4', '#ff7a3a'], glow: '#ff5a2a' },
+          smash: { size: 13, fill: ['#ffffff', '#ffb27a'], glow: '#ff8a4a' },
+          record: { size: 17, fill: ['#fffbe8', '#ffc02e'], glow: '#ffd257' },
+          level: { size: 21, fill: ['#ffffff', '#ffd257'], glow: '#ffd257' },
+          count: { size: 40, fill: ['#ffffff', '#ffe08a'], glow: '#ffd257' },
+          go: { size: 50, fill: ['#ffe27a', '#f0703a'], glow: '#ffb03a' },
+          boss: { size: 22, fill: ['#ffe9c2', '#ff6a45'], glow: '#ff4a2a' },
+          clear: { size: 22, fill: ['#effff7', '#70f0a4'], glow: '#91e6be' },
+        };
+        const easeOutBack = (x) => 1 + 2.7 * (x - 1) ** 3 + 1.7 * (x - 1) ** 2;
         // Cloud ellipses use fractions of the cloud width: center x/y, radius x/y.
         const CLOUD_PROFILES = [
           [
@@ -5354,6 +5561,23 @@
             this.particles = [];
             this.dustTimer = 0;
             this.recordTime = 0;
+            this.callouts = [];
+            this.banner = null;
+            this.shakeTime = 0;
+            this.shakeStrength = 0;
+          }
+          // Event lettering above the action. Reduced motion keeps the text, drawn still.
+          callout(text, x, y, style = 'callout', life = 950) {
+            if (this.callouts.length >= 4) this.callouts.shift();
+            this.callouts.push({ text, x, y, style, life, maxLife: life });
+          }
+          announce(text, sub = '', life = 1700) {
+            this.banner = { text, sub, life, maxLife: life };
+          }
+          shake(strength, time = 220) {
+            if (this.reducedMotion.matches || strength < this.shakeStrength * (this.shakeTime / 220)) return;
+            this.shakeStrength = strength;
+            this.shakeTime = time;
           }
           burst(x, y, count, kind) {
             if (this.reducedMotion.matches) return;
@@ -5420,6 +5644,14 @@
           }
           update(dt, trex, running, speed, landed) {
             this.recordTime = Math.max(0, this.recordTime - dt);
+            this.shakeTime = Math.max(0, this.shakeTime - dt);
+            let kept = 0;
+            for (const callout of this.callouts) {
+              callout.life -= dt;
+              if (callout.life > 0) this.callouts[kept++] = callout;
+            }
+            this.callouts.length = kept;
+            if (this.banner && (this.banner.life -= dt) <= 0) this.banner = null;
             const seconds = dt / 1000;
             let remaining = 0;
             for (const p of this.particles) {
@@ -6152,6 +6384,90 @@
             this.turboView = Object.create(game.turbo);
             this.featherView = Object.create(game.feather);
             this.shieldView = Object.create(game.shield);
+            this.textSprites = new Map();
+            this.hud = null;
+            // Canvas text never triggers a face load early enough; request both up front.
+            document.fonts?.load('16px ' + FONT_PIXEL).catch(() => {});
+            document.fonts?.load('16px ' + FONT_DISPLAY).catch(() => {});
+          }
+          // Arcade lettering is rasterised once per text, style and pixel scale. Frames only
+          // transform the cached sprite, so glows never cost a per-frame shadow blur.
+          arcadeText(text, styleName) {
+            const style = ARCADE_TEXT[styleName],
+              scale = this.ctx.getTransform().a || 1,
+              key = styleName + '|' + text + '|' + scale;
+            let sprite = this.textSprites.get(key);
+            if (sprite) return sprite;
+            const font = style.size + 'px ' + FONT_DISPLAY,
+              // Until the embedded face is ready the fallback is drawn, but not cached.
+              ready = !document.fonts || document.fonts.check(font);
+            if (!ready && !this.fontRequest) this.fontRequest = document.fonts.load(font).catch(() => {});
+            const canvas = document.createElement('canvas'),
+              c = canvas.getContext('2d');
+            c.font = font;
+            const size = style.size,
+              stroke = Math.max(3, size * 0.2),
+              depth = Math.max(2, Math.round(size * 0.1)),
+              glow = size * 0.55,
+              pad = Math.ceil(stroke + glow),
+              width = Math.ceil(c.measureText(text).width + pad * 2),
+              height = Math.ceil(size * 1.25 + depth + pad * 2),
+              cx = width / 2,
+              cy = pad + size * 0.62;
+            canvas.width = Math.ceil(width * scale);
+            canvas.height = Math.ceil(height * scale);
+            c.scale(scale, scale);
+            c.font = font;
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            c.lineJoin = 'round';
+            c.lineWidth = stroke;
+            // Glow behind a navy/ember extrusion, then outline, gradient fill and gloss.
+            c.shadowColor = style.glow;
+            c.shadowBlur = glow * scale;
+            c.strokeStyle = c.fillStyle = '#a54b2b';
+            c.strokeText(text, cx, cy + depth);
+            c.shadowColor = 'transparent';
+            for (let d = depth - 1; d > 0; d--) {
+              c.strokeStyle = d > depth / 2 ? '#a54b2b' : '#0f2c4d';
+              c.strokeText(text, cx, cy + d);
+            }
+            c.strokeStyle = '#0f2c4d';
+            c.strokeText(text, cx, cy);
+            const fill = c.createLinearGradient(0, cy - size / 2, 0, cy + size / 2);
+            fill.addColorStop(0, style.fill[0]);
+            fill.addColorStop(0.45, style.fill[0]);
+            fill.addColorStop(0.55, style.fill[1]);
+            fill.addColorStop(1, style.fill[1]);
+            c.fillStyle = fill;
+            c.fillText(text, cx, cy);
+            c.save();
+            c.beginPath();
+            c.rect(0, 0, width, cy - size * 0.18);
+            c.clip();
+            c.globalAlpha = 0.4;
+            c.fillStyle = '#ffffff';
+            c.fillText(text, cx, cy);
+            c.restore();
+            sprite = { canvas, width, height, cy };
+            if (ready) {
+              if (this.textSprites.size > 48) this.textSprites.clear();
+              this.textSprites.set(key, sprite);
+            }
+            return sprite;
+          }
+          // Draws a cached lettering sprite centred on (x, y), optionally scaled and rotated.
+          drawArcade(text, styleName, x, y, scale = 1, alpha = 1, angle = 0) {
+            if (alpha <= 0 || scale <= 0) return;
+            const ctx = this.ctx,
+              sprite = this.arcadeText(text, styleName);
+            ctx.save();
+            ctx.globalAlpha *= Math.min(1, alpha);
+            ctx.translate(x, y);
+            if (angle) ctx.rotate(angle);
+            if (scale !== 1) ctx.scale(scale, scale);
+            ctx.drawImage(sprite.canvas, -sprite.width / 2, -sprite.cy, sprite.width, sprite.height);
+            ctx.restore();
           }
           lerp(previous, current) {
             return previous === undefined ? current : previous + (current - previous) * this.alpha;
@@ -6199,7 +6515,7 @@
             trex.gameTime = this.lerp(game.previous.gameTime, game.gameTime);
             ctx.fillStyle = bg;
             ctx.fillRect(0, 0, this.world.width, HEIGHT);
-            const shake = this.deathShake(game);
+            const shake = this.deathShake(game) || this.eventShake(game);
             ctx.save();
             if (shake) ctx.translate(shake[0], shake[1]);
             this.drawHorizon(
@@ -6227,12 +6543,75 @@
               this.drawBubble(x, y, 17, true);
             }
             this.drawEffects(this.effects);
+            if (game.playing) this.drawCallouts(this.effects);
             ctx.restore();
             if (game.playing) {
               this.drawRecord(this.effects);
               if (!this.compactHud) this.drawTurboMeter(this.turboView);
               if (game.countingDown) this.drawCountdown(game);
               this.drawBossNotice(game.boss);
+              this.drawBanner(this.effects, game);
+            }
+          }
+          eventShake(game) {
+            const effects = this.effects;
+            if (!effects.shakeTime || !game.playing || game.trex.reducedMotion.matches) return null;
+            const strength = effects.shakeStrength * (effects.shakeTime / 220),
+              time = effects.shakeTime;
+            return [Math.sin(time * 0.37) * strength, Math.cos(time * 0.29) * strength * 0.5];
+          }
+          // Event words pop in with overshoot, drift up with a small wobble, then fade.
+          drawCallouts(effects) {
+            const still = this.game.trex.reducedMotion.matches;
+            for (const callout of effects.callouts) {
+              const age = callout.maxLife - callout.life,
+                t = age / callout.maxLife,
+                sprite = this.arcadeText(callout.text, callout.style),
+                half = sprite.width / 2 - 6,
+                x = clamp(callout.x, half, this.world.width - half),
+                pop = still ? 1 : age < 200 ? Math.max(0.2, easeOutBack(age / 200)) : 1,
+                rise = still ? 0 : (1 - (1 - t) ** 3) * 24,
+                wobble = still ? 0 : Math.sin(age / 85) * 0.06 * (1 - t),
+                alpha = t < 0.7 ? 1 : 1 - (t - 0.7) / 0.3;
+              this.drawArcade(callout.text, callout.style, x, callout.y - rise, pop, alpha, wobble);
+            }
+          }
+          // LEVEL n sweeps in from the right, holds, and leaves to the left.
+          drawBanner(effects, game) {
+            const banner = effects.banner;
+            if (!banner || effects.recordTime > 0 || game.countingDown) return;
+            const boss = game.boss;
+            if (boss.training || boss.phase === 'warning' || boss.phase === 'cleared') return;
+            const ctx = this.ctx,
+              still = game.trex.reducedMotion.matches,
+              age = banner.maxLife - banner.life,
+              enter = clamp(age / 320, 0, 1),
+              leave = clamp((age - (banner.maxLife - 280)) / 280, 0, 1),
+              cx = this.world.width / 2,
+              offset = still ? 0 : (1 - easeOutBack(enter)) * (this.world.width * 0.6) - leave * leave * this.world.width * 0.6,
+              alpha = still ? Math.min(1, age / 150, banner.life / 200) : 1 - leave,
+              y = 62;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            // A dark stripe gives the lettering contrast over day and night skies.
+            const stripe = ctx.createLinearGradient(cx - 150, 0, cx + 150, 0);
+            stripe.addColorStop(0, '#173f6900');
+            stripe.addColorStop(0.2, '#173f69d0');
+            stripe.addColorStop(0.8, '#173f69d0');
+            stripe.addColorStop(1, '#173f6900');
+            ctx.fillStyle = stripe;
+            ctx.fillRect(cx - 150 + offset * 0.4, y - 17, 300, banner.sub ? 42 : 34);
+            ctx.restore();
+            this.drawArcade(banner.text, 'level', cx + offset, y, 1, alpha);
+            if (banner.sub) {
+              ctx.save();
+              ctx.globalAlpha = alpha;
+              ctx.font = '8px ' + FONT_PIXEL;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillStyle = '#fff4d2';
+              ctx.fillText(banner.sub, cx + offset * 1.3, y + 18);
+              ctx.restore();
             }
           }
           drawRockBoss(rock) {
@@ -6326,22 +6705,34 @@
               }
               ctx.stroke();
             } else if (active) {
-              ctx.font = '800 9px system-ui, sans-serif';
+              ctx.font = '8px ' + FONT_PIXEL;
+              ctx.fillStyle = '#0f2c4d';
+              const hint = boss.training ? 'ROCK TRAINING - SHORT JUMPS' : 'SHORT JUMP THROUGH';
+              ctx.fillText(hint, x + 1, GROUND_Y + 18);
               ctx.fillStyle = '#fff0bd';
-              ctx.fillText(boss.training ? 'ROCK TRAINING · SHORT JUMPS' : 'SHORT JUMP THROUGH', x, GROUND_Y + 17);
+              ctx.fillText(hint, x, GROUND_Y + 17);
             } else {
-              ctx.fillStyle = '#173f69';
-              roundedRect(ctx, x - 113, 48, 226, 41, 10);
+              const cleared = boss.phase === 'cleared',
+                still = this.game.trex.reducedMotion.matches,
+                time = this.game.gameTime;
+              ctx.fillStyle = '#173f69e8';
+              roundedRect(ctx, x - 118, 44, 236, 48, 12);
               ctx.fill();
-              ctx.strokeStyle = boss.phase === 'cleared' ? '#91e6be' : '#ffd257';
-              ctx.lineWidth = 1.5;
+              ctx.strokeStyle = cleared ? '#91e6be' : '#ff7a4a';
+              ctx.lineWidth = 2;
               ctx.stroke();
-              ctx.font = '900 14px system-ui, sans-serif';
-              ctx.fillStyle = boss.phase === 'cleared' ? '#91e6be' : '#ffd257';
-              ctx.fillText(boss.phase === 'cleared' ? 'BOSS CLEAR!' : 'STONE JAW', x, 61);
-              ctx.font = '700 9px system-ui, sans-serif';
-              ctx.fillStyle = '#fff';
-              ctx.fillText(boss.phase === 'cleared' ? 'KEEP RUNNING.' : 'SHORT JUMP THROUGH THE OPENING', x, 78);
+              ctx.restore();
+              // The warning trembles like the approaching rock; the clear pops once.
+              const title = cleared ? 'BOSS CLEAR!' : 'STONE JAW',
+                jitter = still || cleared ? 0 : Math.sin(time * 0.09) * 0.8,
+                tilt = still || cleared ? 0 : Math.sin(time * 0.05) * 0.03;
+              this.drawArcade(title, cleared ? 'clear' : 'boss', x + jitter, 60, 1, 1, tilt);
+              ctx.save();
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.font = '7px ' + FONT_PIXEL;
+              ctx.fillStyle = '#fff4d2';
+              ctx.fillText(cleared ? 'KEEP RUNNING!' : 'SHORT JUMP THROUGH THE OPENING', x, 82);
             }
             ctx.restore();
           }
@@ -6356,7 +6747,6 @@
                 : (time % COUNTDOWN_STEP_MS) / COUNTDOWN_STEP_MS,
               cx = this.world.width / 2,
               cy = 92;
-            const easeOutBack = (x) => 1 + 2.7 * (x - 1) ** 3 + 1.7 * (x - 1) ** 2;
             ctx.save();
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -6377,10 +6767,7 @@
                   ctx.stroke();
                 }
               }
-              const sprite = this.goSprite();
-              ctx.translate(cx, cy);
-              ctx.scale(scale, scale);
-              ctx.drawImage(sprite.canvas, -sprite.width / 2, -sprite.height / 2, sprite.width, sprite.height);
+              this.drawArcade('GO!', 'go', cx, cy, scale, 1, still ? 0 : (1 - Math.min(1, t / 0.35)) * -0.12);
             } else {
               const value = COUNTDOWN_STEPS - Math.floor(time / COUNTDOWN_STEP_MS),
                 pop = still ? 1 : 1.5 - 0.5 * easeOutBack(Math.min(1, t / 0.3)),
@@ -6396,11 +6783,7 @@
               ctx.beginPath();
               ctx.arc(cx, cy, radius - 2, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (1 - t));
               ctx.stroke();
-              ctx.translate(cx, cy);
-              ctx.scale(pop, pop);
-              ctx.fillStyle = '#ffffff';
-              ctx.font = '900 34px system-ui, sans-serif';
-              ctx.fillText(String(value), 0, 2);
+              this.drawArcade(String(value), 'count', cx, cy + 1, pop * 0.82);
             }
             ctx.restore();
           }
@@ -6534,29 +6917,6 @@
             ctx.stroke();
             ctx.restore();
           }
-          // Drawn once, so fading the outlined text does not let the outline show through.
-          goSprite() {
-            const scale = (this.ctx.getTransform().a || 1) * 1.25;
-            if (this.go?.scale === scale) return this.go;
-            const width = 130,
-              height = 70,
-              canvas = document.createElement('canvas');
-            canvas.width = Math.ceil(width * scale);
-            canvas.height = Math.ceil(height * scale);
-            const sprite = canvas.getContext('2d');
-            sprite.scale(scale, scale);
-            sprite.textAlign = 'center';
-            sprite.textBaseline = 'middle';
-            sprite.font = '900 46px system-ui, sans-serif';
-            sprite.lineJoin = 'round';
-            sprite.lineWidth = 8;
-            sprite.strokeStyle = '#173f69';
-            sprite.strokeText('GO!', width / 2, height / 2 + 2);
-            sprite.fillStyle = '#e67842';
-            sprite.fillText('GO!', width / 2, height / 2 + 2);
-            return (this.go = { canvas, scale, width, height });
-          }
-
           // The ghost is drawn once into a small whitened sprite. A canvas filter per frame
           // stalled CPU-rasterised phone canvases (Galaxy A53 landscape: below 5 FPS).
           ghostSprite(trex) {
@@ -7486,31 +7846,70 @@
           }
 
           drawDistanceMeter(meter, score, high, fg, level, fps) {
-            const ctx = this.ctx;
+            const ctx = this.ctx,
+              night = fg === COLORS.nightFg,
+              shadow = night ? '#081330' : null;
+            // Pixel-face HUD; at night a hard 1px drop shadow, as on arcade cabinets.
+            const label = (text, x, y) => {
+              if (shadow) {
+                ctx.fillStyle = shadow;
+                ctx.fillText(text, x + 1, y + 1);
+              }
+              ctx.fillStyle = fg;
+              ctx.fillText(text, x, y);
+            };
             ctx.save();
-            ctx.fillStyle = fg;
-            ctx.font = 'bold 14px monospace';
+            ctx.font = '10px ' + FONT_PIXEL;
             ctx.textBaseline = 'top';
             ctx.textAlign = 'left';
-            ctx.fillText(formatText('L {level}', { level }), 10, 10);
-            if (fps !== null) ctx.fillText('FPS ' + fps, 110, 10);
-            ctx.textAlign = 'right';
-            const value = hudNumber(score);
-            const hi = hudNumber(high);
-            // One score punch per milestone, always readable (no blinking).
-            const elapsed = 1200 - meter.flash;
-            const moving = !this.game.trex.reducedMotion.matches;
-            const punch = moving && meter.flash > 0 && elapsed < 360
-              ? Math.sin(elapsed / 360 * Math.PI) : 0;
-            ctx.save();
-            ctx.translate(this.world.width - 10, 8 - punch * 2);
-            ctx.scale(1 + punch * 0.08, 1 + punch * 0.08);
-            ctx.font = '900 18px monospace';
-            if (meter.flash > 0) ctx.fillStyle = fg === COLORS.nightFg ? '#ffd257' : '#a54b2b';
-            ctx.fillText('SC ' + value, 0, 0);
-            ctx.restore();
+            label(formatText('L {level}', { level }), 10, 12);
+            if (fps !== null) label('FPS ' + fps, 110, 12);
             ctx.textAlign = 'center';
-            ctx.fillText('HI ' + hi, this.world.width / 2, 10);
+            label('HI ' + hudNumber(high), this.world.width / 2, 12);
+            // One punch per milestone: the score swells once and its digits hop in a wave.
+            // It always stays readable (no blinking) and settles before the milestone ends.
+            const text = 'SC ' + hudNumber(score),
+              elapsed = 1200 - meter.flash,
+              moving = !this.game.trex.reducedMotion.matches,
+              active = meter.flash > 0,
+              punch = moving && active && elapsed < 360 ? Math.sin((elapsed / 360) * Math.PI) : 0,
+              scale = 1 + punch * 0.1,
+              color = active ? (night ? '#ffd257' : '#a54b2b') : fg;
+            ctx.font = '16px ' + FONT_PIXEL;
+            ctx.textAlign = 'left';
+            const width = ctx.measureText(text).width,
+              advance = width / text.length;
+            ctx.translate(this.world.width - 10, 8 - punch * 2);
+            ctx.scale(scale, scale);
+            if (active) {
+              // Soft elliptical glow: the gradient reaches zero inside the filled square.
+              const radius = width * 0.62;
+              ctx.save();
+              ctx.translate(-width / 2, 8);
+              ctx.scale(1, 0.2);
+              const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, radius);
+              glow.addColorStop(0, night ? '#ffd25770' : '#fff1a8d0');
+              glow.addColorStop(1, '#ffd25700');
+              ctx.globalAlpha = Math.min(1, meter.flash / 300);
+              ctx.fillStyle = glow;
+              ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+              ctx.restore();
+            }
+            let lift = 0;
+            for (let i = 0; i < text.length; i++) {
+              const hop = moving && active ? elapsed - 60 - i * 35 : -1,
+                y = hop > 0 && hop < 220 ? -Math.sin((hop / 220) * Math.PI) * 4 : 0,
+                x = -width + i * advance;
+              lift = Math.min(lift, y);
+              if (shadow) {
+                ctx.fillStyle = shadow;
+                ctx.fillText(text[i], x + 1, y + 1);
+              }
+              ctx.fillStyle = color;
+              ctx.fillText(text[i], x, y);
+            }
+            // Read by tests: the composed score label and its milestone transform.
+            this.hud = { text, scale, lift, font: ctx.font, color };
             ctx.restore();
           }
 
@@ -7540,26 +7939,38 @@
           drawRecord(effects) {
             const ctx = this.ctx;
             if (!effects.recordTime) return;
+            const elapsed = 2200 - effects.recordTime,
+              still = this.game.trex.reducedMotion.matches,
+              cx = this.world.width / 2,
+              alpha = Math.min(1, effects.recordTime / 300),
+              pop = still ? 1 : elapsed < 360 ? Math.max(0.2, easeOutBack(elapsed / 360)) : 1,
+              pulse = still ? 0 : Math.sin(elapsed / 140) * 0.03;
             ctx.save();
-            ctx.globalAlpha = Math.min(1, effects.recordTime / 300);
-            const elapsed = 2200 - effects.recordTime;
-            const punch = !this.game.trex.reducedMotion.matches && elapsed < 420
-              ? Math.sin(elapsed / 420 * Math.PI) * 0.1 : 0;
-            ctx.translate(this.world.width / 2, 40);
-            ctx.scale(1 + punch, 1 + punch);
-            ctx.translate(-this.world.width / 2, -40);
-            ctx.shadowColor = '#ffd25790';
-            ctx.shadowBlur = 10;
+            ctx.globalAlpha = alpha;
+            ctx.translate(cx, 40);
+            ctx.scale(pop, pop);
             ctx.fillStyle = '#173f69';
-            roundedRect(ctx, this.world.width / 2 - 85, 25, 170, 30, 15);
+            roundedRect(ctx, -92, -16, 184, 32, 16);
             ctx.fill();
-            ctx.fillStyle = '#ffd257';
-            ctx.font = '900 13px system-ui, sans-serif';
-            ctx.shadowBlur = 0;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('NEW HIGH SCORE!', this.world.width / 2, 40);
+            ctx.strokeStyle = '#ffd257';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // A light sweep crosses the plaque twice, clipped to its rounded shape.
+            if (!still) {
+              ctx.save();
+              roundedRect(ctx, -92, -16, 184, 32, 16);
+              ctx.clip();
+              const sweep = ((elapsed % 1100) / 1100) * 320 - 160;
+              const band = ctx.createLinearGradient(sweep - 26, 0, sweep + 26, 0);
+              band.addColorStop(0, '#fff4d200');
+              band.addColorStop(0.5, '#fff4d255');
+              band.addColorStop(1, '#fff4d200');
+              ctx.fillStyle = band;
+              ctx.fillRect(-92, -16, 184, 32);
+              ctx.restore();
+            }
             ctx.restore();
+            this.drawArcade('NEW HIGH SCORE!', 'record', cx, 40, pop * (1 + pulse), alpha);
           }
 
           drawBubble(x, y, radius, emblem = false) {
@@ -8461,7 +8872,13 @@
             this.stage.classList.remove('attract-leaving');
           }
           updateResult(game) {
-            this.text(this.score, formatText('{score} points', { score: game.score }));
+            // Arcade tally: the points count up on simulation time while the overlay
+            // settles, so pause and skipping stay exact. Reduced motion shows the total.
+            const tally = game.trex.reducedMotion.matches
+              ? 1 : clamp((game.trex.deathTime - 420) / 720, 0, 1);
+            this.text(this.score, formatText('{score} points', {
+              score: Math.round(game.score * (1 - (1 - tally) ** 3)),
+            }));
             const feedback =
               game.rockTraining
                 ? 'Rock training · no highscores'
@@ -10055,7 +10472,9 @@
                 .innerHTML.replace(
                   '</style>',
                   '</style>' + document.getElementById('menu-shell-styles').outerHTML +
-                    document.getElementById('heading-motion-styles').outerHTML,
+                    document.getElementById('heading-motion-styles').outerHTML +
+                    document.getElementById('arcade-fonts').outerHTML +
+                    document.getElementById('arcade-styles').outerHTML,
                 ) +
               '</html>';
             const infoView = (this.infoView = document.getElementById('info-view'));
@@ -10168,6 +10587,7 @@
             this.game.on((event) => this.handleEvent(event));
             this.duckSources = new Set();
             this.inputUse = {};
+            this.shownLevel = 1;
             this.input = new InputController(this);
             this.gamepad = new GamepadController(this);
             this.report = new TestReport(this);
@@ -10387,6 +10807,7 @@
                 this.duckSources.clear();
                 this.game.duck(false);
                 effects.reset();
+                this.shownLevel = 1;
                 this.lastTime = null;
                 pageEl.classList.add('running');
                 this.updateTouchControls();
@@ -10398,24 +10819,29 @@
                 if (event.airborne) {
                   this.sessionView.dismiss('feather');
                   effects.burst(game.trex.x + 20, game.trex.y + 44, 12, 'feather');
+                  effects.callout('AIR JUMP!', game.trex.x + 24, game.trex.y - 6, 'feather');
                   this.announce('Air jump! Feather used.');
                 }
                 break;
               case 'feather':
                 this.sound.celebrate();
                 effects.burst(game.trex.x + 24, game.trex.y + 20, 10, 'feather');
+                effects.callout('FEATHER!', game.trex.x + 24, game.trex.y - 6, 'feather');
                 this.sessionView.dismiss('feather');
                 this.announce('Feather ready. Release Jump, then press again in the air.');
                 break;
               case 'shield':
                 this.sound.shield();
                 effects.burst(game.trex.x + 22, game.trex.y + 24, 10, 'shield');
+                effects.callout('SHIELD!', game.trex.x + 24, game.trex.y - 6, 'shield');
                 this.sessionView.dismiss('shield');
                 this.announce('Shield ready. One cactus or bird hit is safe.');
                 break;
               case 'shieldPop':
                 this.sound.shield(true);
                 effects.burst(game.trex.x + 22, game.trex.y + 24, 18, 'shield');
+                effects.callout('SAVED!', game.trex.x + 24, game.trex.y - 6, 'shield');
+                effects.shake(3);
                 this.sessionView.dismiss('shield');
                 this.announce('Shield popped. Hit survived. Avoid the next obstacle!');
                 break;
@@ -10433,6 +10859,7 @@
               case 'bossClear':
                 this.sound.boss(true);
                 effects.burst(clamp(event.x, 20, game.world.width - 20), event.y, 28, 'rock');
+                effects.shake(4, 300);
                 this.announce(event.clean ? 'Stone Jaw cleared! Keep running.' : 'Shield shattered Stone Jaw! Shield used.');
                 break;
               case 'countdown':
@@ -10466,6 +10893,8 @@
                 break;
               case 'turbo':
                 this.sound.celebrate();
+                effects.callout('CHILI BOOST!', game.trex.x + 30, game.trex.y - 6, 'chili', 1100);
+                effects.shake(2);
                 this.announce('Chili boost! Five seconds.');
                 break;
               case 'turboEnd':
@@ -10476,9 +10905,16 @@
                 break;
               case 'destroy':
                 effects.burst(event.x, event.y, 18, 'spark');
+                effects.callout('SMASH!', event.x, event.y - 22, 'smash', 600);
+                effects.shake(2, 160);
                 break;
               case 'step':
                 effects.update(event.dt, game.trex, game.playing, game.speed, event.landed);
+                // Level banners are cosmetic; the simulation only exposes its speed level.
+                if (game.playing && !game.rockTraining && !game.countingDown && game.level > this.shownLevel) {
+                  this.shownLevel = game.level;
+                  effects.announce('LEVEL ' + game.level, 'SPEED UP!');
+                }
                 this.sound.updateSteps(
                   event.dt,
                   game.speed,

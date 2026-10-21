@@ -37,6 +37,12 @@ try {
     });
     await page.goto(pathToFileURL(file).href);
     await page.waitForFunction(() => !!window.__dinoRunner);
+    // Both embedded faces load offline from the file itself.
+    assert.deepEqual(await page.evaluate(async () => {
+      await document.fonts.ready;
+      return ["16px 'Dino Pixel'", "16px 'Dino Display'"].map(font => document.fonts.check(font));
+    }), [true, true]);
+    assert.match(await page.locator('#start-game').evaluate(el => getComputedStyle(el).fontFamily), /Dino Display/);
     await page.evaluate(() => window.__dinoTest.transitionDone());
     await context.setOffline(true);
     const tap = selector => name === 'desktop'
@@ -62,9 +68,11 @@ try {
     await tap('#attract-pause');
     const paused = await page.locator('#start-game').evaluate(button => ({
       label: getComputedStyle(button.querySelector('.action-label')).animationPlayState,
+      light: getComputedStyle(button, '::before').animationPlayState,
       sheen: getComputedStyle(button, '::after').animationPlayState,
+      glow: getComputedStyle(document.querySelector('#round-panel .title-breath'), '::before').animationPlayState,
     }));
-    assert.deepEqual(paused, { label: 'paused', sheen: 'paused' });
+    assert.deepEqual(paused, { label: 'paused', light: 'paused', sheen: 'paused', glow: 'paused' });
     await tap('#attract-pause');
     await page.emulateMedia({ reducedMotion: 'reduce' });
     assert.deepEqual(await page.locator('#start-game').evaluate(button => [
@@ -87,27 +95,51 @@ try {
       r.draw(1);
     });
     const samples = await page.evaluate(() => {
-      const r = window.__dinoRunner, g = r.game, ctx = r.renderer.ctx;
-      const original = ctx.fillText, samples = [];
-      ctx.fillText = function(text, ...args) {
-        if (text.startsWith('SC ')) samples.push({ text, scale: this.getTransform().a,
-          font: this.font, color: this.fillStyle });
-        return original.call(this, text, ...args);
-      };
-      try {
-        for (const flash of [1200, 1050, 800, 600, 200, 0]) {
-          g.meter.flash = flash;
-          r.renderer.drawDistanceMeter(g.meter, 100, 90, '#dce9ff', 1, null);
-        }
-      } finally { ctx.fillText = original; }
+      const r = window.__dinoRunner, g = r.game, samples = [];
+      for (const flash of [1200, 1050, 800, 600, 200, 0]) {
+        g.meter.flash = flash;
+        r.renderer.drawDistanceMeter(g.meter, 100, 90, '#dce9ff', 1, null);
+        samples.push({ ...r.renderer.hud });
+      }
       g.meter.flash = 1050; r.draw(1);
       return samples;
     });
     assert.equal(samples.length, 6, 'Score remains readable in every milestone phase');
     assert(samples.every(sample => sample.text === 'SC 00100'));
     assert(samples[1].scale > samples[0].scale, 'Milestone punches once: ' + JSON.stringify(samples));
+    assert(samples[1].lift < 0, 'Milestone digits hop in a wave');
     assert.equal(samples[3].scale, samples[5].scale, 'Punch settles before the milestone ends');
-    assert(samples.every(sample => sample.font.includes('18px')), 'Score has stronger size hierarchy');
+    assert(samples.slice(3).every(sample => sample.lift === 0), 'Digits settle before the milestone ends');
+    assert(samples.every(sample => /16px .*Dino Pixel/.test(sample.font)), 'Score uses the pixel face: ' + samples[0].font);
+    // Event lettering: cached sprites, overshoot pop, rise and fade; level banners sweep.
+    const lettering = await page.evaluate(() => {
+      const r = window.__dinoRunner, g = r.game, e = r.renderer.effects, sizes = [];
+      e.callouts.length = 0;
+      e.callout('SHIELD!', g.trex.x, g.trex.y - 6, 'shield');
+      const original = r.renderer.drawArcade, draws = [];
+      r.renderer.drawArcade = function(text, style, x, y, scale, alpha) {
+        draws.push({ text, y, scale, alpha }); return original.apply(this, arguments);
+      };
+      try {
+        for (const step of [0, 120, 300, 500]) {
+          e.update(step, g.trex, true, g.speed, false);
+          r.renderer.drawCallouts(e);
+        }
+        e.announce('LEVEL 2', 'SPEED UP!');
+        e.recordTime = 0;
+        r.renderer.drawBanner(e, g);
+      } finally { r.renderer.drawArcade = original; }
+      const cached = r.renderer.textSprites.size;
+      r.renderer.arcadeText('SHIELD!', 'shield');
+      sizes.push(cached, r.renderer.textSprites.size);
+      return { draws, sizes };
+    });
+    const pops = lettering.draws.filter(draw => draw.text === 'SHIELD!');
+    assert.equal(pops.length, 4);
+    assert(pops[1].scale > 1, 'Callout overshoots while popping in');
+    assert(pops[3].y < pops[0].y && pops[3].scale === 1, 'Callout rises and settles');
+    assert(lettering.draws.some(draw => draw.text === 'LEVEL 2'), 'Level banner draws');
+    assert.equal(lettering.sizes[0], lettering.sizes[1], 'Lettering sprites are cached');
     assert.equal(await page.locator('#hud-score').getAttribute('aria-label'), 'Score 100');
     assert.equal(await page.locator('#mobile-hud').evaluate(el => el.hasAttribute('data-milestone')), true);
     assert.equal(await page.locator('#hud-score').evaluate(el => getComputedStyle(el).color), 'rgb(255, 210, 87)');
@@ -115,17 +147,12 @@ try {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.waitForFunction(() => window.__dinoGame.trex.reducedMotion.matches);
     const still = await page.evaluate(() => {
-      const r = window.__dinoRunner, ctx = r.renderer.ctx, original = ctx.fillText, scales = [];
-      ctx.fillText = function(text, ...args) {
-        if (text.startsWith('SC ')) scales.push(this.getTransform().a);
-        return original.call(this, text, ...args);
-      };
-      try {
-        for (const flash of [1200, 1050, 0]) {
-          r.game.meter.flash = flash;
-          r.renderer.drawDistanceMeter(r.game.meter, 100, 90, '#dce9ff', 1, null);
-        }
-      } finally { ctx.fillText = original; }
+      const r = window.__dinoRunner, scales = [];
+      for (const flash of [1200, 1050, 0]) {
+        r.game.meter.flash = flash;
+        r.renderer.drawDistanceMeter(r.game.meter, 100, 90, '#dce9ff', 1, null);
+        scales.push(r.renderer.hud.lift === 0 ? r.renderer.hud.scale : NaN);
+      }
       r.draw(1); return scales;
     });
     assert(still.every(scale => scale === still[0]), 'Reduced motion removes Canvas score movement');
@@ -135,7 +162,7 @@ try {
     await context.close();
   }
   fs.writeFileSync(path.join(output, 'arcade-type.json'), JSON.stringify(reports, null, 2));
-  console.log(`${engine}: arcade lettering, anchored START, pause, milestone readability, dark and reduced motion passed in 3 layouts`);
+  console.log(`${engine}: embedded faces, arcade lettering, anchored START, pause, milestone readability, callouts, dark and reduced motion passed in 3 layouts`);
 } finally {
   await browser.close();
   fs.rmSync(temporary, { recursive: true, force: true });

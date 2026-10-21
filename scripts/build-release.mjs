@@ -100,6 +100,8 @@ html = html.trim() + '\n';
 stages.push({ tool: 'HTMLMinifier-Terser', bytes: bytes(html) });
 
 assert(html.includes('Copyright 2014 The Chromium Authors'), 'Chromium attribution was lost');
+assert(html.includes('Copyright 2011 Juan Montoreano') && html.includes('Copyright 2012 The Press Start 2P Project Authors'),
+  'Embedded font attribution was lost');
 assert(bytes(html) < bytes(input), 'Release must be smaller than source');
 assert(!/<script\b[^>]*\bsrc\s*=|<link\b[^>]*\brel\s*=\s*["']?stylesheet/i.test(html),
   'The release must remain self-contained');
