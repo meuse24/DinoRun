@@ -2677,48 +2677,136 @@
         100% { opacity: 1; transform: none; }
       }
       @media (prefers-reduced-motion: no-preference) {
-        :root.motion #round-panel[data-enter] .title-word .heading-wave-char {
+        :root.motion:not(.effects-off) #round-panel[data-enter] .title-word .heading-wave-char {
           animation: arcade-letter-drop 620ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--wave-i, 0) * 55ms) both,
             heading-ripple var(--heading-idle-duration) var(--heading-idle-easing) calc(var(--wave-i, 0) * var(--heading-wave-phase)) infinite;
         }
-        :root.motion #game-over-overlay[data-enter='death'] .heading-wave-char {
+        :root.motion:not(.effects-off) #game-over-overlay[data-enter='death'] .heading-wave-char {
           animation: arcade-letter-slam 420ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--t5-delay, 0ms) + var(--wave-i, 0) * 45ms) both,
             heading-ripple var(--heading-idle-duration) var(--heading-idle-easing) calc(var(--wave-i, 0) * var(--heading-wave-phase)) infinite;
         }
-        :root.motion #game-over-overlay[data-enter='death'] #round-score {
+        :root.motion:not(.effects-off) #game-over-overlay[data-enter='death'] #round-score {
           animation: arcade-tally-in 380ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(var(--t5-delay, 0ms) + 380ms) both;
         }
-        :root.motion #stage.idle #round-panel h1 .title-breath::before {
+        :root.motion:not(.effects-off) #stage.idle #round-panel h1 .title-breath::before {
           animation: arcade-glow 3.2s ease-in-out infinite;
         }
-        :root.motion #stage.idle #round-panel h1 .title-word::after {
+        :root.motion:not(.effects-off) #stage.idle #round-panel h1 .title-word::after {
           animation: arcade-twinkle 3.6s ease-out infinite;
         }
-        :root.motion #stage.idle #round-panel h1 .title-word:last-child::after { animation-delay: 1.8s; }
-        :root.motion #stage.idle #start-game .action-label {
+        :root.motion:not(.effects-off) #stage.idle #round-panel h1 .title-word:last-child::after { animation-delay: 1.8s; }
+        :root.motion:not(.effects-off) #stage.idle #start-game .action-label {
           animation: arcade-start-beat 2.4s ease-in-out infinite;
         }
-        :root.motion #stage.idle #round-panel #start-game::before {
+        :root.motion:not(.effects-off) #stage.idle #round-panel #start-game::before {
           animation: arcade-start-glow 2.4s ease-out infinite;
         }
-        :root.motion #stage.idle #start-game::after {
+        :root.motion:not(.effects-off) #stage.idle #start-game::after {
           animation: arcade-start-sheen 4.8s ease-in-out infinite;
         }
-        :root.motion #mobile-hud[data-milestone] #hud-score {
+        :root.motion:not(.effects-off) #mobile-hud[data-milestone] #hud-score {
           transform-origin: right center;
           animation: arcade-score-pop 420ms ease-out;
         }
-        :root.motion #stage.heading-paused #start-game .action-label,
-        :root.motion #stage.heading-paused #start-game::before,
-        :root.motion #stage.heading-paused #start-game::after,
-        :root.motion #stage.heading-paused #round-panel h1 .title-breath::before,
-        :root.motion #stage.heading-paused #round-panel h1 .title-word::after,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game .action-label,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game::before,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #start-game::after,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-breath::before,
-        :root.motion #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-word::after,
-        :root.motion #stage.game-paused :is(#hud-score, #round-score) { animation-play-state: paused; }
+        :root.motion:not(.effects-off) #stage.heading-paused #start-game .action-label,
+        :root.motion:not(.effects-off) #stage.heading-paused #start-game::before,
+        :root.motion:not(.effects-off) #stage.heading-paused #start-game::after,
+        :root.motion:not(.effects-off) #stage.heading-paused #round-panel h1 .title-breath::before,
+        :root.motion:not(.effects-off) #stage.heading-paused #round-panel h1 .title-word::after,
+        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #start-game .action-label,
+        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #start-game::before,
+        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #start-game::after,
+        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-breath::before,
+        :root.motion:not(.effects-off) #stage:has(#attract-pause[aria-pressed='true']) #round-panel h1 .title-word::after,
+        :root.motion:not(.effects-off) #stage.game-paused :is(#hud-score, #round-score) { animation-play-state: paused; }
+      }
+
+      /* Screen headings (Settings, Highscores, name entry, Help, Bye, Install):
+         the same outlined, extruded lettering as the title, in the menu orange. */
+      dialog .menu-title,
+      .help-page .menu-title,
+      dialog h2 {
+        color: #e67842;
+        -webkit-text-stroke: 0.075em var(--arcade-ink);
+        paint-order: stroke fill;
+        text-shadow: 0 0.04em 0 var(--arcade-ink), 0 0.08em 0 var(--arcade-ink),
+          0 0.12em 0 var(--arcade-ember), 0 0 0.42em #ffd25770;
+        letter-spacing: 0.035em;
+      }
+      :is(dialog .menu-title, .help-page .menu-title, dialog h2) .heading-breath { position: relative; }
+      .help-page .menu-title span { color: inherit; }
+      :is(dialog .menu-title, .help-page .menu-title, dialog h2) .heading-breath::after {
+        content: '';
+        position: absolute;
+        top: -0.08em;
+        right: -0.3em;
+        width: 0.34em;
+        height: 0.34em;
+        background: #fffdf2;
+        clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .help-page main h2,
+      #scores-table th,
+      #session-stats dd {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-synthesis: none;
+        letter-spacing: 0.02em;
+      }
+      #session-stats dd { color: #e06a2c; }
+      #update-title { font-family: var(--font-display); font-weight: 400; font-size: 1.15em; letter-spacing: 0.02em; }
+      #scores-table td:nth-child(3) { font-family: var(--font-pixel); font-size: 0.78em; letter-spacing: 0; }
+
+      #coach { font-family: var(--font-display); font-weight: 400; font-size: 15px; letter-spacing: 0.02em; }
+      #effects-help { margin: 10px 4px 0; font-size: 13px; line-height: 1.4; opacity: 0.85; }
+      /* Name entry as cabinet initials: pixel letters on a navy plate. */
+      #entry-result { font-family: var(--font-pixel); font-weight: 400; font-size: 15px; letter-spacing: 0; }
+      .letter-value {
+        position: relative;
+        border: 2px solid var(--arcade-gold);
+        background: linear-gradient(#1d4b7c, var(--arcade-ink));
+        color: var(--arcade-gold);
+        font: 400 30px var(--font-pixel);
+        text-shadow: 0 3px 0 #0b1f38, 0 0 12px #ffd25790;
+        box-shadow: inset 0 -4px 0 #0b1f3880, 0 3px 0 #a54b2b;
+      }
+      .letter-column:focus-within .letter-value { border-color: #fff4d2; box-shadow: inset 0 -4px 0 #0b1f3880, 0 3px 0 #a54b2b, 0 0 14px #ffd257b0; }
+      .letter-value::after {
+        content: '';
+        position: absolute;
+        left: 22%;
+        right: 22%;
+        bottom: 8px;
+        height: 3px;
+        background: var(--arcade-gold);
+        opacity: 0;
+      }
+      .letter-column:focus-within .letter-value::after { opacity: 1; }
+
+      @keyframes arcade-cursor { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      @keyframes arcade-letter-flip {
+        0% { scale: 1 0.2; opacity: 0.4; }
+        60% { scale: 1 1.15; opacity: 1; }
+        100% { scale: 1; }
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        :root.motion:not(.effects-off) dialog[open]:not(.no-motion):not([data-raised]) :is(.menu-title, h2) .heading-wave-char,
+        :root.motion:not(.effects-off).help-page.help-active .menu-title .heading-wave-char {
+          animation: arcade-letter-drop 560ms cubic-bezier(0.2, 0.8, 0.3, 1) calc(80ms + var(--wave-i, 0) * 45ms) both,
+            heading-ripple var(--heading-idle-duration) var(--heading-idle-easing) calc(var(--wave-i, 0) * var(--heading-wave-phase)) infinite;
+        }
+        :root.motion:not(.effects-off) dialog[open] :is(.menu-title, h2) .heading-breath::after,
+        :root.motion:not(.effects-off).help-page.help-active .menu-title .heading-breath::after {
+          animation: arcade-twinkle 3.8s ease-out 0.9s infinite;
+        }
+        :root.motion:not(.effects-off) #scores[open] .letter-column:focus-within .letter-value::after {
+          animation: arcade-cursor 0.9s steps(1) infinite;
+        }
+        :root.motion:not(.effects-off) #scores[open] .letter-value[data-flip] {
+          animation: arcade-letter-flip 200ms ease-out;
+        }
       }
     </style>
   </head>
@@ -2905,7 +2993,11 @@
               Frame rate (FPS)
             </button>
             <button id="sound-toggle" type="button" role="switch" aria-checked="true">Sound</button>
+            <button id="effects-toggle" type="button" role="switch" aria-checked="true" aria-describedby="effects-help">
+              Arcade effects
+            </button>
           </div>
+          <p id="effects-help" hidden>Switched off automatically so the game runs smoothly on this device.</p>
           <section id="volume-controls" aria-label="Volume" aria-describedby="volume-help">
             <div class="volume-row music-track-row">
               <label for="music-track">Theme song</label>
@@ -3639,7 +3731,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.3';
+        const BUILD = '2026-10-21.4';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -5555,6 +5647,7 @@
             this.reducedMotion = {
               matches: reducedMotion,
             };
+            this.lettering = true;
             this.reset();
           }
           reset() {
@@ -5566,16 +5659,24 @@
             this.shakeTime = 0;
             this.shakeStrength = 0;
           }
-          // Event lettering above the action. Reduced motion keeps the text, drawn still.
+          clearLettering() {
+            this.callouts = [];
+            this.banner = null;
+            this.shakeTime = 0;
+          }
+          // Event lettering above the action. Reduced motion keeps the text, drawn still;
+          // the Arcade effects setting (lettering) removes callouts, banners and shake.
           callout(text, x, y, style = 'callout', life = 950) {
+            if (!this.lettering) return;
             if (this.callouts.length >= 4) this.callouts.shift();
             this.callouts.push({ text, x, y, style, life, maxLife: life });
           }
           announce(text, sub = '', life = 1700) {
+            if (!this.lettering) return;
             this.banner = { text, sub, life, maxLife: life };
           }
           shake(strength, time = 220) {
-            if (this.reducedMotion.matches || strength < this.shakeStrength * (this.shakeTime / 220)) return;
+            if (!this.lettering || this.reducedMotion.matches || strength < this.shakeStrength * (this.shakeTime / 220)) return;
             this.shakeStrength = strength;
             this.shakeTime = time;
           }
@@ -6386,9 +6487,34 @@
             this.shieldView = Object.create(game.shield);
             this.textSprites = new Map();
             this.hud = null;
-            // Canvas text never triggers a face load early enough; request both up front.
-            document.fonts?.load('16px ' + FONT_PIXEL).catch(() => {});
-            document.fonts?.load('16px ' + FONT_DISPLAY).catch(() => {});
+            this.hudGlyphs = new Map();
+            // Canvas text never triggers a face load early enough; request both up front,
+            // then rasterise the known lettering while the browser is idle.
+            Promise.all([
+              document.fonts?.load('16px ' + FONT_PIXEL),
+              document.fonts?.load('16px ' + FONT_DISPLAY),
+            ]).then(() => this.prewarmLettering(), () => {});
+          }
+          // A first-time sprite costs a blurred raster (several ms on CPU-rasterised phones),
+          // so known texts are prepared one per idle slot instead of during play.
+          prewarmLettering() {
+            const texts = [['3', 'count'], ['2', 'count'], ['1', 'count'], ['GO!', 'go'],
+              ['NEW HIGH SCORE!', 'record'], ['STONE JAW', 'boss'], ['BOSS CLEAR!', 'clear']];
+            if (this.effects.lettering)
+              texts.push(['AIR JUMP!', 'feather'], ['FEATHER!', 'feather'], ['SHIELD!', 'shield'],
+                ['SAVED!', 'shield'], ['CHILI BOOST!', 'chili'], ['SMASH!', 'smash'],
+                ...[2, 3, 4, 5, 6, 7, 8].map((level) => ['LEVEL ' + level, 'level']));
+            const idle = window.requestIdleCallback
+              ? (task) => requestIdleCallback(task, { timeout: 1000 }) : (task) => setTimeout(task, 50);
+            const token = (this.prewarmToken = {});
+            const next = () => {
+              if (token !== this.prewarmToken) return;
+              const entry = texts.shift();
+              if (!entry) return;
+              this.arcadeText(entry[0], entry[1]);
+              idle(next);
+            };
+            idle(next);
           }
           // Arcade lettering is rasterised once per text, style and pixel scale. Frames only
           // transform the cached sprite, so glows never cost a per-frame shadow blur.
@@ -7845,43 +7971,69 @@
             ctx.restore();
           }
 
+          // Pixel-face glyphs are rasterised once per character, size, colour and pixel scale;
+          // the HUD then only copies them, instead of shaping web-font text every frame.
+          pixelGlyph(char, size, color) {
+            const scale = this.ctx.getTransform().a || 1,
+              key = char + size + color + '|' + scale;
+            let glyph = this.hudGlyphs.get(key);
+            if (glyph) return glyph;
+            const font = size + 'px ' + FONT_PIXEL,
+              ready = !document.fonts || document.fonts.check(font),
+              canvas = document.createElement('canvas'),
+              c = canvas.getContext('2d');
+            canvas.width = Math.ceil(size * scale);
+            canvas.height = Math.ceil(size * 1.25 * scale);
+            c.scale(scale, scale);
+            c.font = font;
+            c.textBaseline = 'top';
+            c.fillStyle = color;
+            c.fillText(char, 0, 0);
+            glyph = { canvas, width: size, height: size * 1.25 };
+            if (ready) {
+              if (this.hudGlyphs.size > 240) this.hudGlyphs.clear();
+              this.hudGlyphs.set(key, glyph);
+            }
+            return glyph;
+          }
+          // Press Start 2P advances exactly one em per glyph; `lift(i)` offsets single glyphs.
+          drawPixelText(text, x, y, size, color, shadow, align = 'left', lift = null) {
+            const left = align === 'right' ? x - text.length * size
+              : align === 'center' ? x - (text.length * size) / 2 : x;
+            for (let i = 0; i < text.length; i++) {
+              if (text[i] === ' ') continue;
+              const dy = lift ? lift(i) : 0;
+              if (shadow) {
+                const back = this.pixelGlyph(text[i], size, shadow);
+                this.ctx.drawImage(back.canvas, left + i * size + 1, y + dy + 1, back.width, back.height);
+              }
+              const glyph = this.pixelGlyph(text[i], size, color);
+              this.ctx.drawImage(glyph.canvas, left + i * size, y + dy, glyph.width, glyph.height);
+            }
+          }
           drawDistanceMeter(meter, score, high, fg, level, fps) {
             const ctx = this.ctx,
               night = fg === COLORS.nightFg,
+              // Pixel-face HUD; at night a hard 1px drop shadow, as on arcade cabinets.
               shadow = night ? '#081330' : null;
-            // Pixel-face HUD; at night a hard 1px drop shadow, as on arcade cabinets.
-            const label = (text, x, y) => {
-              if (shadow) {
-                ctx.fillStyle = shadow;
-                ctx.fillText(text, x + 1, y + 1);
-              }
-              ctx.fillStyle = fg;
-              ctx.fillText(text, x, y);
-            };
             ctx.save();
-            ctx.font = '10px ' + FONT_PIXEL;
-            ctx.textBaseline = 'top';
-            ctx.textAlign = 'left';
-            label(formatText('L {level}', { level }), 10, 12);
-            if (fps !== null) label('FPS ' + fps, 110, 12);
-            ctx.textAlign = 'center';
-            label('HI ' + hudNumber(high), this.world.width / 2, 12);
+            this.drawPixelText(formatText('L {level}', { level }), 10, 12, 10, fg, shadow);
+            if (fps !== null) this.drawPixelText('FPS ' + fps, 110, 12, 10, fg, shadow);
+            this.drawPixelText('HI ' + hudNumber(high), this.world.width / 2, 12, 10, fg, shadow, 'center');
             // One punch per milestone: the score swells once and its digits hop in a wave.
             // It always stays readable (no blinking) and settles before the milestone ends.
             const text = 'SC ' + hudNumber(score),
+              size = 16,
               elapsed = 1200 - meter.flash,
-              moving = !this.game.trex.reducedMotion.matches,
+              moving = !this.game.trex.reducedMotion.matches && this.effects.lettering,
               active = meter.flash > 0,
               punch = moving && active && elapsed < 360 ? Math.sin((elapsed / 360) * Math.PI) : 0,
               scale = 1 + punch * 0.1,
-              color = active ? (night ? '#ffd257' : '#a54b2b') : fg;
-            ctx.font = '16px ' + FONT_PIXEL;
-            ctx.textAlign = 'left';
-            const width = ctx.measureText(text).width,
-              advance = width / text.length;
+              color = active ? (night ? '#ffd257' : '#a54b2b') : fg,
+              width = text.length * size;
             ctx.translate(this.world.width - 10, 8 - punch * 2);
             ctx.scale(scale, scale);
-            if (active) {
+            if (active && this.effects.lettering) {
               // Soft elliptical glow: the gradient reaches zero inside the filled square.
               const radius = width * 0.62;
               ctx.save();
@@ -7896,20 +8048,15 @@
               ctx.restore();
             }
             let lift = 0;
-            for (let i = 0; i < text.length; i++) {
-              const hop = moving && active ? elapsed - 60 - i * 35 : -1,
-                y = hop > 0 && hop < 220 ? -Math.sin((hop / 220) * Math.PI) * 4 : 0,
-                x = -width + i * advance;
+            const hop = (i) => {
+              const t = moving && active ? elapsed - 60 - i * 35 : -1,
+                y = t > 0 && t < 220 ? -Math.sin((t / 220) * Math.PI) * 4 : 0;
               lift = Math.min(lift, y);
-              if (shadow) {
-                ctx.fillStyle = shadow;
-                ctx.fillText(text[i], x + 1, y + 1);
-              }
-              ctx.fillStyle = color;
-              ctx.fillText(text[i], x, y);
-            }
+              return y;
+            };
+            this.drawPixelText(text, 0, 0, size, color, shadow, 'right', hop);
             // Read by tests: the composed score label and its milestone transform.
-            this.hud = { text, scale, lift, font: ctx.font, color };
+            this.hud = { text, scale, lift, font: size + 'px ' + FONT_PIXEL, color };
             ctx.restore();
           }
 
@@ -8395,6 +8542,8 @@
           }
           initialize(doc) {
             doc.documentElement.classList.toggle('motion', this.enabled);
+            if (doc !== document) doc.documentElement.classList.toggle('effects-off',
+              document.documentElement.classList.contains('effects-off'));
             let titleOffset = 0;
             for (const element of doc.querySelectorAll('.title-word, .heading-breath:not(.title-breath)')) {
               const text = element.textContent;
@@ -8977,6 +9126,80 @@
           render() {
             this.button.textContent = 'Frame rate (FPS)';
             this.button.setAttribute('aria-checked', String(this.enabled));
+          }
+        }
+
+        // Arcade lettering effects: a saved switch (default on) and a one-time probe that
+        // switches them off when this device cannot animate the menu smoothly. The probe
+        // needs both slow frames and real per-frame work, so a 30 Hz power-saving cap
+        // alone does not count as too slow. A manual choice always wins and ends probing.
+        const EFFECTS_PROBE = Object.freeze({
+          warmupFrames: 30, warmupMs: 600, frames: 90, minFrames: 15, maxMs: 2000,
+          slowIntervalMs: 24, busyWorkMs: 4, jankMs: 40,
+        });
+        class EffectsSetting {
+          constructor(hooks = testHooks) {
+            this.button = document.getElementById('effects-toggle');
+            this.help = document.getElementById('effects-help');
+            const saved = preferences.get('dino-effects');
+            this.enabled = saved !== 'off' && saved !== 'auto-off';
+            this.automatic = saved === 'auto-off';
+            this.listeners = new Set();
+            // Deterministic test frames are not real device timing.
+            const probe = hooks.effectsProbe ?? (saved === null && !hooks.manualFrames);
+            this.probe = probe ? { skipped: 0, warmup: 0, elapsed: 0, intervals: [], work: [] } : null;
+            this.result = null;
+            this.button.addEventListener('click', () => this.set(!this.enabled, false));
+            this.apply();
+          }
+          on(listener) {
+            this.listeners.add(listener);
+            listener(this.enabled);
+          }
+          set(enabled, automatic) {
+            this.enabled = enabled;
+            this.automatic = automatic && !enabled;
+            this.probe = null;
+            preferences.set('dino-effects', enabled ? 'on' : automatic ? 'auto-off' : 'off');
+            this.apply();
+          }
+          apply() {
+            const off = !this.enabled;
+            document.documentElement.classList.toggle('effects-off', off);
+            document.getElementById('info-view')?.contentDocument?.documentElement
+              ?.classList.toggle('effects-off', off);
+            this.button.setAttribute('aria-checked', String(this.enabled));
+            this.help.hidden = !this.automatic;
+            for (const listener of this.listeners) listener(this.enabled);
+          }
+          // One sample per drawn menu frame: the rAF interval and the update+draw time.
+          sample(interval, work) {
+            const probe = this.probe;
+            if (!probe || !(interval > 0) || interval > 250) return null;
+            // Warm-up ends after 30 frames or 600 ms; a slow device decides within 2 s.
+            if (probe.skipped < EFFECTS_PROBE.warmupFrames && probe.warmup < EFFECTS_PROBE.warmupMs) {
+              probe.skipped++;
+              probe.warmup += interval;
+              return null;
+            }
+            probe.intervals.push(interval);
+            probe.work.push(work);
+            probe.elapsed += interval;
+            const count = probe.intervals.length;
+            if (count < EFFECTS_PROBE.frames
+              && !(probe.elapsed >= EFFECTS_PROBE.maxMs && count >= EFFECTS_PROBE.minFrames)) return null;
+            const sorted = (values) => [...values].sort((a, b) => a - b);
+            const result = (this.result = {
+              interval: sorted(probe.intervals)[probe.intervals.length >> 1],
+              work: sorted(probe.work)[probe.work.length >> 1],
+              p90: sorted(probe.intervals)[Math.floor(probe.intervals.length * 0.9)],
+            });
+            result.slow = (result.interval > EFFECTS_PROBE.slowIntervalMs && result.work > EFFECTS_PROBE.busyWorkMs)
+              || result.p90 > EFFECTS_PROBE.jankMs;
+            this.probe = null;
+            // A fast result is not stored, so a later launch probes again.
+            if (result.slow) this.set(false, true);
+            return result;
           }
         }
 
@@ -9672,7 +9895,7 @@
           apply() {
             this.listView.hidden = this.view !== 'list';
             this.entryView.hidden = this.view !== 'entry';
-            this.runner.headingMotion.setText(this.title, 'Highscores');
+            this.runner.headingMotion.setText(this.title, this.view === 'entry' ? 'New highscore!' : 'Highscores');
             if (this.isOpen && !this.dialog.open) {
               this.shownGeneration = this.generation;
               const vt = this.runner.transition.current?.vt;
@@ -9719,6 +9942,11 @@
           setLetter(column, letter) {
             this.letters[column] = letter;
             this.renderLetters();
+            // Restart the short flip on the changed plate (CSS, motion and effects only).
+            const plate = this.letterValues[column];
+            plate.removeAttribute('data-flip');
+            void plate.offsetWidth;
+            plate.setAttribute('data-flip', '');
             this.entryMessage.textContent = '';
           }
           renderLetters() {
@@ -10393,6 +10621,9 @@
             document
               .getElementById('fps-toggle')
               .addEventListener('click', () => runner.sound.switchClick(runner.fps.enabled));
+            document
+              .getElementById('effects-toggle')
+              .addEventListener('click', () => runner.sound.switchClick(runner.effectsSetting.enabled));
             // Read the intended state before the fullscreen request changes it asynchronously.
             document
               .getElementById('fullscreen-toggle')
@@ -10584,6 +10815,11 @@
                 ? PORTRAIT_W : BASE_W,
             });
             this.renderer = new Renderer(context, this.game);
+            this.effectsSetting = new EffectsSetting();
+            this.effectsSetting.on((enabled) => {
+              this.renderer.effects.lettering = enabled;
+              if (!enabled) this.renderer.effects.clearLettering();
+            });
             this.game.on((event) => this.handleEvent(event));
             this.duckSources = new Set();
             this.inputUse = {};
@@ -10808,6 +11044,8 @@
                 this.game.duck(false);
                 effects.reset();
                 this.shownLevel = 1;
+                // Scale may have changed since the last round (rotation, resize).
+                this.renderer.prewarmLettering();
                 this.lastTime = null;
                 pageEl.classList.add('running');
                 this.updateTouchControls();
@@ -10911,7 +11149,9 @@
               case 'step':
                 effects.update(event.dt, game.trex, game.playing, game.speed, event.landed);
                 // Level banners are cosmetic; the simulation only exposes its speed level.
-                if (game.playing && !game.rockTraining && !game.countingDown && game.level > this.shownLevel) {
+                // A visible coach hint shares the banner's place; the level waits for it.
+                if (game.playing && !game.rockTraining && !game.countingDown && game.level > this.shownLevel
+                  && game.simulationTime >= this.sessionView.hintUntil) {
                   this.shownLevel = game.level;
                   effects.announce('LEVEL ' + game.level, 'SPEED UP!');
                 }
@@ -11082,8 +11322,17 @@
             if (this.report.enabled && this.playing) this.report.frame(timestamp);
             const dt = this.lastTime === null ? 0 : Math.max(0, timestamp - this.lastTime);
             this.lastTime = timestamp;
+            const probing = this.effectsSetting.probe && this.game.state === 'attract' && !document.hidden,
+              start = probing ? performance.now() : 0;
             const alpha = this.update(dt);
             this.draw(alpha);
+            if (probing) {
+              const result = this.effectsSetting.sample(dt, performance.now() - start);
+              if (result) this.report.record('effects-probe', formatText(
+                'interval {interval} ms, work {work} ms, p90 {p90} ms: {state}', {
+                  interval: result.interval.toFixed(1), work: result.work.toFixed(1),
+                  p90: result.p90.toFixed(1), state: result.slow ? 'off' : 'on' }));
+            }
           }
         }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dino-run-v29';
+const CACHE_NAME = 'dino-run-v30';
 const CACHE_PREFIX = 'dino-run-';
 const GAME_URL = new URL('./dino.html', self.registration.scope).href;
 const STATIC_URLS = [

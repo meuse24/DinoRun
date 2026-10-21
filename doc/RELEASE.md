@@ -32,20 +32,20 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.3)
+## Size (UTF-8 bytes, build 2026-10-21.4)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 509,858 |
-| After Terser | 329,080 |
-| After CSSO | 292,071 |
-| Final HTML | 284,581 |
+| Readable source | 523,682 |
+| After Terser | 338,075 |
+| After CSSO | 299,894 |
+| Final HTML | 292,344 |
 
-Saved: **225,277 bytes (44.18%)**, before transport compression. About 31 KB
+Saved: **231,338 bytes (44.18%)**, before transport compression. About 31 KB
 are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-102,096 bytes; Brotli quality 11 gives 92,080 bytes. These are measurements only;
+103,996 bytes; Brotli quality 11 gives 93,607 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -105,7 +105,19 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.3)
+## Current delivery verification (2026-10-21.4)
+
+Delivery: 292344 bytes, SHA-256
+`fe5f0727a0b67ea4a2e3f47f802f9307ca546300044aac75ec0ed38bf0fca875`.
+Worker cache: v30. Includes the saved Arcade effects switch, automatic menu
+performance probe, expanded menu/initials lettering and sprite prewarming.
+Reproducible build; Chromium compares64 source/release scenes pixel-identically.
+Effects-setting checks pass Chromium source/delivery and WebKit delivery;
+arcade checks pass delivery in both engines. Chromium delivery lifecycle/offline7
+and the installed skill client pass. Results: `doc/progress.md`; artifacts:
+`output/effects-release/`. No physical-device test or deployment this iteration.
+
+## Previous delivery verification (2026-10-21.3)
 
 Delivery: 284581 bytes, SHA-256
 `2731337d73f57b1647b8eaf1f293113690700f72581ee170fd43dd2d684d3250`.

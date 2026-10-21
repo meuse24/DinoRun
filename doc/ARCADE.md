@@ -93,3 +93,22 @@ effects. Review captures were written to `output/arcade-fx/look/` (desktop,
 portrait, landscape: menu, countdown, callouts, level, record, boss, night,
 tally, Game over). Desktop/touch emulation only; physical Android frame times
 were not measured in this iteration.
+
+
+## Effects setting and delivery (2026-10-21.4)
+
+Settings now offers a saved Arcade effects switch. On a fresh launch, a short
+menu-only performance probe can disable the additional effects and show an
+explanation; a manual choice takes precedence. The probe distinguishes a light
+30 Hz cap from busy or frequently delayed frames. Deterministic tests feed
+synthetic timing to verify those decisions; they do not establish phone speed.
+The choice propagates into Help and gates Canvas lettering, digit waves and
+event shake. Existing gameplay continues independently. Menu headings, cabinet
+initials, lettering prewarming and coach/banner coordination are also refined.
+
+Run `node tests/effects-setting.mjs [game.html]` for desktop/touch persistence,
+effect gating, Help propagation and automatic decision coverage. It accepts
+`DINO_BROWSER=webkit`. `tests/android-effects.mjs` is included for a separate
+authorized physical-phone run using the safe preview/USB setup; it was not
+executed for this release. Publish the v30 worker together with the new HTML
+as described in [UPDATES.md](UPDATES.md).
