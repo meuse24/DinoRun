@@ -22,7 +22,7 @@ Keyboard, canvas, gamepad and coordinator start/restart all use the same payment
 gate. A new round spends exactly one credit; an empty balance cannot start.
 Active-round jump input never spends. Deposits are accepted only on the available
 attract menu, not during a round or modal/update interaction. Returning without
-credits focuses INSERT COIN. Insertion does not trigger landscape fullscreen.
+credits focuses INSERT COIN. The first insertion click may request fullscreen like any first click.
 
 ## Effects and sound
 

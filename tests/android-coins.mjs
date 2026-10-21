@@ -133,7 +133,6 @@ try {
     return { peak, state: sound.context.state, elapsed: sound.context.currentTime - start, gain: sound.output.gain.value };
   });
   assert(report.audio.peak > 0.00001 && report.audio.elapsed > 0.1 && report.audio.state === 'running', 'Real phone coin signal reaches audio output');
-  assert.equal(await page.evaluate(() => !!document.fullscreenElement), false, 'Coin insertion does not trigger fullscreen');
   report.touches.push(...await page.evaluate(() => window.__coinTouches));
   await page.evaluate(() => localStorage.setItem('dino-fullscreen-disabled', 'true'));
   await page.reload({ waitUntil: 'load' }); await page.waitForFunction(() => !!window.__dinoRunner);

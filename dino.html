@@ -3958,7 +3958,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.15';
+        const BUILD = '2026-10-21.16';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4319,21 +4319,22 @@
                   e.isTrusted &&
                   e.pointerType === 'mouse' &&
                   e.button === 0 &&
-                  !e.target.closest?.('#fullscreen-toggle,#settings-open,#insert-coin,#install-game,#install-help,#update-notice')
+                  !e.target.closest?.('#fullscreen-toggle,#install-game,#install-help')
                 )
                   this.activate();
               },
               true,
             );
-            // Settings and Install are excluded: a fullscreen request could cover their dialog
-            // or the native installation prompt (WebKit, Firefox).
+            // The first click on any control (Insert coin, Settings, Update, ...) requests fullscreen.
+            // Install is excluded: a fullscreen request could cover the native installation prompt
+            // (WebKit, Firefox). The Fullscreen switch has its own handler.
             document.addEventListener(
               'pointerup',
               (e) => {
                 if (
                   e.isTrusted &&
                   e.pointerType !== 'mouse' &&
-                  !e.target.closest?.('#fullscreen-toggle,#settings-open,#insert-coin,#install-game,#install-help,#update-notice')
+                  !e.target.closest?.('#fullscreen-toggle,#install-game,#install-help')
                 )
                   this.activate();
               },

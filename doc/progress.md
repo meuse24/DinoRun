@@ -726,3 +726,8 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 - Phone landscape name dialog (browser viewport 673x280): letter fields 44 px instead of 32 px, tighter spacing and 11 px note, margin kept at the 15 px required by game-over-flow; no scrolling. Build `2026-10-21.15`, cache `dino-run-v41`. Passed game-over-flow, release, menu-overlays, architecture; fullscreen (taller) phone view not rechecked.
 - Added `scripts/deploy.mjs` / `npm run deploy` (FTPS via curl, credentials from git-ignored `ftp.txt`, worker uploaded last, SHA-256 check over HTTPS) and documented it in RELEASE.md. Only `--dry-run` was executed (live cache v40 detected); nothing was uploaded.
+
+## 2026-10-21: Fullscreen on the first click of any control
+
+- The first trusted click/tap now requests fullscreen also on Insert coin, Settings and the Update notice (previously excluded). Excluded remain the Fullscreen switch (own handler) and the Install buttons (a fullscreen request could cover the native install prompt). Doc/COINS.md updated; the android-coins assertion that coin insertion never enters fullscreen was removed (physical phone not rerun). Build `2026-10-21.16`, cache `dino-run-v42`, release rebuilt.
+- Chromium check: first click on Insert coin and on Settings enters fullscreen, Settings dialog still opens. Passed coins (9 layouts), menu-overlays, attract-screen, game-contract, game-over-flow, effects-setting, release (64 scenes). Update-notice click not tested separately. Not committed or deployed.
