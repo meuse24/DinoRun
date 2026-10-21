@@ -262,7 +262,7 @@ try {
       });
       assert.equal(await page.evaluate(() => location.hash), '#info');
       assert.equal(forward.paused, true, 'The guide pauses at once');
-      assert.equal(forward.page, deferred, 'The page stays in the old snapshot until commit');
+      assert.equal(forward.page, true, 'Gameplay stays visible while Help opens');
       if (deferred) {
         const heading = await page.evaluate(async () => {
           await window.__dinoRunner.transition.current?.vt?.finished;
@@ -276,7 +276,7 @@ try {
       }
       await done(page);
       const help = await snap(page);
-      assert.equal(help.page, false);
+      assert.equal(help.page, true, 'Gameplay remains visible behind Help');
       assert.equal(help.info, true);
       assert.equal(await page.title(), 'Help · m24 Dino Run');
       await page.frameLocator('#info-view').locator('[data-help-back]').first().click();

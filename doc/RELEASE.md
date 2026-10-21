@@ -32,20 +32,31 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.10)
+## Physical verification (2026-10-21.13)
+
+Final delivery SHA-256:
+`148f844668776db41f260e56b6e5b29e6b4575c5affed280343d4c1651f07c03`.
+Galaxy S10e SM-G970F, Android 12, Chrome 155.0.8059.84: Settings/Help in
+browser/fullscreen portrait and both landscape rotations; rotation while open;
+paused gameplay, controls, resume/jump and highscore initials/cancel/local save
+passed. Normal rAF and 48 trusted touch events; zero browser errors. Screenshots
+inspected. Storage, rotation and owned USB/preview helpers restored/closed.
+No live API calls or deployment. Report: `output/small-refactor/phone/device`.
+
+## Size (UTF-8 bytes, build 2026-10-21.13)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 552,894 |
-| After Terser | 358,797 |
-| After CSSO | 319,045 |
-| Final HTML | 311,132 |
+| Readable source | 558,506 |
+| After Terser | 363,301 |
+| After CSSO | 322,321 |
+| Final HTML | 314,392 |
 
-Saved: **241,762 bytes (43.73%)**, before transport compression. About 31 KB
+Saved: **244,114 bytes (43.71%)**, before transport compression. About 31 KB
 are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-108,757 bytes; Brotli quality 11 gives 97,666 bytes. These are measurements only;
+109,348 bytes; Brotli quality 11 gives 98,132 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -62,7 +73,7 @@ this build does not configure a server or create required compressed sidecars.
 - Do not edit the generated HTML. Rebuild after changing the source. The source
   game/build identifier stays unchanged because this is packaging of that game.
 - Hosted updates now pin HTML to the active worker's cache. Publish the generated
-  HTML together with the updated root worker (v36 for this build). Increment both
+  HTML together with the updated root worker (v39 for this build). Increment both
   BUILD and CACHE_NAME on future releases. See [UPDATES.md](UPDATES.md) for the
   staging/consent contract, first-upgrade limitation and upload order.
 
@@ -105,7 +116,35 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.10)
+## Current delivery verification (2026-10-21.12)
+
+Delivery: 314376 bytes, SHA-256
+`2ceb3cccb162ea7c9a9341b1c4cb8428ee9be63b9ba05088e3821d58c3f79b33`.
+Worker cache v38. Settings and Help now appear as bounded modal overlays over
+visible paused gameplay. Help retains its embedded offline content, browser Back
+and direct links, with Escape and native modal focus handling. The new
+`menu-overlays.mjs` suite verifies three desktop/touch layouts in Chromium/WebKit.
+All 86 Chromium transition checks and 64 source/release comparisons pass;
+installed skill client and lifecycle/offline7 pass. Screenshots inspected. No deployment.
+Physical Galaxy S10e (Android12, Chrome155.0.8059.84) also passes six real
+browser/fullscreen orientations, dialog rotation, touch settings/resume/jump and
+highscore name cancel/local save using this exact hash. Normal rAF,48 trusted
+touches; no emulation or live API. Runner restores origin storage/rotation and
+closes its own tab. Artifacts: `output/menu-overlays/device`.
+
+## Previous delivery verification (2026-10-21.11)
+
+Delivery: 312960 bytes, SHA-256
+`57bce47e6257d1e2f7e034697a30070ac1b35dd6e7e370f64d723126891969d9`.
+Worker cache v37. Highscore name entry is a centered modal overlay over the
+frozen gameplay, with a light backdrop and responsive controls. The highscore
+list retains its full-screen layout. Chromium round-end/save/cancel checks pass
+three desktop/touch layouts on source and delivery; WebKit delivery passes the
+same three layouts. All 86 Chromium screen-transition checks and the installed
+skill client pass. All 64 source/release UI and gameplay scenes are pixel-identical
+in Chromium. Screenshots inspected, including compact landscape. No deployment.
+
+## Previous delivery verification (2026-10-21.10)
 
 Delivery: 311132 bytes, SHA-256
 `ed56c93a53e643b477f2aa563180c9d9304e0b7594ad30198060d9b2ba8d49a8`.

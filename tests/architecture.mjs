@@ -5,25 +5,51 @@ import fs from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { pathToFileURL } from 'node:url';
+import { parse } from 'acorn';
 
 const root = path.resolve(import.meta.dirname, '..');
 const source = fs.readFileSync(path.join(root, 'dino.html'), 'utf8');
 const engine = process.env.DINO_BROWSER || 'chromium';
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/architecture'), engine);
 fs.mkdirSync(output, { recursive: true });
-const between = (start, end) => source.slice(source.indexOf(start), source.indexOf(end, source.indexOf(start)));
+function controllerDeclarations(html) {
+  const names = ['BLOCKED_NAMES', 'roundEntry', 'isHighscoreName', 'HighscoreController'];
+  const declarations = new Map();
+  for (const [, script] of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
+    const program = parse(script, { ecmaVersion: 'latest' });
+    // Only inspect the embedded game's immediate IIFE scope, never nested methods.
+    for (const statement of program.body) {
+      const call = statement.type === 'ExpressionStatement' && statement.expression;
+      if (call?.type !== 'CallExpression' || call.callee.type !== 'ArrowFunctionExpression' ||
+          call.callee.body.type !== 'BlockStatement') continue;
+      for (const node of call.callee.body.body) {
+        const entries = node.type === 'VariableDeclaration'
+          ? node.declarations.filter(item => item.id.type === 'Identifier')
+            .map(item => [item.id.name, `${node.kind} ${script.slice(item.start, item.end)};`])
+          : node.type === 'ClassDeclaration' ? [[node.id.name, script.slice(node.start, node.end)]] : [];
+        for (const [name, declaration] of entries) {
+          if (!names.includes(name)) continue;
+          assert(!declarations.has(name), `Ambiguous embedded declaration: ${name}`);
+          declarations.set(name, declaration);
+        }
+      }
+    }
+  }
+  return names.map(name => {
+    assert(declarations.has(name), `Missing embedded declaration: ${name}`);
+    return declarations.get(name);
+  }).join('\n');
+}
 // Execute the real inline controller and name/entry helpers. No window, document,
 // navigator or Canvas is provided; stores and network are injected test doubles.
-const Controller = vm.runInNewContext([
-  between('        const BLOCKED_NAMES', '        const LETTERS'),
-  between('        const roundEntry', '        // Drops unknown labels'),
-  source.match(/const isHighscoreName =[^\n]+/)[0],
-  between('        class HighscoreController', '        // Presentation: score lists'),
+const loadController = html => vm.runInNewContext([
+  controllerDeclarations(html),
   'HighscoreController',
 ].join('\n'), {
   HIGHSCORE_LIST_SIZE: 10, INPUTS: { keyboard: true, touch: true },
   newEntryId: randomUUID, utcNow: () => '2026-10-15T12:00:00Z',
 });
+const Controller = loadController(source);
 const deferred = () => {
   let resolve, reject;
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
@@ -31,7 +57,7 @@ const deferred = () => {
 };
 const error = (kind, needsNewName = false) => ({ kind, needsNewName });
 const round = (score = 12, recordAtStart = 0) => ({ score, recordAtStart, mode: 'normal', gameTime: 4000 });
-function fixture(entries = []) {
+function fixture(entries = [], ControllerType = Controller) {
   const local = [...entries], cache = new Map(), requests = [], notices = [], records = [];
   const store = {
     local: () => [...local], cachedOnline: mode => cache.get(mode),
@@ -47,12 +73,28 @@ function fixture(entries = []) {
       const task = deferred(); requests.push({ type: 'submit', round, name, ...task }); return task.promise;
     },
   };
-  const controller = new Controller({ store, api,
+  const controller = new ControllerType({ store, api,
     onEntryReady: () => notices.push('entry'), onRecord: text => records.push(text) });
   return { controller, store, requests, notices, records, local };
 }
 const checks = [];
 async function check(name, action) { await action(); checks.push(name); }
+
+await check('controller extraction tolerates formatting and comment changes', async () => {
+  const reformatted = source.replace(/^[\t ]+/gm, '')
+    .replace('const isHighscoreName = (name) =>', 'const isHighscoreName =\n(name) =>')
+    .replace('// Presentation: score lists', '// Renamed UI section: score lists');
+  const f = fixture([], loadController(reformatted));
+  f.controller.roundEnded(round());
+  const saving = f.controller.save('DINO');
+  f.requests[0].reject(error('offline'));
+  const saved = await saving;
+  assert.equal(saved.name, 'DINO');
+  assert.equal(saved.localRank, 1);
+  assert.throws(() => controllerDeclarations('<script>(() => {})();</script>'),
+    /Missing embedded declaration: BLOCKED_NAMES/);
+  assert.throws(() => controllerDeclarations(source + source), /Ambiguous embedded declaration/);
+});
 
 await check('qualification, zero and ties', async () => {
   const f = fixture();

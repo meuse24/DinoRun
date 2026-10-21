@@ -28,6 +28,20 @@ The optional song and hosted installation assets keep their existing roles.
 No framework, dependency container, general event bus or additional packaging is
 needed for these two boundaries.
 
+## Small maintenance refactoring (2026-10-21.13)
+
+`ScreenPresenter.restoreAfterDialog()` restores pause, canvas sizing and rendering
+before the caller resolves its return-focus target. Settings and HighscoreView
+share this sequence. Their close-event guards, highscore generations, Help
+history and focus-target selection remain with the owning views.
+
+The DOM-free controller test selects named declarations from the game's immediate
+IIFE scope using Acorn's syntax tree. It no longer depends on indentation, section
+comments or single-line arrow functions. Missing/ambiguous declarations fail
+explicitly. Acorn is a pinned development dependency; standalone play adds no
+runtime dependency. A regression exercises qualification and offline saving after
+reformatting and checks missing/duplicate declaration diagnostics.
+
 ## Validation
 
 Use `DINO_PLAYWRIGHT` to select an installed Playwright ESM entry if needed.

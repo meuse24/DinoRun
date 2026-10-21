@@ -79,7 +79,9 @@ wirkliche, über den vorhandenen Runner-Hook erreichbare Instanz. Sie prüft
 Offset-Änderungen, Knoten-Wiederverwendung, Leerzeichen/Unicode, zugängliche
 Namen, überholte/fehlgeschlagene Übergänge, Schließen und CSS-Fallback.
 Quelle und Release bestehen in Chromium und WebKit. Die fragile Extraktion
-der älteren Controller-Architekturtests (Befund 4) bleibt eine spätere Aufgabe.
+der älteren Controller-Architekturtests (Befund 4) wurde später mit Build
+2026-10-21.13 durch Auswahl benannter AST-Deklarationen ersetzt; siehe
+[ARCHITECTURE.md](ARCHITECTURE.md).
 
 
 Validierung .11: 86 Übergangsprüfungen und Skill-Client (Release) bestanden;

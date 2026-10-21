@@ -146,6 +146,19 @@ try{
     await start();await crash(12);await finish();
     await page.waitForFunction(()=>document.getElementById('scores').open);
     assert.equal(await page.locator('#game-over-overlay').isVisible(),false);
+    const overlay=await page.locator('#scores').evaluate(d=>{
+      const box=d.getBoundingClientRect(),body=d.querySelector('.menu-scroll');
+      return {view:d.dataset.view,modal:d.matches(':modal'),x:box.x,y:box.y,
+        right:box.right,bottom:box.bottom,width:innerWidth,height:innerHeight,
+        overflow:body.scrollWidth>body.clientWidth,focus:d.contains(document.activeElement)};
+    });
+    assert.equal(overlay.view,'entry');assert.equal(overlay.modal,true);
+    assert(overlay.x>=15&&overlay.y>=15&&overlay.right<=overlay.width-15&&overlay.bottom<=overlay.height-15,
+      'Name entry leaves gameplay visible around the dialog in every orientation');
+    assert.equal(overlay.overflow,false,'Name picker fits without horizontal scrolling');
+    assert.equal(overlay.focus,true,'Keyboard focus stays in the modal');
+    const frozen=(await state()).deathTimeMs;
+    await advance(250);assert.equal((await state()).deathTimeMs,frozen,'Gameplay remains frozen behind name entry');
     await page.screenshot({path:path.join(output,layout+'-name.png')});
     await page.evaluate(()=>{
       const r=window.__dinoRunner;r.highscores.letters=[...'AAAA'];r.highscores.renderLetters();

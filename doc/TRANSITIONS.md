@@ -238,8 +238,8 @@ Nur die Darstellung, die in T7a, T9 und T11 wechselt, läuft über
 
 - T7a: Overlay ausblenden, `showModal()` des Scores-Dialogs, Eingabeansicht.
 - T9: Listen-/Eingabeansicht im Scores-Dialog, Titel.
-- T11: `infoView.hidden`/`pageEl.hidden`, `document.title`, danach
-  `runner.resize()` und Zeichnen, dann Fokus.
+- T11: `infoView.hidden`, Help-Dialog öffnen/schließen, `document.title`, danach
+  `runner.resize()` und Zeichnen, dann Fokus. Die Spielseite bleibt sichtbar.
 
 **Rekursionsschutz:** `resize()` und `draw()` rufen heute über
 `sessionView.update()` wieder Präsentationscode auf. Innerhalb von
@@ -413,13 +413,21 @@ Typ `forward`/`back`: `scores-body` 20 px horizontal + Fade, 220/160 ms;
 Öffnen: Desktop/Landscape Fade + Scale 0,96 → 1, 240 ms; Phone-Portrait
 Bottom-Sheet 32 px von unten, 260 ms; Backdrop 200 ms. Schließen: Umkehr
 160 ms `--ease-in` – auch bei nativem Escape.
+Seit Build2026-10-21.12 als zentriertes Overlay (maximal800×760px) mit
+Viewport-Abstand und scrollbarem Inhalt über dem sichtbaren pausierten Spiel.
 
 ### T11 Hilfe (`#info`) (C)
 
 - `help-forward`: `root`-Old 24 px nach links + Fade auf 0,6, `root`-New
   von rechts 48 px + Fade, 280 ms. `help-back` gespiegelt, 220 ms.
 - `showView()` setzt den logischen Zustand (Hash) und fordert an; `commit()`
-  schaltet iframe/Seite, Titel, Resize, Zeichnen, Fokus.
+  öffnet/schließt den nativen Help-Dialog um den iframe. Die Spielseite bleibt
+  sichtbar. Overlay maximal1000×820px, mit Viewport-Abstand und scrollbarem Inhalt.
+- Der iframe ist nur während `showModal()` kurz inert, damit dessen Autofokus
+  den Elternkontext nicht vor dem Snapshot verwischt. Der Fokus wechselt nach
+  Ende der View Transition in die Hilfe; sonst würde das Elternfenster-`blur`
+  die Animation abbrechen. Escape im iframe und natives `cancel` verwenden
+  denselben Rückweg wie der Help-Back-Button. Hash/Browser-Zurück bleiben erhalten.
 - Die Hilfe ist `srcdoc` aus derselben Datei. Zu prüfen bleibt, ob WebKit
   den iframe-Inhalt im Snapshot erfasst; sonst dort nur Crossfade.
 

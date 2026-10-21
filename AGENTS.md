@@ -120,6 +120,13 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   dialog and View Transition paths), input during transitions, focus, close
   paths, reduced motion and latency; accepts `DINO_BROWSER=webkit`. Other
   suites turn transitions off unless `DINO_TRANSITIONS=1`. See `doc/TRANSITIONS.md`.
+- `node tests/menu-overlays.mjs [game.html]`: Settings/Help modal sizing,
+  paused visible gameplay, scrolling/settings controls, focus isolation, Escape,
+  browser Back and direct Help links in desktop/touch layouts. Accepts `DINO_BROWSER`.
+- `node tests/android-menu-overlays.mjs [game.html]`: physical Android trusted
+  touch, Settings/Help in browser/fullscreen portrait and both landscapes,
+  rotation while open, resume/jump and highscore name cancel/save. Own safe
+  origin8881; requires scoped CDP relay, restores rotation and origin storage.
 - `node tests/android-transitions.mjs`: physical-Android frame times during
   transitions and START latency with/without them; same bridges as above.
 - With the preview running, execute `node tests/render-cache.mjs <baseline.html>` or `node tests/snow-caps.mjs <baseline.html>`. Both require a saved pre-change HTML file, Playwright, and its Chromium browser. `DINO_PLAYWRIGHT` can point to an installed Playwright ESM entry.
