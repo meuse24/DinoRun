@@ -31,19 +31,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.1)
+## Size (UTF-8 bytes, build 2026-10-21.2)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 452,284 |
-| After Terser | 279,694 |
-| After CSSO | 246,278 |
-| Final HTML | 239,028 |
+| Readable source | 457,006 |
+| After Terser | 283,765 |
+| After CSSO | 249,303 |
+| Final HTML | 242,053 |
 
-Saved: **213,256 bytes (47.15%)**, before transport compression. The optional
+Saved: **214,953 bytes (47.04%)**, before transport compression. The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-74,289 bytes; Brotli quality 11 gives 65,274 bytes. These are measurements only;
+74,926 bytes; Brotli quality 11 gives 65,883 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -103,7 +103,20 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.1)
+## Current delivery verification (2026-10-21.2)
+
+Delivery: 242053 bytes, SHA-256
+`fd2ba41cedfc72c8b2b44e9b2d1a2896221b822b31087910ce2f0f48ba8ecb2d`.
+Rebuilding reproduces the artifact. Chromium compares all 64 source/release
+UI/gameplay scenes pixel-identically. New arcade checks pass Chromium source
+and WebKit delivery in three desktop/touch layouts each. Existing attract
+checks pass ten layouts per engine; Chromium passes 86 screen-transition checks,
+seven lifecycle/offline scenarios, round-end flow in three layouts and the
+installed develop-web-game action client. WebKit delivery passes the seven
+lifecycle/offline scenarios and round-end flow in three layouts. Evidence: `output/arcade/` and
+[ARCADE.md](ARCADE.md). No physical-device test or deployment in this iteration.
+
+## Previous delivery verification (2026-10-21.1)
 
 Delivery: 239028 bytes, SHA-256
 `407253dbd00a094947b14bf39976a71d2aadfed799b643cfb2c4b87dfaa4edfe`.
@@ -217,3 +230,11 @@ Previously tested delivery SHA-256:
 - Screenshots inspected, phone rotation settings restored, own test tab closed,
   USB bridges removed and temporary server stopped. No live score submissions.
 - Reports/screenshots: `output/release`; aggregate `verification.json`.
+
+## Arcade presentation (2026-10-21.2)
+
+Larger gold/cream title, layered text depth/glow, anchored START label pulse and
+light sweep, readable score milestone punches, record emphasis and larger
+GAME OVER points. Existing pause and reduced-motion behavior apply. Design
+references and repeatable checks: [ARCADE.md](ARCADE.md). Worker cache is v28;
+publish the rebuilt HTML and worker together using [UPDATES.md](UPDATES.md).
