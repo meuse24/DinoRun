@@ -1,18 +1,18 @@
 {
-  "build": "2026-10-21.17",
+  "build": "2026-10-21.18",
   "source": {
     "file": "dino.html",
     "bytes": 560332,
-    "sha256": "233ed278db2eb0df0e15dca56c974e1e9a237e5182dcdaa68d370140acc685d0",
-    "gzipBytes": 145827,
-    "brotliBytes": 125451
+    "sha256": "91d488e4217d7540938aa3bf768b215b7bf8b6ee28792d7a731aaac4ac7e9a57",
+    "gzipBytes": 145826,
+    "brotliBytes": 125422
   },
   "release": {
     "file": "release/dino.html",
     "bytes": 315411,
-    "sha256": "210b31702c78748a38268def09db4da12d586f151af8cfb298e835c6fee5d6d5",
+    "sha256": "320d96dd7dd0d3a79bb40178613e93279606d817144260eb4ad8930281b7dcab",
     "gzipBytes": 109624,
-    "brotliBytes": 98431
+    "brotliBytes": 98375
   },
   "tools": {
     "terser": "5.51.2",
