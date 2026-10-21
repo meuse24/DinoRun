@@ -32,20 +32,20 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.5)
+## Size (UTF-8 bytes, build 2026-10-21.6)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 530,068 |
-| After Terser | 342,016 |
-| After CSSO | 303,777 |
-| Final HTML | 296,079 |
+| Readable source | 546,148 |
+| After Terser | 355,698 |
+| After CSSO | 315,719 |
+| Final HTML | 307,950 |
 
-Saved: **233,989 bytes (44.14%)**, before transport compression. About 31 KB
+Saved: **238,198 bytes (43.61%)**, before transport compression. About 31 KB
 are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-105,213 bytes; Brotli quality 11 gives 94,572 bytes. These are measurements only;
+107,593 bytes; Brotli quality 11 gives 96,667 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -62,7 +62,7 @@ this build does not configure a server or create required compressed sidecars.
 - Do not edit the generated HTML. Rebuild after changing the source. The source
   game/build identifier stays unchanged because this is packaging of that game.
 - Hosted updates now pin HTML to the active worker's cache. Publish the generated
-  HTML together with the updated root worker (v27 for this build). Increment both
+  HTML together with the updated root worker (v32 for this build). Increment both
   BUILD and CACHE_NAME on future releases. See [UPDATES.md](UPDATES.md) for the
   staging/consent contract, first-upgrade limitation and upload order.
 
@@ -105,7 +105,19 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.5)
+## Current delivery verification (2026-10-21.6)
+
+Delivery: 307950 bytes, SHA-256
+`4aada6ade9d10fcf8b7cae0dd6f9ce4d79ff135f75b822cb34d377ac199aa90b`.
+Worker cache v32. Arcade credits, a prominent empty-wallet INSERT COIN target,
+animated counter/coin feedback and metallic coin sound; see [COINS.md](COINS.md).
+Chromium and WebKit delivery coin checks pass nine layouts each. Physical
+Galaxy S10e checks pass ten browser/fullscreen orientation states with trusted
+touch, normal animation frames, actual audio signal and non-overlapping actions.
+Source/release rendering, lifecycle and skill-client evidence is recorded in
+[progress.md](progress.md). No deployment.
+
+## Previous delivery verification (2026-10-21.5)
 
 Delivery: 296079 bytes, SHA-256
 `22f5e947a64ce03318a911d77a7c280817d084b10e74bd7c70fc1aa44f8a8694`.

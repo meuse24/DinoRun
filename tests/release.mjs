@@ -49,7 +49,7 @@ for (const [name, viewport] of [
         Math.random = random;
         const audio = new EventTarget();
         audio.play = () => Promise.resolve(); audio.pause = () => {};
-        window.__dinoTest = { manualFrames: true, random, now: () => 1000,
+        window.__dinoTest = { credits: 99, manualFrames: true, random, now: () => 1000,
           highscoreApiUrl: null, musicAudio: audio };
         localStorage.setItem('dino-fullscreen-disabled', 'true');
       });

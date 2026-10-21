@@ -64,7 +64,7 @@ async function fixture(viewport,preset={},denied=false) {
         pause:{value:()=>{paused=true;}},
       });
     }
-    window.__dinoTest={manualFrames:true,highscoreApiUrl:null,musicAudio};
+    window.__dinoTest={ credits: 99,manualFrames:true,highscoreApiUrl:null,musicAudio};
   },{preset,denied,simulatedPlayback});
   await context.route('**/*',route=>{
     requests.push(route.request().url());

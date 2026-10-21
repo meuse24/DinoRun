@@ -170,7 +170,7 @@ try {
   page.on('pageerror', e => errors.push(String(e)));
   await context.route(/^https?:/, route => route.abort());
   await page.addInitScript(() => {
-    window.__dinoTest = { manualFrames: true, highscoreApiUrl: null };
+    window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null };
     localStorage.setItem('dino-fullscreen-disabled', 'true');
   });
   // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.

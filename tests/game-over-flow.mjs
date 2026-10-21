@@ -50,7 +50,7 @@ try{
         localStorage.setItem('dino-fullscreen-disabled','true');
         musicAudio=new EventTarget();musicAudio.play=()=>Promise.resolve();musicAudio.pause=()=>{};
       }
-      window.__dinoTest={manualFrames:!physical,highscoreApiUrl:null,musicAudio};
+      window.__dinoTest={ credits: 99,manualFrames:!physical,highscoreApiUrl:null,musicAudio};
     },{physical});
     await page.route('**/highscores.php*',route=>route.abort());
     page.on('pageerror',e=>errors.push(String(e)));

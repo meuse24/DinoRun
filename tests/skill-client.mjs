@@ -20,7 +20,7 @@ const fixture = fs.readFileSync(process.argv[2] || path.join(root, 'dino.html'),
   const audio = new EventTarget();
   audio.pause = () => {};
   audio.play = () => Promise.resolve();
-  window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, musicAudio: audio };
+  window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, musicAudio: audio };
 </script><script>`);
 const types = { '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json' };
 const server = http.createServer((request, response) => {

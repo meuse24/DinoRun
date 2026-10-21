@@ -1,5 +1,18 @@
 # Arcade typography and feedback
 
+## Coin controls (build 2026-10-21.6)
+
+INSERT COIN and the credit meter reuse the display/pixel fonts, layered gold
+lettering, navy outlines and static glow below. At zero credits the large gold
+button fills the future START slot, with an animated coin, label beat, light
+pulse and sweep. After insertion, START takes that exact target and the smaller
+deposit button moves beside the counter. Coin flip, digit punch and floating +1
+confirm deposits. Motion uses transform/opacity, is gated by the existing motion
+and Effects settings, and freezes while paused. Reduced motion keeps the static
+arcade styling. See [COINS.md](COINS.md) for credits, audio and phone validation.
+
+## Typography foundation
+
 Build `2026-10-21.3`, worker cache `dino-run-v29`. Second iteration: the first
 pass (build `.2`) kept system fonts and mostly static shadows; this pass adds
 real arcade faces, event lettering and stronger, still anchored motion.

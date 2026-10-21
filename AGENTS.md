@@ -64,6 +64,12 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   power-up preview, persistent Start target, isolated demo, online/local scores,
   pause, reduced motion and ten desktop/touch layouts, including full-width
   landscape and paused orientation changes. Accepts `DINO_BROWSER`.
+- `node tests/coins.mjs [game.html]`: zero-credit start gating, deposits,
+  persistence, round payment, arcade motion, sound and nine responsive layouts.
+  Accepts `DINO_BROWSER=webkit`; see `doc/COINS.md`.
+- `node tests/android-coins.mjs [game.html]`: physical Android trusted touch,
+  actual coin audio signal, payment and ten browser/fullscreen orientation states.
+  Own safe server on8878, scoped CDP relay9224; restores rotation and origin state.
 - `node tests/effects-setting.mjs [game.html]`: saved Arcade effects switch,
   Canvas/CSS gating, Help propagation and synthetic performance-probe decisions
   in desktop/touch layouts. Accepts `DINO_BROWSER`; see `doc/ARCADE.md`.

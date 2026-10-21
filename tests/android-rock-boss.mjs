@@ -54,7 +54,7 @@ try{
  page.on('pageerror',e=>report.errors.push(String(e)));
  page.on('console',m=>{if(m.type()==='error')report.errors.push(m.text());});
  await page.route('**/highscores.php*',r=>r.abort());
- await page.addInitScript(()=>{window.__dinoTest={highscoreApiUrl:null};});
+ await page.addInitScript(()=>{window.__dinoTest={ credits: 99,highscoreApiUrl:null};});
  const response=await page.goto(process.env.DINO_ANDROID_URL||'http://127.0.0.1:8877/dino.html');
  await page.waitForFunction(()=>!!window.__dinoRunner);
  const injectedHash=await page.evaluate(()=>window.__dinoArtifactSha256);

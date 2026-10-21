@@ -18,7 +18,7 @@ try {
   await page.addInitScript(() => {
     const musicAudio = new EventTarget();
     musicAudio.play = () => Promise.resolve(); musicAudio.pause = () => {};
-    window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, musicAudio };
+    window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, musicAudio };
     try { localStorage.setItem('dino-fullscreen-disabled', 'true'); } catch {}
   });
   await page.goto(pathToFileURL(path.resolve(process.argv[2] || path.join(root, 'dino.html'))).href);

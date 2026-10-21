@@ -33,7 +33,7 @@ try {
       const musicAudio = new EventTarget();
       musicAudio.play = () => Promise.resolve(); musicAudio.pause = () => {};
       localStorage.setItem('dino-fullscreen-disabled', 'true');
-      window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, musicAudio, transitions: false };
+      window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, musicAudio, transitions: false };
     });
     await page.goto(pathToFileURL(file).href);
     await page.waitForFunction(() => !!window.__dinoRunner);

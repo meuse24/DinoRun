@@ -63,7 +63,7 @@ try {
         const random = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
         Math.random = random;
         // Compare the established game without the intentionally new pickup.
-        window.__dinoTest = { random, now: () => 1000, highscoreApiUrl: null, featherEnabled: false };
+        window.__dinoTest = { credits: 99, random, now: () => 1000, highscoreApiUrl: null, featherEnabled: false };
         window.requestAnimationFrame = () => 0;
       });
       await page.goto(url, { waitUntil: 'load' });

@@ -72,7 +72,7 @@ try {
       const audio = new EventTarget();
       audio.play = () => Promise.resolve();
       audio.pause = () => {};
-      window.__dinoTest = {
+      window.__dinoTest = { credits: 99,
         manualFrames: true, highscoreApiUrl: null, musicAudio: audio,
         now: () => 1000,
         random: () => {

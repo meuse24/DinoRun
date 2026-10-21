@@ -30,7 +30,7 @@ try {
   page = await browser.contexts()[0].newPage();
   // The existing development server can be used without modifying its files or
   // touching the live API. Hooks execute before the game, including on reload.
-  await page.addInitScript(() => { window.__dinoTest = { highscoreApiUrl: null }; });
+  await page.addInitScript(() => { window.__dinoTest = { credits: 99, highscoreApiUrl: null }; });
   await page.route('**/highscores.php*', route => route.abort());
   await page.bringToFront();
   page.on('pageerror', e => errors.push(String(e)));

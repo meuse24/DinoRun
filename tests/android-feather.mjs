@@ -43,7 +43,7 @@ try {
   browser = await chromium.connectOverCDP(process.env.DINO_CDP_URL || 'http://127.0.0.1:9223', { noDefaults: true });
   metadata.browser = browser.version();
   page = await browser.contexts()[0].newPage();
-  await page.addInitScript(() => { window.__dinoTest = { highscoreApiUrl: null }; });
+  await page.addInitScript(() => { window.__dinoTest = { credits: 99, highscoreApiUrl: null }; });
   await page.route('**/highscores.php*', route => route.abort());
   await page.bringToFront();
   page.on('pageerror', e => errors.push(String(e)));

@@ -17,7 +17,7 @@ try{
   await context.route(/^https?:/,r=>r.abort());const page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
   await page.addInitScript(()=>{const musicAudio=new EventTarget();musicAudio.play=()=>Promise.resolve();musicAudio.pause=()=>{};
-   window.__dinoTest={manualFrames:true,transitions:false,highscoreApiUrl:null,musicAudio};
+   window.__dinoTest={ credits: 99,manualFrames:true,transitions:false,highscoreApiUrl:null,musicAudio};
    try{localStorage.setItem('dino-fullscreen-disabled','true');localStorage.setItem('chromium-dino-highscore','7');localStorage.setItem('chromium-dino-highscore-relaxed','9');}catch{}});
   await page.goto(pathToFileURL(file).href);await page.waitForFunction(()=>!!window.__dinoRunner);
   const toggle=page.getByRole('switch',{name:'Rock training',exact:true});

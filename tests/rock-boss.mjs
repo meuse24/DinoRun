@@ -21,7 +21,7 @@ try{
  const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.addInitScript(()=>{
   const musicAudio=new EventTarget();musicAudio.play=()=>Promise.resolve();musicAudio.pause=()=>{};
-  window.__dinoTest={manualFrames:true,transitions:false,highscoreApiUrl:null,musicAudio};
+  window.__dinoTest={ credits: 99,manualFrames:true,transitions:false,highscoreApiUrl:null,musicAudio};
   try{localStorage.setItem('dino-fullscreen-disabled','true');}catch{}
  });
  await page.goto(pathToFileURL(file).href);await page.waitForFunction(()=>!!window.__dinoRunner);
@@ -142,7 +142,7 @@ try{
    const c=await browser.newContext({viewport,screen:viewport,hasTouch:touch,isMobile:touch,serviceWorkers:'block'});
    await c.route(/^https?:/,r=>r.abort());const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(String(e)));p.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
    await p.addInitScript(()=>{const musicAudio=new EventTarget();musicAudio.play=()=>Promise.resolve();musicAudio.pause=()=>{};
-    window.__dinoTest={manualFrames:true,transitions:false,highscoreApiUrl:null,musicAudio};
+    window.__dinoTest={ credits: 99,manualFrames:true,transitions:false,highscoreApiUrl:null,musicAudio};
     try{localStorage.setItem('dino-fullscreen-disabled','true');}catch{}});
    await p.goto(pathToFileURL(file).href);await p.waitForFunction(()=>!!window.__dinoRunner);await c.setOffline(true);
    await p.evaluate(()=>{

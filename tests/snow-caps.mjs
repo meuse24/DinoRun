@@ -26,7 +26,7 @@ try {
       page.on('pageerror', error => errors.push(String(error)));
       await page.route('**/dino.html', route => route.fulfill({ contentType: 'text/html', body: sources[version] }));
       await page.addInitScript(() => {
-        window.__dinoTest = { manualFrames: true, highscoreApiUrl: null };
+        window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null };
         window.requestAnimationFrame = () => 0;
       });
       await page.goto('http://127.0.0.1:8765/dino.html');

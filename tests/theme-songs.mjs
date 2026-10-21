@@ -37,7 +37,7 @@ try{
   const context=await browser.newContext({viewport:{width:1280,height:800}});
   await context.addInitScript(()=>{
     localStorage.setItem('dino-fullscreen-disabled','true');
-    window.__dinoTest={manualFrames:true,highscoreApiUrl:null};
+    window.__dinoTest={ credits: 99,manualFrames:true,highscoreApiUrl:null};
   });
   const page=await context.newPage();
   const errors=[], expectedRangeErrors=[];

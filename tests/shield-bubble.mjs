@@ -58,7 +58,7 @@ try {
       window.__shieldRandomCalls = 0;
       const audio = new EventTarget();
       audio.play = () => Promise.resolve(); audio.pause = () => {};
-      window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, musicAudio: audio,
+      window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, musicAudio: audio,
         now: () => 1000, random: () => {
           window.__shieldRandomCalls++;
           return ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);

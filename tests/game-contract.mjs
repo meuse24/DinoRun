@@ -94,7 +94,7 @@ try {
       let seed = 937;
       window.__contractRequests = 0;
       window.__contractSubmissions = 0;
-      window.__dinoTest = {
+      window.__dinoTest = { credits: 99,
         manualFrames: true,
         random: () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296),
         now: () => 1000,
@@ -275,7 +275,7 @@ try {
   const errors = [];
   page.on('pageerror', error => errors.push(String(error)));
   await page.addInitScript(() => {
-    window.__dinoTest = { highscoreApiUrl: null };
+    window.__dinoTest = { credits: 99, highscoreApiUrl: null };
     localStorage.setItem('dino-fullscreen-disabled', 'true');
   });
   // Transitions stay off for deterministic screenshots unless DINO_TRANSITIONS=1.

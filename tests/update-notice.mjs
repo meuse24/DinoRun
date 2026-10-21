@@ -74,7 +74,7 @@ try {
       localStorage.setItem('dino-fullscreen-disabled', 'true');
       const musicAudio = new EventTarget();
       musicAudio.play = () => Promise.resolve(); musicAudio.pause = () => {};
-      window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, musicAudio, transitions: false };
+      window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, musicAudio, transitions: false };
     });
     const page = await context.newPage();
     page.on('pageerror', error => errors.push(String(error)));

@@ -42,7 +42,7 @@ async function openGame(browser, { level = 'full', transitions, manualFrames = t
     }
     const musicAudio = new EventTarget();
     musicAudio.play = () => Promise.resolve(); musicAudio.pause = () => {};
-    window.__dinoTest = { manualFrames, highscoreApiUrl: null, musicAudio,
+    window.__dinoTest = { credits: 99, manualFrames, highscoreApiUrl: null, musicAudio,
       ...(transitions === undefined ? {} : { transitions }) };
     try { localStorage.setItem('dino-fullscreen-disabled', 'true'); } catch {}
   }, { level, transitions, manualFrames });
@@ -681,7 +681,7 @@ try {
     await page.addInitScript(() => {
       const musicAudio = new EventTarget();
       musicAudio.play = () => Promise.resolve(); musicAudio.pause = () => {};
-      window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, musicAudio };
+      window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, musicAudio };
       try { localStorage.setItem('dino-fullscreen-disabled', 'true'); } catch {}
       // Records the first entrance (T1) with the animations it started.
       window.__enters = [];
@@ -1366,7 +1366,7 @@ try {
       const page = await context.newPage();
       await page.addInitScript(transitions => {
         let seed = 4242, time = 1000;
-        window.__dinoTest = { manualFrames: true, highscoreApiUrl: null, transitions,
+        window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, transitions,
           now: () => time, random: () => ((seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296) };
         window.__advanceClock = ms => { time += ms; };
         try { localStorage.setItem('dino-fullscreen-disabled', 'true'); } catch {}
