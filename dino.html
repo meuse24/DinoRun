@@ -2406,6 +2406,47 @@
         .attract-powerup h3 { font-size: 15px; }
         #round-panel .attract-powerup p { font-size: 12px; }
       }
+      /* A quiet menu notice, outside the canvas and its input surface. */
+      #update-notice {
+        position: fixed;
+        z-index: 6;
+        top: max(12px, env(safe-area-inset-top));
+        right: max(12px, env(safe-area-inset-right));
+        width: min(360px, calc(100vw - 24px));
+        padding: 14px 16px;
+        border: 1px solid var(--menu-line);
+        border-radius: 18px;
+        background: var(--bg);
+        color: var(--menu-ink);
+        box-shadow: 0 8px 24px var(--menu-shadow);
+        font-size: 14px;
+      }
+      #update-notice[hidden] { display: none; }
+      #update-message { margin: 6px 0 12px; line-height: 1.35; }
+      .update-actions { display: flex; gap: 8px; }
+      #update-notice button {
+        min-height: 44px;
+        padding: 8px 14px;
+        border: 1px solid var(--menu-line);
+        border-radius: 10px;
+        background: var(--bg);
+        color: var(--menu-ink);
+        font: 700 14px Arial, sans-serif;
+        cursor: pointer;
+      }
+      #update-notice #update-apply { background: #ffd257; color: #173f69; }
+      @media (max-height: 450px) and (orientation: landscape) {
+        #update-notice {
+          width: min(620px, calc(100vw - 24px));
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+        #update-message { margin: 2px 0 0; }
+        .update-actions { flex: none; margin-left: auto; }
+      }
     </style>
   </head>
   <body>
@@ -2556,6 +2597,16 @@
         DOWN
       </p>
     </main>
+    <aside id="update-notice" data-game-ui aria-labelledby="update-title" hidden>
+      <div role="status" aria-live="polite" aria-atomic="true">
+        <strong id="update-title">Update available</strong>
+        <p id="update-message">A new version is ready. Updating reloads the game.</p>
+      </div>
+      <div class="update-actions">
+        <button id="update-apply" type="button">Update now</button>
+        <button id="update-later" type="button">Later</button>
+      </div>
+    </aside>
     <dialog id="settings" aria-labelledby="settings-title">
       <div class="settings-content menu-frame">
         <header class="menu-header">
@@ -3242,6 +3293,11 @@
                   </section>
                   <section class="card wide">
                     <h2>About</h2>
+                    <p id="about-version"></p>
+                    <p>When a new version is ready, an update notice appears in the start menu.
+                      Choose Update now to reload, or Later to keep playing. Updates never reload
+                      an ongoing run automatically. Closing all game tabs also allows an update
+                      to take effect the next time you play.</p>
                     <p>
                       Made by Günther Meusburger (m24). Based on the
                       <a
@@ -3308,7 +3364,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-19.5';
+        const BUILD = '2026-10-21.1';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -3649,7 +3705,7 @@
                   e.isTrusted &&
                   e.pointerType === 'mouse' &&
                   e.button === 0 &&
-                  !e.target.closest?.('#fullscreen-toggle,#settings-open,#install-game,#install-help')
+                  !e.target.closest?.('#fullscreen-toggle,#settings-open,#install-game,#install-help,#update-notice')
                 )
                   this.activate();
               },
@@ -3663,7 +3719,7 @@
                 if (
                   e.isTrusted &&
                   e.pointerType !== 'mouse' &&
-                  !e.target.closest?.('#fullscreen-toggle,#settings-open,#install-game,#install-help')
+                  !e.target.closest?.('#fullscreen-toggle,#settings-open,#install-game,#install-help,#update-notice')
                 )
                   this.activate();
               },
@@ -9387,6 +9443,7 @@
           canInput() {
             const runner = this.runner;
             return (
+              !runner.updates?.applying &&
               !runner.ended &&
               !runner.paused &&
               !pageEl.hidden &&
@@ -9632,6 +9689,140 @@
           }
         }
 
+        // Hosted updates are presentation/coordinator state, never simulation state.
+        // A controller change alone is not consent to reload this tab.
+        class GameUpdates {
+          constructor(runner) {
+            this.runner = runner;
+            this.notice = document.getElementById('update-notice');
+            this.button = document.getElementById('update-apply');
+            this.later = document.getElementById('update-later');
+            this.message = document.getElementById('update-message');
+            this.waiting = null;
+            this.ready = false;
+            this.dismissed = false;
+            this.applying = false;
+            this.reloading = false;
+            this.lastCheck = 0;
+            for (const event of ['pointerdown', 'pointerup', 'keydown', 'keyup', 'click'])
+              this.notice.addEventListener(event, (e) => e.stopPropagation());
+            this.button.addEventListener('click', () => this.apply());
+            this.later.addEventListener('click', () => {
+              this.dismissed = true;
+              this.sync();
+              document.getElementById('start-game').focus({ preventScroll: true });
+            });
+            // Modal changes must hide the notice even when the paused loop stops.
+            const observer = new MutationObserver(() => this.sync());
+            for (const dialog of document.querySelectorAll('dialog'))
+              observer.observe(dialog, { attributes: true, attributeFilter: ['open'] });
+            observer.observe(pageEl, { attributes: true, attributeFilter: ['hidden'] });
+            window.addEventListener('hashchange', () => this.sync());
+          }
+          safe() {
+            return this.runner.game.state === 'attract' && !this.runner.ended &&
+              !this.runner.highscoreController.qualifying && !this.runner.highscores.isOpen &&
+              !pageEl.hidden && !document.hidden && location.hash !== '#info' &&
+              this.runner.transition.idle && !document.querySelector('dialog[open]');
+          }
+          sync() {
+            const visible = !!(this.waiting || this.ready) && !this.dismissed && this.safe();
+            if (this.notice.hidden === visible) {
+              const hadFocus = this.notice.contains(document.activeElement);
+              this.notice.hidden = !visible;
+              if (!visible && hadFocus) gameEl.focus({ preventScroll: true });
+            }
+            this.button.disabled = this.applying;
+            this.later.disabled = this.applying;
+          }
+          offer(worker) {
+            if (!worker || worker === navigator.serviceWorker.controller || worker === this.waiting) return;
+            this.waiting = worker;
+            this.ready = false;
+            this.dismissed = false;
+            this.message.textContent = 'A new version is ready. Updating reloads the game.';
+            this.sync();
+          }
+          async register() {
+            const serviceWorker = navigator.serviceWorker;
+            let controller = serviceWorker.controller;
+            serviceWorker.addEventListener('controllerchange', () => {
+              const previous = controller;
+              controller = serviceWorker.controller;
+              if (!controller || controller === previous) return;
+              if (this.applying) { this.reload(); return; }
+              // First installation claims the page too; it is not an update.
+              if (!previous) return;
+              this.waiting = null;
+              this.ready = true;
+              this.dismissed = false;
+              this.sync();
+            });
+            try {
+              const registration = this.registration = await serviceWorker.register('./service-worker.js', {
+                updateViaCache: 'none',
+              });
+              const watch = (worker) => {
+                if (!worker) return;
+                const changed = () => {
+                  if (worker.state === 'installed' && serviceWorker.controller) this.offer(worker);
+                  if (worker.state === 'redundant' && this.waiting === worker) {
+                    this.waiting = null;
+                    this.sync();
+                  }
+                };
+                worker.addEventListener('statechange', changed);
+                changed();
+              };
+              registration.addEventListener('updatefound', () => watch(registration.installing));
+              watch(registration.installing);
+              this.offer(registration.waiting);
+              this.lastCheck = Date.now();
+              document.addEventListener('visibilitychange', () => { this.sync(); this.check(); });
+              window.addEventListener('online', () => this.check());
+              window.addEventListener('pageshow', () => { this.sync(); this.check(); });
+              // Long foreground sessions discover updates too; background tabs stay quiet.
+              setInterval(() => this.check(), 5 * 60 * 1000);
+            } catch (error) {
+              console.warn('Dino Run offline installation failed:', error);
+            }
+          }
+          async check() {
+            if (!this.registration || this.checking || document.hidden || !navigator.onLine ||
+                Date.now() - this.lastCheck < 60 * 1000) return;
+            this.lastCheck = Date.now();
+            this.checking = true;
+            try { await this.registration.update(); }
+            catch { /* Offline and deployment failures leave the installed game playable. */ }
+            finally { this.checking = false; }
+          }
+          apply() {
+            if (this.applying || !this.safe() || !(this.waiting || this.ready)) return;
+            this.applying = true;
+            this.sync();
+            if (this.ready || this.waiting === navigator.serviceWorker.controller) {
+              this.reload();
+              return;
+            }
+            this.message.textContent = 'Updating…';
+            const failed = () => {
+              this.applying = false;
+              this.message.textContent = 'Update could not finish. Try again, or keep playing.';
+              this.sync();
+            };
+            // Release the input lock if the worker disappears or activation stalls.
+            this.timer = setTimeout(failed, 12000);
+            try { this.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+            catch { clearTimeout(this.timer); failed(); }
+          }
+          reload() {
+            if (this.reloading) return;
+            this.reloading = true;
+            clearTimeout(this.timer);
+            window.location.reload();
+          }
+        }
+
         // Page UI: dialogs, round buttons and the embedded guide/navigation.
         // All artwork, guide markup and behavior remain in this HTML.
         class GamePage {
@@ -9770,6 +9961,8 @@
               landscapeFullscreen.sync();
             });
             infoView.addEventListener('load', () => {
+              const version = infoView.contentDocument?.getElementById('about-version');
+              if (version) version.textContent = 'Dino Run · Version ' + BUILD;
               this.runner.headingMotion.syncGuide(this.infoView, this.runner.transition.current?.vt);
               // Events inside the guide do not bubble into the parent window.
               for (const event of ['focus', 'blur'])
@@ -10304,6 +10497,7 @@
             }
           }
           draw(alpha = 1) {
+            this.updates?.sync();
             const wasIdle = this.sessionView.stage.classList.contains('idle');
             const night = this.renderer.darkQuery.matches !== this.game.nightAlpha > 0.5;
             this.sessionView.update(this.game, this.input, this.paused, night);
@@ -10367,12 +10561,16 @@
         }
         const runner = new Runner(context);
         window.__dinoRunner = runner;
+        runner.updates = new GameUpdates(runner);
         window.__dinoGame = runner.game;
         window.render_game_to_text = () => {
           const game = runner.game;
           return JSON.stringify({
             coordinates: 'logical canvas pixels; origin top left, x right, y down',
             state: game.state, paused: runner.paused, mode: game.mode, rockTraining: game.rockTraining,
+            build: BUILD,
+            update: { available: !!(runner.updates.waiting || runner.updates.ready),
+              visible: !runner.updates.notice.hidden, applying: runner.updates.applying },
             audio: { enabled: runner.sound.enabled, musicVolume: runner.music.volume,
               effectsVolume: runner.sound.volume, track: runner.music.track },
             attract: game.state === 'attract' ? {
@@ -10441,9 +10639,7 @@
             ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)))
       ) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./service-worker.js').catch((error) => {
-            console.warn('Dino Run offline installation failed:', error);
-          });
+          window.__dinoRunner?.updates.register();
         });
       }
     </script>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dino-run-v26';
+const CACHE_NAME = 'dino-run-v27';
 const CACHE_PREFIX = 'dino-run-';
 const GAME_URL = new URL('./dino.html', self.registration.scope).href;
 const STATIC_URLS = [
@@ -16,13 +16,18 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       Promise.all([
-        cache.addAll([GAME_URL, ...STATIC_URLS.filter((url) => !MUSIC_URLS.includes(url))]),
+        // Revalidate deployment files instead of reusing the browser's HTTP cache.
+        cache.addAll([GAME_URL, ...STATIC_URLS.filter((url) => !MUSIC_URLS.includes(url))]
+          .map((url) => new Request(url, { cache: 'reload' }))),
         // Either optional song may be absent without blocking offline installation.
-        ...MUSIC_URLS.map((url) => cache.add(url).catch(() => {})),
+        ...MUSIC_URLS.map((url) => cache.add(new Request(url, { cache: 'reload' })).catch(() => {})),
       ]),
     ),
   );
-  self.skipWaiting();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
@@ -48,17 +53,10 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (url.pathname === new URL(GAME_URL).pathname) {
+    // Keep the installed game stable until activation. Never read a waiting
+    // worker's cache or overwrite this version with newer network HTML.
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            event.waitUntil(
-              caches.open(CACHE_NAME).then((cache) => cache.put(GAME_URL, response.clone())),
-            );
-          }
-          return response;
-        })
-        .catch(async () => (await caches.match(GAME_URL)) || Response.error()),
+      caches.open(CACHE_NAME).then(async (cache) => (await cache.match(GAME_URL)) || fetch(request)),
     );
     return;
   }
@@ -66,7 +64,7 @@ self.addEventListener('fetch', (event) => {
   if (!STATIC_URLS.includes(url.href)) return;
 
   event.respondWith(
-    caches.match(url.href).then(async (cached) => {
+    caches.open(CACHE_NAME).then((cache) => cache.match(url.href)).then(async (cached) => {
       if (!cached) return fetch(request);
       if (!MUSIC_URLS.includes(url.href) || !request.headers.has('range')) return cached;
 

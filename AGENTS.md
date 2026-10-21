@@ -34,6 +34,10 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/game-contract.mjs`: run baseline-independent lifecycle, score-rule,
   standalone offline file and hosted offline installation checks. It starts its
   own fixture server and never contacts the live highscore service.
+- `node tests/update-notice.mjs [game.html]`: real staged worker updates, safe-menu
+  notices, consent/Later, multiple tabs, offline activation, failed downloads and
+  activation timeout in desktop/touch layouts. Accepts `DINO_BROWSER=webkit`;
+  see `doc/UPDATES.md` for release/cache versioning and hosting instructions.
 - `node tests/architecture.mjs`: check the highscore workflow without a DOM,
   deferred responses/retries, independent world widths, mobile rotation and
   automatic name-dialog timing. Also accepts `DINO_BROWSER=webkit`.

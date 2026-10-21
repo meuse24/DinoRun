@@ -31,19 +31,19 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-19.5)
+## Size (UTF-8 bytes, build 2026-10-21.1)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 442,896 |
-| After Terser | 273,644 |
-| After CSSO | 240,733 |
-| Final HTML | 233,679 |
+| Readable source | 452,284 |
+| After Terser | 279,694 |
+| After CSSO | 246,278 |
+| Final HTML | 239,028 |
 
-Saved: **209,217 bytes (47.24%)**, before transport compression. The optional
+Saved: **213,256 bytes (47.15%)**, before transport compression. The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-72,881 bytes; Brotli quality 11 gives 64,150 bytes. These are measurements only;
+74,289 bytes; Brotli quality 11 gives 65,274 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -59,6 +59,10 @@ this build does not configure a server or create required compressed sidecars.
   PHP/PWA deployment. Nothing is uploaded or deployed by the build.
 - Do not edit the generated HTML. Rebuild after changing the source. The source
   game/build identifier stays unchanged because this is packaging of that game.
+- Hosted updates now pin HTML to the active worker's cache. Publish the generated
+  HTML together with the updated root worker (v27 for this build). Increment both
+  BUILD and CACHE_NAME on future releases. See [UPDATES.md](UPDATES.md) for the
+  staging/consent contract, first-upgrade limitation and upload order.
 
 ## Verify
 
@@ -99,7 +103,26 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-19.5)
+## Current delivery verification (2026-10-21.1)
+
+Delivery: 239028 bytes, SHA-256
+`407253dbd00a094947b14bf39976a71d2aadfed799b643cfb2c4b87dfaa4edfe`.
+Rebuilding reproduces the artifact. Chromium compares all 64 source/release
+UI/gameplay scenes pixel-identically. The actual minified delivery passes the
+real-worker update suite in three desktop/touch layouts per engine (Chromium
+and WebKit), including offline activation, two tabs, waiting-worker replacement,
+failed precaching, timeout/retry and natural activation. Both engines also pass
+all seven lifecycle/file/offline scenarios and the three-layout round-end/name
+entry suite. Chromium passes real MP3 playback, offline switching and all six
+cached range cases, plus the installed skill client.
+
+Screenshots of notice layouts, Help/About version, offline gameplay, dark/reduced
+motion and activation retry were inspected. Reports: `output/updates/`, including
+`comparison/comparison-chromium/report.json`. These are desktop browsers and
+mobile emulation; no physical-phone verification or production upload was done.
+See [UPDATES.md](UPDATES.md) before publishing HTML with its updated worker.
+
+## Previous delivery verification (2026-10-19.5)
 
 Reinstalled pinned tools with `npm ci` and rebuilt using `npm run build`.
 The result is byte-identical to the existing delivery: 233679 bytes, SHA-256
