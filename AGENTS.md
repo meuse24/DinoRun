@@ -26,6 +26,9 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `npm ci` then `npm run build`: generate `release/dino.html` and its size/hash
   report using Terser, CSSO and HTMLMinifier-Terser. See `doc/RELEASE.md`. Keep the
   source HTML readable; tools are development dependencies only.
+- `npm run deploy [-- --dry-run] [-- --also <file>]`: upload `release/dino.html`
+  and then `service-worker.js` via FTPS using the git-ignored `ftp.txt`, then verify
+  hashes over HTTPS. Never run it without the user's request; see `doc/RELEASE.md`.
 - `node tests/release.mjs`: compare source/release UI, rendering and state in
   desktop/mobile layouts; accepts `DINO_BROWSER=webkit`.
 

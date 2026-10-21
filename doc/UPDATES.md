@@ -68,7 +68,8 @@ No root-level worker or new CDN dependency is introduced.
   to avoid silently reusing a fresh local HTTP-cache entry.
 - Keep existing manifest/icons, PHP/config/data and optional music in place.
   The minified HTML alone still supports standalone offline file play, but is
-  not the whole hosted PWA deployment. Nothing is uploaded by the build.
+  not the whole hosted PWA deployment. Nothing is uploaded by the build; use
+  `npm run deploy` (see RELEASE.md, Upload) for the ordered upload and hash check.
 
 ## Research basis
 

@@ -77,6 +77,30 @@ this build does not configure a server or create required compressed sidecars.
   BUILD and CACHE_NAME on future releases. See [UPDATES.md](UPDATES.md) for the
   staging/consent contract, first-upgrade limitation and upload order.
 
+## Upload
+
+`npm run deploy` publishes the finished delivery; `npm run build` never uploads.
+Run it only after the build and the verification below pass.
+
+1. Create `ftp.txt` in the repository root (git-ignored, never commit it): the
+   first line is the game URL, then `Server:`, `Username:` and `Passwort:` lines.
+   The URL path (`/apps/dino/`) is also the FTP target directory.
+2. `npm run deploy -- --dry-run` checks the delivery without uploading: it needs
+   `BUILD` in `release/dino.html`, a delivery newer than `dino.html`, and refuses
+   when the live worker already has the same `CACHE_NAME` (override: `--force`).
+3. `npm run deploy` uploads `release/dino.html` as `dino.html`, then
+   `service-worker.js` **last**, so a worker never caches a mismatched game. It
+   uses the system `curl` (FTP over TLS required; `--plain-ftp` allows
+   unencrypted FTP). The password is passed through stdin, not as an argument.
+4. It then fetches both files over HTTPS and compares SHA-256 hashes with the
+   local files. A mismatch fails the command.
+
+Extra files are uploaded only on request, before the HTML:
+`npm run deploy -- --also highscores-lib.php --also manifest.webmanifest`.
+Only a fixed list is accepted (PHP API/admin scripts, manifest, icons, songs).
+Configuration, `highscores-data/`, secrets and tests can never be uploaded.
+Upload `highscores-lib.php` when the score rules changed (see LEVEL-BONUS.md).
+
 ## Verify
 
 Use `DINO_PLAYWRIGHT` for an existing Playwright ESM installation if necessary;

@@ -5,6 +5,7 @@
   "description": "Optional release tooling for the standalone Dino Run HTML game",
   "scripts": {
     "build": "node scripts/build-release.mjs",
+    "deploy": "node scripts/deploy.mjs",
     "test:release": "node tests/release.mjs"
   },
   "engines": {

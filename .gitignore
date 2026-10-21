@@ -8,3 +8,5 @@
 /adminphppasswort.txt
 /highscores.config.example - Kopie.php
 /Theme_song2.wav
+# FTP credentials for scripts/deploy.mjs (see doc/RELEASE.md).
+/ftp.txt
