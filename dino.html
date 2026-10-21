@@ -112,8 +112,24 @@
                 ? 'In Safari, choose Share → Add to Dock.'
                 : 'Use the install icon in the address bar or the browser menu → Install page as app. If that option is missing, open this page in Chrome or Edge; on Mac, try Safari.';
 
-          const showInstructions = () => {
-            instructions.textContent = message;
+          // Chromium reports an installed copy only for apps listed in the manifest's
+          // related_applications. A page cannot uninstall itself, so we only explain how.
+          // Asked on demand: the call fetches the manifest.
+          const isInstalled = () =>
+            Promise.race([
+              navigator.getInstalledRelatedApps?.().then(
+                (apps) => apps.some((app) => app.platform === 'webapp'),
+                () => false,
+              ) ?? false,
+              new Promise((resolve) => setTimeout(resolve, 1500, false)),
+            ]);
+          const installedMessage = appleMobile
+            ? 'Dino Run is already on your Home Screen. To install it again, remove the app first: touch and hold its icon, then tap Remove App.'
+            : /Android/.test(agent)
+              ? 'Dino Run is already installed. Open it from your home screen. To install it again, uninstall it first: touch and hold its icon, then choose Uninstall.'
+              : 'Dino Run is already installed. Open it from your apps. To install it again, uninstall it first in the browser menu or your system settings.';
+          const showInstructions = async () => {
+            instructions.textContent = (await isInstalled()) ? installedMessage : message;
             if (typeof help.showModal === 'function') {
               help.showModal();
               window.__dinoRunner?.updatePause();
@@ -123,7 +139,7 @@
           };
           button.addEventListener('click', async () => {
             if (!installPrompt) {
-              showInstructions();
+              await showInstructions();
               return;
             }
             const prompt = installPrompt;
@@ -3958,7 +3974,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.16';
+        const BUILD = '2026-10-21.17';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,

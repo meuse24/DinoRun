@@ -731,3 +731,8 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 - The first trusted click/tap now requests fullscreen also on Insert coin, Settings and the Update notice (previously excluded). Excluded remain the Fullscreen switch (own handler) and the Install buttons (a fullscreen request could cover the native install prompt). Doc/COINS.md updated; the android-coins assertion that coin insertion never enters fullscreen was removed (physical phone not rerun). Build `2026-10-21.16`, cache `dino-run-v42`, release rebuilt.
 - Chromium check: first click on Insert coin and on Settings enters fullscreen, Settings dialog still opens. Passed coins (9 layouts), menu-overlays, attract-screen, game-contract, game-over-flow, effects-setting, release (64 scenes). Update-notice click not tested separately. Not committed or deployed.
+
+## 2026-10-21: Install help for already installed PWA
+
+- On the phone, Install app showed only the generic fallback because Chrome sends no `beforeinstallprompt` for an installed app (live site had no installability or manifest errors; checked by CDP). A page cannot uninstall itself. When the click finds no native prompt, `getInstalledRelatedApps()` (asked on demand, 1.5 s limit; it fetches the manifest) now selects an "already installed, open it or uninstall it first" text per platform. Manifest gained `related_applications` (webapp, production manifest URL) for that detection. Build `2026-10-21.17`, cache `dino-run-v43`; `manifest.webmanifest` must be uploaded with `--also`.
+- Verified with a stubbed API (both texts) and menu-overlays, game-contract, screen-transitions (86), release (64), attract-screen. Real detection on the phone is unverified until the manifest is deployed. Not committed or deployed.

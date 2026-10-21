@@ -9,6 +9,12 @@
   "display": "fullscreen",
   "background_color": "#8fd3ff",
   "theme_color": "#f7f7f7",
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://meuse24.info/apps/dino/manifest.webmanifest"
+    }
+  ],
   "icons": [
     {
       "src": "./icon-192.png",
