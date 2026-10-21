@@ -5,6 +5,15 @@ readable root `dino.html`; the game itself still needs no build step to run.
 
 ## Rebuild
 
+Current layout-fix build: `2026-10-21.19`, worker cache `dino-run-v45`.
+The compact-landscape update notice leaves the credit/START column clear;
+short portrait menus reserve space for the landscape hint below scores and
+power-up cards. Delivery: 316,001 bytes, SHA-256
+`09da4544cb4078e8a9f0cfaecae3c35164ccf3052e21a71040a9d87f5fba4961`.
+Chromium source/release comparisons pass all 64 scenes. Further validation is
+recorded in [progress.md](progress.md). This build has not been deployed or
+tested on a physical phone.
+
 ```powershell
 npm ci
 npm run build

@@ -36,6 +36,8 @@ try {
     { ...device, name: 'compact-landscape', viewport: { width: 663, height: 234 } },
     { ...device, name: 'wide-phone', viewport: { width: 844, height: 234 } },
     { ...device, name: 'small-portrait', viewport: { width: 320, height: 568 } },
+    { ...device, name: 'browser-portrait', viewport: { width: 360, height: 617 } },
+    { ...device, name: 'compact-portrait', viewport: { width: 320, height: 640 } },
   ]) {
     const { name, defaultBrowserType, ...options } = config;
     const context = await browser.newContext({ ...options, screen: options.viewport, serviceWorkers: 'block' });
@@ -85,6 +87,12 @@ try {
     }));
     const startRect = await page.locator('#start-game').boundingBox();
     const checkStart = async () => {
+      if (options.viewport.width <= options.viewport.height) {
+        const hint = await page.locator('#landscape-hint').boundingBox();
+        const slide = await page.locator('.attract-slide:not([hidden])').boundingBox();
+        assert(hint && slide && slide.y + slide.height + 4 <= hint.y,
+          `${name}: portrait hint stays below the active attract content: ${JSON.stringify({ hint, slide })}`);
+      }
       const rect = await page.locator('#start-game').boundingBox();
       assert(rect && rect.height >= 60 && rect.width >= 180, 'Prominent start target');
       for (const key of ['x', 'y', 'width', 'height'])

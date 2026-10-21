@@ -109,6 +109,12 @@ try {
       notice.y + notice.height <= viewport.height + 1, 'Notice fits viewport');
     assert(notice.x + notice.width <= start.x || start.x + start.width <= notice.x ||
       notice.y + notice.height <= start.y || start.y + start.height <= notice.y, 'START remains uncovered');
+    if (layout === 'landscape') {
+      const credits = await page.locator('#coin-controls').boundingBox();
+      assert(notice.x + notice.width <= credits.x || credits.x + credits.width <= notice.x ||
+        notice.y + notice.height <= credits.y || credits.y + credits.height <= notice.y,
+        'Credit counter and INSERT COIN remain uncovered');
+    }
     await page.screenshot({ path: path.join(output, `${layout}-notice.png`) });
     if (layout === 'desktop') {
       await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });

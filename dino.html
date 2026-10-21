@@ -2563,6 +2563,18 @@
         .attract-powerup h3 { font-size: 15px; }
         #round-panel .attract-powerup p { font-size: 12px; }
       }
+      /* Leave the portrait advice its own row, even with five score entries. */
+      @media (max-height: 600px) and (orientation: portrait) {
+        #round-panel .attract-heading h2 { font-size: 20px; margin-bottom: 4px; }
+        .attract-scoreboard { padding: 6px 12px; }
+        #round-panel #attract-score-source { margin-bottom: 4px; }
+        :is(#attract-score-list, .attract-score-ghost) li { font-size: 14px; padding: 2px 0; }
+        #round-panel #attract-personal-best { margin-top: 4px; padding-top: 4px; }
+        .attract-powerups { gap: 6px; }
+        .attract-powerup { padding: 4px 12px; }
+        .attract-powerup h3 { font-size: 14px; margin-bottom: 2px; }
+        #round-panel .attract-powerup p { font-size: 11px; line-height: 1.2; }
+      }
       /* A quiet menu notice, outside the canvas and its input surface. */
       #update-notice {
         position: fixed;
@@ -2594,7 +2606,10 @@
       #update-notice #update-apply { background: #ffd257; color: #173f69; }
       @media (max-height: 450px) and (orientation: landscape) {
         #update-notice {
-          width: min(620px, calc(100vw - 24px));
+          /* Keep the right-hand credit and START column fully available. */
+          left: max(12px, env(safe-area-inset-left));
+          right: auto;
+          width: calc(100vw - max(200px, 30vw) - 46px);
           display: flex;
           align-items: center;
           gap: 12px;
@@ -3974,7 +3989,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.18';
+        const BUILD = '2026-10-21.19';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
