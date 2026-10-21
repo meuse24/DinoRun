@@ -32,20 +32,20 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.8)
+## Size (UTF-8 bytes, build 2026-10-21.9)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 546,697 |
-| After Terser | 355,841 |
-| After CSSO | 315,862 |
-| Final HTML | 308,093 |
+| Readable source | 546,603 |
+| After Terser | 355,739 |
+| After CSSO | 315,760 |
+| Final HTML | 307,991 |
 
-Saved: **238,604 bytes (43.64%)**, before transport compression. About 31 KB
+Saved: **238,612 bytes (43.65%)**, before transport compression. About 31 KB
 are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-107,648 bytes; Brotli quality 11 gives 96,676 bytes. These are measurements only;
+107,620 bytes; Brotli quality 11 gives 96,732 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -62,7 +62,7 @@ this build does not configure a server or create required compressed sidecars.
 - Do not edit the generated HTML. Rebuild after changing the source. The source
   game/build identifier stays unchanged because this is packaging of that game.
 - Hosted updates now pin HTML to the active worker's cache. Publish the generated
-  HTML together with the updated root worker (v34 for this build). Increment both
+  HTML together with the updated root worker (v35 for this build). Increment both
   BUILD and CACHE_NAME on future releases. See [UPDATES.md](UPDATES.md) for the
   staging/consent contract, first-upgrade limitation and upload order.
 
@@ -105,7 +105,17 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.8)
+## Current delivery verification (2026-10-21.9)
+
+Delivery: 307991 bytes, SHA-256
+`f30ce710622a30c73c4a4c9546086041cdf95039cf08a97d33b29b400b1a84cf`.
+Worker cache v35. Fixed sun anchor shared by all renderers: scores, demo and
+power-up screens no longer jump between idle drift and the running demo position.
+Attract regression measures the painted sun across repeated switches/demo resets
+in ten layouts. Installed skill client passes; screenshots inspected.
+No deployment.
+
+## Previous delivery verification (2026-10-21.8)
 
 Delivery: 308093 bytes, SHA-256
 `f7d75d1a99caa78102e82feaf7c5a799b617715c7d95d38bd33487bd54a3504f`.

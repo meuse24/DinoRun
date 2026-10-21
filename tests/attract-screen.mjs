@@ -187,6 +187,31 @@ try {
     assert.deepEqual(await page.evaluate(() => ({ games: window.__dinoRunner.stats.games,
       deaths: window.__dinoRunner.stats.deaths, round: window.__dinoRunner.highscoreController.round })),
     { games: 0, deaths: 0, round: null });
+    // Measure the painted sun across the actual renderers after their clocks have advanced.
+    // Scores/power-ups use an idle backdrop; demo uses a running game and may reset it.
+    const suns = await page.evaluate(() => {
+      const r = window.__dinoRunner, ctx = r.renderer.ctx, arc = ctx.arc, samples = [];
+      let painted;
+      ctx.arc = function(x, y, radius, ...angles) {
+        if (radius === 10 && this.fillStyle === '#ffd257') {
+          const p = new DOMPoint(x, y).matrixTransform(this.getTransform());
+          painted = { x: p.x / this.canvas.width, y: p.y / this.canvas.height };
+        }
+        return arc.call(this, x, y, radius, ...angles);
+      };
+      try {
+        for (const index of [0, 1, 2, 0, 1]) {
+          painted = null; r.attract.select(index); r.draw(1);
+          samples.push(painted);
+        }
+      } finally { ctx.arc = arc; }
+      return samples;
+    });
+    assert(suns.every(Boolean), name + ': every attract screen paints the sun');
+    for (const sun of suns) {
+      assert(Math.abs(sun.x - suns[0].x) < 0.00001 && Math.abs(sun.y - suns[0].y) < 0.00001,
+        name + ': sun stays in place across scores/demo/power-ups and demo resets');
+    }
     assert.equal(await page.evaluate(() => {
       const r = window.__dinoRunner, calls = window.__attractRandomCalls;
       r.attract.select(1);

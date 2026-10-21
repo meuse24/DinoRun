@@ -3837,7 +3837,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.8';
+        const BUILD = '2026-10-21.9';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -7906,11 +7906,11 @@
           drawScenery(horizon, nightAlpha, distance, fg) {
             const ctx = this.ctx;
             ctx.save();
-            // Keep the sun and its full idle drift/halo left of the lives and 1UP HUD.
-            // It fades as Chromium's night cycle begins.
+            // All attract renderers share this fixed anchor, including the running demo.
+            // Keep the halo left of the lives/1UP HUD; fade with the night cycle.
             const daylight = 1 - nightAlpha,
-              sunY = 47 + (this.idleTime ? Math.sin(this.idleTime / 14000) * 6 : 0),
-              sunX = this.world.width - 140 + (this.idleTime ? Math.sin(this.idleTime / 22000) * 20 : 0);
+              sunY = 47,
+              sunX = this.world.width - 140;
             ctx.globalAlpha = daylight * 0.18;
             ctx.fillStyle = '#ffe59a';
             ctx.beginPath();
