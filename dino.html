@@ -3837,7 +3837,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.7';
+        const BUILD = '2026-10-21.8';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -7473,6 +7473,11 @@
             const ctx = this.ctx;
             const x = trex.x,
               y = trex.y;
+            const jumpRoll = jumpPose === 'eyeroll' && !trex.dead;
+            const roll = jumpRoll || (trex.idlePose === 'eyeroll' && !trex.dead);
+            const progress = jumpRoll ? clamp(trex.jumpPoseTime / 420, 0, 1) : clamp(trex.idleProgress || 0, 0, 1);
+            const smooth = value => { const t = clamp(value, 0, 1); return t * t * (3 - 2 * t); };
+            const expression = roll ? (trex.reducedMotion.matches ? 1 : Math.sin(progress * Math.PI)) : 0;
             // Warm cheeks during the chili boost.
             if (trex.turbo && !trex.dead) {
               ctx.fillStyle = '#e94535';
@@ -7481,7 +7486,7 @@
               ctx.fill();
             }
             // Face details.
-            if (trex.blinkRemaining > 0 && !trex.dead) {
+            if (trex.blinkRemaining > 0 && !trex.dead && !roll) {
               ctx.strokeStyle = '#7b3423';
               ctx.lineWidth = 1.5;
               ctx.beginPath();
@@ -7491,22 +7496,20 @@
             } else {
               ctx.fillStyle = '#fff';
               ctx.beginPath();
-              ctx.arc(x + 35, y + 7, 2.6, 0, Math.PI * 2);
+              ctx.arc(x + 35, y + 7, 2.6 + expression * 0.8, 0, Math.PI * 2);
               ctx.fill();
               ctx.fillStyle = '#172b24';
               ctx.beginPath();
-              const jumpRoll = jumpPose === 'eyeroll';
-              const roll = jumpRoll || trex.idlePose === 'eyeroll';
-              const progress = jumpRoll ? clamp(trex.jumpPoseTime / 420, 0, 1) : trex.idleProgress;
-              const angle =
-                jumpRoll && trex.reducedMotion.matches
-                  ? -Math.PI / 2
-                  : roll
-                    ? -Math.PI * 2 * progress ** 2 * (3 - 2 * progress)
-                    : 0;
-              const radius = 1 + (jumpRoll ? 0.65 : roll ? idleEnvelope * 0.4 : 0);
-              const lookX = (0.7 * Math.cos(angle) - 0.2 * Math.sin(angle)) * radius;
-              const lookY = (0.7 * Math.sin(angle) + 0.2 * Math.cos(angle)) * radius;
+              let lookX = 0.7, lookY = 0.2;
+              if (roll) {
+                // Look up, sweep across the upper eye, hold, then settle forward.
+                // A deliberate upper arc reads as an eye-roll rather than a spinning pupil.
+                const lift = smooth(progress / 0.22), sweep = smooth((progress - 0.2) / 0.4);
+                const settle = smooth((progress - 0.75) / 0.25);
+                lookX = (0.7 + 0.5 * lift - 2.4 * sweep) * (1 - settle) + 0.7 * settle;
+                lookY = (0.2 - 1.7 * lift - 0.35 * Math.sin(sweep * Math.PI)) * (1 - settle) + 0.2 * settle;
+                if (trex.reducedMotion.matches) { lookX = 0; lookY = -1.5; }
+              }
               ctx.arc(
                 x + 35 + lookX - (trex.idlePose === 'scratch' ? idleEnvelope * 1.5 : 0),
                 y + 7 + lookY,
