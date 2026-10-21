@@ -115,7 +115,9 @@ Reproducible build; Chromium compares64 source/release scenes pixel-identically.
 Effects-setting checks pass Chromium source/delivery and WebKit delivery;
 arcade checks pass delivery in both engines. Chromium delivery lifecycle/offline7
 and the installed skill client pass. Results: `doc/progress.md`; artifacts:
-`output/effects-release/`. No physical-device test or deployment this iteration.
+`output/effects-release/`. The physical Galaxy S10e run of
+`tests/android-effects.mjs` (probe kept effects on; busy-round frame times) is
+recorded in [ARCADE.md](ARCADE.md). No deployment this iteration.
 
 ## Previous delivery verification (2026-10-21.3)
 

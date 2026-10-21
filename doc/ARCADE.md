@@ -108,7 +108,40 @@ initials, lettering prewarming and coach/banner coordination are also refined.
 
 Run `node tests/effects-setting.mjs [game.html]` for desktop/touch persistence,
 effect gating, Help propagation and automatic decision coverage. It accepts
-`DINO_BROWSER=webkit`. `tests/android-effects.mjs` is included for a separate
-authorized physical-phone run using the safe preview/USB setup; it was not
-executed for this release. Publish the v30 worker together with the new HTML
+`DINO_BROWSER=webkit`. Publish the v30 worker together with the new HTML
 as described in [UPDATES.md](UPDATES.md).
+
+### Probe rule
+
+After a warm-up (30 frames or 600 ms) the menu collects 90 frames, or decides
+after 2 s with at least 15 frames. Effects switch off when the median interval
+exceeds 24 ms while update+draw work exceeds 4 ms, or when the 90th-percentile
+interval exceeds 40 ms. A fast result is not saved, so each launch re-probes; a
+slow result is saved as `auto-off`; a manual choice is saved as `on`/`off` and
+stops probing. The result is written to the optional test log (`effects-probe`).
+
+### Frame-time measurements
+
+Desktop Chromium headless, 1280x720, CDP CPU throttling, busy round (a callout
+every 400 ms, banners, milestones, shake; no obstacles), mean FPS:
+
+| CPU | Build .2 menu/play | .3 menu/play | .4 effects on | .4 effects off |
+| --- | --- | --- | --- | --- |
+| 1x | 60 / 60 | 60 / 60 | 60 / 60 | 60 / 60 |
+| 4x | 21.1 / 20.3 | 20.5 / 16.4 | 21.5 / 20.5 | 23.9 / 27.0 |
+| 6x | 9.6 / 9.5 | 8.5 / 7.4 | 12.3 / 9.5 | 13.3 / 13.3 |
+
+The pixel-glyph HUD cache recovered the .3 gameplay loss. The probe kept effects
+on at 1x (16.7 ms) and switched them off at 4x (median 50 ms, p90 67 ms).
+
+Physical Galaxy S10e (SM-G970F, Android 12, Chrome 155) via the safe preview,
+USB bridges and CDP (`node tests/android-effects.mjs`, report in
+`output/arcade-fx/device/report.json`): the real first-launch probe measured
+16.7 ms intervals, 0.4-0.5 ms work and kept effects on in both orientations.
+Busy round with effects on/off: landscape 57.8/59.8 FPS (p95 16.8 ms, 3.7 %
+frames over 20 ms with effects), portrait 60/59.8 FPS; menu 58.7-59.3 on,
+59.8 off. Before sprite prewarming, landscape play was 55 FPS (p95 33.4 ms);
+first-time blurred sprite rasterisation is now done in idle time. The device
+run also showed the coach hint covering the LEVEL banner; banners now wait for
+the hint. The runner restores rotation and clears only the preview origin's
+worker/cache and the saved effects choice.

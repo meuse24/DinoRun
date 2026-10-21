@@ -67,6 +67,8 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/effects-setting.mjs [game.html]`: saved Arcade effects switch,
   Canvas/CSS gating, Help propagation and synthetic performance-probe decisions
   in desktop/touch layouts. Accepts `DINO_BROWSER`; see `doc/ARCADE.md`.
+- `node tests/android-effects.mjs`: physical-Android effects probe and frame times
+  with effects on/off (portrait/landscape); safe preview and bridges as in doc/FEATHER.md.
 - `node tests/arcade-type.mjs [game.html]`: embedded arcade faces, callouts/banners,
   anchored START effects, preview pause, readable score milestones, dark colors and dynamic
   reduced motion in desktop/touch layouts. Accepts `DINO_BROWSER`; see
