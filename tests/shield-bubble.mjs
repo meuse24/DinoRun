@@ -80,6 +80,7 @@ try {
           g.newSession(); g.beginRound(0); g.endJump();
           for (let i = 0; i < 65; i++) window.advanceTime(1000 / 60);
           g.gameTime = 4000;
+          g.lives = 1; // Final-life shield/collision regressions.
           g.horizon.obstacles.length = 0;
           g.turbo.spawnTimer = g.feather.spawnTimer = g.shield.spawnTimer = 1e9;
           r.renderer.effects.reset();

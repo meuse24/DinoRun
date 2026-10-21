@@ -30,7 +30,7 @@ try{
   window.__bossFixture={
    game(mode='normal',speed=6,width=600){
     const g=new Game({mode,width,random:()=>0.5,cosmeticRandom:()=>0.5});
-    g.beginRound();g.endJump();for(let i=0;i<60;i++)g.update(dt);
+    g.beginRound();g.lives=1;g.endJump(); /* Final-life geometry regressions. */for(let i=0;i<60;i++)g.update(dt);
     g.config={...g.config,acceleration:0};g.speed=speed;g.gameTime=4000;
     g.turbo.spawnTimer=g.feather.spawnTimer=g.shield.spawnTimer=1e9;
     g.horizon.obstacles.length=0;g.boss.remaining=0;
@@ -147,7 +147,7 @@ try{
    await p.goto(pathToFileURL(file).href);await p.waitForFunction(()=>!!window.__dinoRunner);await c.setOffline(true);
    await p.evaluate(()=>{
     const r=window.__dinoRunner,g=r.game;r.sound.enabled=false;r.highscoreController.roundLeft();
-    g.newSession();g.beginRound();g.endJump();for(let i=0;i<60;i++)window.advanceTime(1000/60);
+    g.newSession();g.beginRound();g.lives=1;g.endJump(); /* Final-life geometry regressions. */for(let i=0;i<60;i++)window.advanceTime(1000/60);
     g.gameTime=4000;g.config={...g.config,acceleration:0};g.speed=6;g.horizon.obstacles.length=0;
     g.turbo.spawnTimer=g.feather.spawnTimer=g.shield.spawnTimer=1e9;g.boss.remaining=0;
     window.advanceTime(1000/60);g.capturePrevious();r.draw(1);

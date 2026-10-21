@@ -190,6 +190,7 @@ try {
   await page.waitForFunction(() => !window.__dinoGame.shield.charged);
   assert.equal((await state()).state, 'playing');
   await page.screenshot({ path: path.join(output, 'shield-pop.png') });
+  await page.evaluate(() => { window.__dinoGame.lives = 1; });
   await contact('ptero');
   await page.waitForFunction(() => window.__dinoGame.crashed);
   await reset();

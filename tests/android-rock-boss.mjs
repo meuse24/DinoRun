@@ -28,7 +28,7 @@ const prepare=async(mode='normal',speed=6)=>{
  await page.evaluate(({mode,speed})=>{
   const r=window.__dinoRunner,g=r.game;
   if(r.highscores.dialog.open)r.highscores.close();
-  r.highscoreController.roundLeft();g.newSession();g.setMode(mode);g.beginRound();g.endJump();
+  r.highscoreController.roundLeft();g.newSession();g.setMode(mode);g.beginRound();g.lives=1;g.endJump();
   r.sound.enabled=false;r.updateMusic();
   g.config={...g.config,acceleration:0};g.speed=speed;g.gameTime=4000;g.horizon.obstacles.length=0;
   g.turbo.spawnTimer=g.feather.spawnTimer=g.shield.spawnTimer=1e9;g.boss.remaining=0;

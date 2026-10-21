@@ -32,20 +32,20 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.4)
+## Size (UTF-8 bytes, build 2026-10-21.5)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 523,682 |
-| After Terser | 338,075 |
-| After CSSO | 299,894 |
-| Final HTML | 292,344 |
+| Readable source | 530,068 |
+| After Terser | 342,016 |
+| After CSSO | 303,777 |
+| Final HTML | 296,079 |
 
-Saved: **231,338 bytes (44.18%)**, before transport compression. About 31 KB
+Saved: **233,989 bytes (44.14%)**, before transport compression. About 31 KB
 are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-103,996 bytes; Brotli quality 11 gives 93,607 bytes. These are measurements only;
+105,213 bytes; Brotli quality 11 gives 94,572 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -105,7 +105,19 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.4)
+## Current delivery verification (2026-10-21.5)
+
+Delivery: 296079 bytes, SHA-256
+`22f5e947a64ce03318a911d77a7c280817d084b10e74bd7c70fc1aa44f8a8694`.
+Worker cache v31. Three starting lives, score-based extra lives up to five,
+recovery protection and responsive heart/next-reward HUD; see [LIVES.md](LIVES.md).
+Chromium source/release64 scenes are pixel-identical; final lives checks pass
+Chromium/WebKit delivery in3 layouts each. Lifecycle/offline and skill client
+pass; shield, boss, feather, training, round-end and architecture regressions
+pass. Validation and limitations: `doc/progress.md`; artifacts: `output/lives/`.
+No deployment or physical-device run in this iteration.
+
+## Previous delivery verification (2026-10-21.4)
 
 Delivery: 292344 bytes, SHA-256
 `fe5f0727a0b67ea4a2e3f47f802f9307ca546300044aac75ec0ed38bf0fca875`.

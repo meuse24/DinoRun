@@ -110,6 +110,7 @@ try{
           c.api.list=()=>new Promise(resolve=>{window.__qualify=resolve;});
           g.recordAtStart=100;
         }
+        g.lives=1; // Exercise the terminal collision, not a surviving hit.
         g.score=score;g.distance=score/0.025;g.gameTime=4000;g.trex.reset();g.turbo.reset();g.shield.reset();
         g.horizon.obstacles.length=0;
         for(let i=0;i<100;i++){

@@ -279,6 +279,7 @@ try {
     await collect(page);
     await page.evaluate(() => {
       const g = window.__dinoGame, o = g.horizon.obstacles[0];
+      g.lives = 1; // Feather does not save the final life.
       o.x = g.trex.x + 10;
       o.type = { ...o.type, name: 'small' };
     });

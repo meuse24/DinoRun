@@ -1394,6 +1394,9 @@
         grid-row: 1;
         text-align: right;
       }
+      #hud-lives { grid-column: 3; grid-row: 2; text-align: right; color: #b83b3b; font: 900 16px/1.2 system-ui, sans-serif; letter-spacing: 1px; }
+      #mobile-hud.night #hud-lives { color: #ff9f99; }
+      #hud-next-life { grid-column: 1 / 3; grid-row: 2; text-align: left; font: 700 10px/1.2 monospace; opacity: 0.85; }
       #hud-record {
         grid-column: 2;
         grid-row: 1;
@@ -2816,6 +2819,7 @@
         <div id="mobile-hud" aria-label="Dino Run">
           <span id="hud-mode" role="img"></span><span id="hud-record" role="img"></span
           ><span id="hud-score" role="img"></span><span id="hud-fps" hidden></span>
+          <span id="hud-lives" role="img"></span><span id="hud-next-life" aria-hidden="true"></span>
           <div id="hud-turbo" hidden>
             <span id="hud-turbo-label"></span
             ><progress aria-label="Chili boost" id="hud-turbo-bar" max="5000" value="0"></progress>
@@ -3643,6 +3647,12 @@
                       <strong>Feather:</strong> one extra jump. Jump, then press jump again in the
                       air. You can hold only one feather. It shows behind your dino.
                     </p>
+                    <p id="lives-help">
+                      <strong>Lives:</strong> start with 3 lives, up to 5. An unprotected hit costs one life,
+                      followed by 1.8 seconds of recovery protection. Earn extra lives at 500, 1,250,
+                      2,250, 3,500 points and beyond; each interval grows by 250 points.
+                      Milestones reached at full lives are used, not saved. The HUD shows hearts and the next 1UP score.
+                    </p>
                     <p id="shield-bubble-help">
                       <strong>Shield bubble:</strong> collect it to survive one cactus, bird or boss hit.
                       It stays around your dino until it pops. You can hold only one shield.
@@ -3731,7 +3741,7 @@
         const CHILI_MULTIPLIER = 1.18,
           POINTS_PER_PX = 0.025;
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.4';
+        const BUILD = '2026-10-21.5';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -3743,6 +3753,8 @@
           openingTop: 60,
           openingBottom: 170,
         });
+        // Score milestones are consumed even at the cap; no banked lives.
+        const LIVES = Object.freeze({ start: 3, max: 5, firstScore: 500, gap: 500, gapGrowth: 250, recoveryMs: 1800 });
         const SHIELD = Object.freeze({
           firstSpawnMs: 10000,
           respawnMs: 24000,
@@ -6092,6 +6104,7 @@
             this.shield = new ShieldBubble(shieldEnabled, this.world);
             this.boss = new RockBoss(bossEnabled, this.world, rockTraining);
             this.meter = new DistanceMeter();
+            this.resetLives();
             this.listeners = new Set();
             this.state = 'attract';
             this.clearJumpBuffer();
@@ -6168,6 +6181,7 @@
             if (this.crashed) return this.restart(countdown);
             if (!this.playing) {
               this.state = 'playing';
+              this.resetLives();
               this.clearJumpBuffer();
               this.gameTime = 0;
               this.countdown = countdown;
@@ -6223,6 +6237,7 @@
           // Reset entities in this order: they share the gameplay random source.
           // A round preserves simulationTime and attractTime; a session clears them.
           resetRound(countdown = 0) {
+            this.resetLives();
             this.clearJumpBuffer();
             this.acc = 0;
             this.gameTime = 0;
@@ -6269,9 +6284,38 @@
           duck(on) {
             this.trex.setDuck(on);
           }
+          resetLives() {
+            this.lives = LIVES.start;
+            this.lifeMilestones = 0;
+            this.nextLifeScore = LIVES.firstScore;
+            this.recoveryRemaining = 0;
+          }
+          awardLives() {
+            if (!this.playing || this.rockTraining) return;
+            while (this.score >= this.nextLifeScore) {
+              const threshold = this.nextLifeScore;
+              this.lifeMilestones++;
+              this.nextLifeScore += LIVES.gap + this.lifeMilestones * LIVES.gapGrowth;
+              if (this.lives >= LIVES.max) continue;
+              this.lives++;
+              this.emit('extraLife', { lives: this.lives, threshold, nextScore: this.nextLifeScore });
+            }
+          }
+          takeHit(obstacle) {
+            if (!this.playing || this.rockTraining || this.recoveryRemaining > 0) return false;
+            this.lives = Math.max(0, this.lives - 1);
+            if (this.lives === 0) this.gameOver(obstacle);
+            else {
+              this.recoveryRemaining = LIVES.recoveryMs;
+              this.emit('lifeLost', { lives: this.lives, obstacle: obstacle?.type.name || null });
+            }
+            return true;
+          }
           gameOver(obstacle = null) {
             if (this.crashed) return;
             this.state = 'crashed';
+            this.lives = 0;
+            this.recoveryRemaining = 0;
             this.crashObstacle = obstacle?.type.name || null;
             this.clearJumpBuffer();
             this.gameOverTime = 0;
@@ -6352,6 +6396,7 @@
               }
             }
             if (this.playing) {
+              this.recoveryRemaining = Math.max(0, this.recoveryRemaining - dt);
               const before = this.gameTime;
               this.gameTime += dt;
               for (let mark = 0; mark <= this.countdown && this.countdown > 0; mark += COUNTDOWN_STEP_MS)
@@ -6380,6 +6425,8 @@
               else {
                 this.distance += travelSpeed;
                 this.score = Math.floor(this.distance * POINTS_PER_PX);
+                // A milestone reached on the contact frame can save the last life.
+                this.awardLives();
                 this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
                 this.horizon.update(
                   dt,
@@ -6414,12 +6461,15 @@
                       y: obstacle.y + 20,
                     });
                     this.horizon.obstacles.splice(i, 1);
+                  } else if (this.recoveryRemaining > 0) {
+                    this.horizon.obstacles.splice(i, 1);
                   } else if (this.shield.consume()) {
                     this.horizon.obstacles.splice(i, 1);
                     this.emit('shieldPop', { obstacle: obstacle.type.name });
                   } else {
-                    this.gameOver(obstacle);
-                    break;
+                    this.takeHit(obstacle);
+                    if (this.crashed) break;
+                    this.horizon.obstacles.splice(i, 1);
                   }
                 }
                 const rock = this.boss.rock;
@@ -6428,10 +6478,14 @@
                     if (boxesCollide(this.trex, rock)) rock.failed = true;
                     if (rock.x + rock.width < this.trex.x) this.clearBoss(!rock.failed);
                   } else if (boxesCollide(this.trex, rock)) {
-                    if (this.shield.consume()) {
+                    if (this.recoveryRemaining > 0) this.clearBoss(false, 'recovery');
+                    else if (this.shield.consume()) {
                       this.emit('shieldPop', { obstacle: 'rockBoss' });
-                      this.clearBoss(false);
-                    } else this.gameOver(rock);
+                      this.clearBoss(false, 'shield');
+                    } else {
+                      this.takeHit(rock);
+                      if (!this.crashed) this.clearBoss(false, 'life');
+                    }
                   } else if (rock.x + rock.width < this.trex.x) this.clearBoss(true);
                 }
                 if (
@@ -6455,10 +6509,10 @@
               landed: wasJumping && !this.trex.jumping && !this.crashed,
             });
           }
-          clearBoss(clean) {
+          clearBoss(clean, protection = null) {
             const rock = this.boss.rock;
             this.boss.finish(clean);
-            this.emit(this.rockTraining ? 'trainingResult' : 'bossClear', { clean, x: rock.x + rock.width / 2, y: GROUND_Y - 20 });
+            this.emit(this.rockTraining ? 'trainingResult' : 'bossClear', { clean, protection, x: rock.x + rock.width / 2, y: GROUND_Y - 20 });
           }
         }
 
@@ -6652,7 +6706,21 @@
               this.lerp(game.previous.sceneryDistance, game.sceneryDistance),
             );
             if (game.boss.rock) this.drawRockBoss(this.view(game.boss.rock));
+            ctx.save();
+            if (game.recoveryRemaining > 0) ctx.globalAlpha = 0.65;
             this.drawTrex(trex);
+            ctx.restore();
+            if (game.playing && game.recoveryRemaining > 0) {
+              ctx.save();
+              ctx.strokeStyle = '#60dcdf';
+              ctx.lineWidth = 2;
+              ctx.setLineDash([3, 3]);
+              const ducking = trex.ducking && !trex.jumping;
+              roundedRect(ctx, trex.x - 5, (ducking ? GROUND_Y - 30 : trex.y) - 4,
+                (ducking ? 59 : trex.width) + 10, (ducking ? 30 : trex.height) + 8, 10);
+              ctx.stroke();
+              ctx.restore();
+            }
             if (game.playing) this.drawShield(trex, game.shield);
             if (game.playing && game.feather.charged)
               this.drawFeatherBadge(trex.x - 14, clamp(trex.y + 12, 20, GROUND_Y - 36));
@@ -8058,6 +8126,32 @@
             // Read by tests: the composed score label and its milestone transform.
             this.hud = { text, scale, lift, font: size + 'px ' + FONT_PIXEL, color };
             ctx.restore();
+            this.drawLives(fg);
+          }
+          drawLives(fg) {
+            const ctx = this.ctx, game = this.game;
+            if (game.rockTraining) {
+              this.drawPixelText('PRACTICE', this.world.width - 10, 33, 7, fg, null, 'right');
+              return;
+            }
+            ctx.save();
+            for (let i = 0; i < LIVES.max; i++) {
+              ctx.save();
+              ctx.translate(this.world.width - 72 + i * 13, 33);
+              ctx.globalAlpha = i < game.lives ? 1 : 0.25;
+              ctx.fillStyle = fg === COLORS.nightFg ? '#ff9f99' : '#b83b3b';
+              ctx.strokeStyle = fg;
+              ctx.lineWidth = 0.6;
+              ctx.beginPath();
+              ctx.moveTo(5, 9);
+              ctx.bezierCurveTo(-5, 2, 0, -3, 5, 1);
+              ctx.bezierCurveTo(10, -3, 15, 2, 5, 9);
+              if (i < game.lives) ctx.fill();
+              else ctx.stroke();
+              ctx.restore();
+            }
+            this.drawPixelText('1UP ' + game.nextLifeScore, this.world.width - 10, 48, 7, fg, null, 'right');
+            ctx.restore();
           }
 
           drawEffects(effects) {
@@ -8873,7 +8967,7 @@
             this.controlsHint = document.querySelector('#page > .hint');
             this.mobileHud = document.getElementById('mobile-hud');
             this.hud = Object.fromEntries(
-              ['mode', 'score', 'record', 'fps', 'turbo', 'turbo-label', 'turbo-bar'].map((id) => [
+              ['mode', 'score', 'record', 'lives', 'next-life', 'fps', 'turbo', 'turbo-label', 'turbo-bar'].map((id) => [
                 id,
                 document.getElementById('hud-' + id),
               ]),
@@ -8914,6 +9008,12 @@
                 element.setAttribute('aria-label', full);
               }
             }
+            this.text(this.hud.lives, game.rockTraining ? '∞' : '♥'.repeat(game.lives) + '♡'.repeat(LIVES.max - game.lives));
+            const lifeLabel = game.rockTraining ? 'Unlimited practice lives'
+              : game.lives + ' of ' + LIVES.max + ' lives. Next extra life at ' + game.nextLifeScore + ' points.';
+            if (this.hud.lives.getAttribute('aria-label') !== lifeLabel)
+              this.hud.lives.setAttribute('aria-label', lifeLabel);
+            this.text(this.hud['next-life'], game.rockTraining ? 'PRACTICE' : '1UP ' + game.nextLifeScore);
             this.hud.fps.hidden = fps === null;
             if (fps !== null) this.text(this.hud.fps, 'FPS ' + fps);
             this.hud.turbo.hidden = !game.playing || !game.turbo.remaining;
@@ -11075,6 +11175,18 @@
                 this.sessionView.dismiss('shield');
                 this.announce('Shield ready. One cactus or bird hit is safe.');
                 break;
+              case 'lifeLost':
+                this.sound.shield(true);
+                effects.burst(game.trex.x + 22, game.trex.y + 24, 12, 'impact');
+                effects.callout('-1 LIFE', game.trex.x + 24, game.trex.y - 6, 'callout');
+                effects.shake(3);
+                this.announce(event.lives + ' lives left. Brief recovery protection.');
+                break;
+              case 'extraLife':
+                this.sound.celebrate();
+                effects.callout('1UP!', game.trex.x + 24, game.trex.y - 6, 'clear');
+                this.announce('Extra life! ' + event.lives + ' lives. Next at ' + event.nextScore + ' points.');
+                break;
               case 'shieldPop':
                 this.sound.shield(true);
                 effects.burst(game.trex.x + 22, game.trex.y + 24, 18, 'shield');
@@ -11095,10 +11207,11 @@
                 this.announce(event.clean ? 'Good jump!' : 'Rock touched. Try again!');
                 break;
               case 'bossClear':
+                if (event.protection === 'life') break; // Keep the life-loss feedback audible.
                 this.sound.boss(true);
                 effects.burst(clamp(event.x, 20, game.world.width - 20), event.y, 28, 'rock');
                 effects.shake(4, 300);
-                this.announce(event.clean ? 'Stone Jaw cleared! Keep running.' : 'Shield shattered Stone Jaw! Shield used.');
+                this.announce(event.clean ? 'Stone Jaw cleared! Keep running.' : event.protection === 'shield' ? 'Shield shattered Stone Jaw! Shield used.' : 'Stone Jaw survived! Keep running.');
                 break;
               case 'countdown':
                 this.sound.countdown(event.value === 0);
@@ -11376,6 +11489,7 @@
               } : null,
             } : null,
             score: game.score, speed: game.speed, night: game.nightAlpha,
+            lives: game.lives, maxLives: LIVES.max, nextLifeScore: game.nextLifeScore, recoveryMs: game.recoveryRemaining,
             player: {
               x: game.trex.x, y: game.trex.y, velocity: game.trex.velocity,
               jumping: game.trex.jumping, ducking: game.trex.ducking, dead: game.trex.dead,
