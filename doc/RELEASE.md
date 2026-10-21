@@ -32,20 +32,20 @@ Official documentation: [Terser](https://github.com/terser/terser),
 `package-lock.json` pins transitive dependencies. `.gitattributes` keeps the
 source/delivery line endings stable. Repeated builds produce identical HTML.
 
-## Size (UTF-8 bytes, build 2026-10-21.6)
+## Size (UTF-8 bytes, build 2026-10-21.7)
 
 | Stage | Bytes |
 | --- | ---: |
-| Readable source | 546,148 |
-| After Terser | 355,698 |
-| After CSSO | 315,719 |
-| Final HTML | 307,950 |
+| Readable source | 546,220 |
+| After Terser | 355,699 |
+| After CSSO | 315,720 |
+| Final HTML | 307,951 |
 
-Saved: **238,198 bytes (43.61%)**, before transport compression. About 31 KB
+Saved: **238,269 bytes (43.62%)**, before transport compression. About 31 KB
 are the two embedded OFL fonts (base64 WOFF2, which compresses poorly). The optional
 songs are not counted or altered by the HTML build. `release/size-report.json` contains these stages,
 tool versions, SHA-256 hashes and measured gzip/Brotli sizes. Gzip level 9 gives
-107,593 bytes; Brotli quality 11 gives 96,667 bytes. These are measurements only;
+107,592 bytes; Brotli quality 11 gives 96,644 bytes. These are measurements only;
 this build does not configure a server or create required compressed sidecars.
 
 ## Use
@@ -62,7 +62,7 @@ this build does not configure a server or create required compressed sidecars.
 - Do not edit the generated HTML. Rebuild after changing the source. The source
   game/build identifier stays unchanged because this is packaging of that game.
 - Hosted updates now pin HTML to the active worker's cache. Publish the generated
-  HTML together with the updated root worker (v32 for this build). Increment both
+  HTML together with the updated root worker (v33 for this build). Increment both
   BUILD and CACHE_NAME on future releases. See [UPDATES.md](UPDATES.md) for the
   staging/consent contract, first-upgrade limitation and upload order.
 
@@ -105,7 +105,15 @@ configuration before the unchanged compact scripts. SHA-256 checks verify which
 artifact is loaded and cached. The runner restores rotation and closes its tab;
 stop the temporary server and remove the test USB bridges afterward.
 
-## Current delivery verification (2026-10-21.6)
+## Current delivery verification (2026-10-21.7)
+
+Delivery: 307951 bytes, SHA-256
+`1560f52d7ade6a6920d4ab2fa50c393f56a07a659e23b67c36ca06fbe62772a3`.
+Worker cache v33. Sun and halo moved left of the lives/1UP HUD, including idle
+drift. Chromium delivery lives checks pass desktop, portrait and compact landscape;
+screenshots inspected. Installed skill client verifies gameplay. No deployment.
+
+## Previous delivery verification (2026-10-21.6)
 
 Delivery: 307950 bytes, SHA-256
 `4aada6ade9d10fcf8b7cae0dd6f9ce4d79ff135f75b822cb34d377ac199aa90b`.
