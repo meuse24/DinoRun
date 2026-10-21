@@ -2417,6 +2417,13 @@
         top: 50%;
         transform: translateY(-50%);
       }
+      #stage.idle[data-portrait-demo] #game {
+        top: var(--demo-top);
+        left: var(--demo-left);
+        width: var(--demo-width);
+        height: var(--demo-height);
+        transform: none;
+      }
       #stage.idle #mobile-hud,
       :is(#stage.idle, #stage.attract-leaving) #round-panel::before,
       #page:has(#stage.idle) > .hint { display: none; }
@@ -2514,14 +2521,18 @@
         #stage.idle:has(#install-game:not([hidden])) #touch-controls { right: auto; justify-content: flex-start; }
         :is(#stage.idle, #stage.attract-leaving) #install-game { top: auto; bottom: -64px; right: 0; min-height: 44px; }
       }
-      /* Landscape uses the whole safe width and a compact horizontal menu.
+      /* Landscape uses the full display width, including the cutout area.
          The isolated preview world adapts to the Canvas, preserving artwork proportions. */
       @media (orientation: landscape) {
+        #page {
+          --top-space: 0px;
+          --footer-space: 0px;
+          padding: 0;
+        }
         #stage.idle {
           max-width: none;
-          /* Resolve against the page width explicitly. An auto aspect-ratio
-             height with percentage grid children can stay stale after rotation. */
-          height: min(36.666667cqw, 520px, calc(100dvh - var(--top-space) - var(--footer-space)));
+          /* Width determines the scale; fit short screens without vertical stretch. */
+          height: min(36.666667cqw, 100dvh);
         }
         #stage.idle #game { height: 100%; aspect-ratio: auto; }
         :is(#stage.idle, #stage.attract-leaving) #round-panel { padding: 0; }
@@ -3038,6 +3049,27 @@
         }
         :root.motion:not(.effects-off) #scores[open] .letter-value[data-flip] {
           animation: arcade-letter-flip 200ms ease-out;
+        }
+      }
+    </style>
+    <style>
+      /* Use the whole phone display, including its cutout area. Reserve only
+         the actual touch-control row; resize the logical world to avoid stretch. */
+      @media (any-pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+        #stage:not(.idle) {
+          display: flex;
+          flex-direction: column;
+          max-width: none;
+          height: 100dvh;
+        }
+        #stage:not(.idle) #game {
+          width: 100%;
+          height: calc(100dvh - 72px);
+          aspect-ratio: auto;
+          flex: none;
+        }
+        #touch-controls {
+          padding-inline: 12px;
         }
       }
     </style>
@@ -3989,7 +4021,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.19';
+        const BUILD = '2026-10-21.24';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -5526,8 +5558,14 @@
           const rect = gameEl.getBoundingClientRect();
           // Hidden views have no layout size; preserve the backing store until visible.
           if (rect.width <= 0 || rect.height <= 0) return;
+          // Edge-to-edge phone play otherwise uploads nearly two million CPU-
+          // rasterised pixels per frame at DPR3. Keep CSS size and world aspect,
+          // but cap raster density during landscape touch play, not attract/portrait.
+          const density = window.devicePixelRatio || 1;
+          const rasterDensity = matchMedia('(pointer: coarse) and (orientation: landscape)').matches &&
+            !gameEl.parentElement.classList.contains('idle') ? Math.min(density, 2) : density;
           pixelRatio = Math.min(
-            (window.devicePixelRatio || 1) * Math.max(rect.width / logicalWidth, 0.5),
+            rasterDensity * Math.max(rect.width / logicalWidth, 0.5),
             4,
           );
           const width = Math.round(logicalWidth * pixelRatio),
@@ -6937,6 +6975,7 @@
             this.textSprites = new Map();
             this.hud = null;
             this.hudGlyphs = new Map();
+            this.hudRuns = new Map();
             // Canvas text never triggers a face load early enough; request both up front,
             // then rasterise the known lettering while the browser is idle.
             Promise.all([
@@ -8474,23 +8513,29 @@
 
           // Pixel-face glyphs are rasterised once per character, size, colour and pixel scale;
           // the HUD then only copies them, instead of shaping web-font text every frame.
-          pixelGlyph(char, size, color) {
-            const scale = this.ctx.getTransform().a || 1,
-              key = char + size + color + '|' + scale;
+          pixelGlyph(char, size, color, shadow = null) {
+            // Milestone punches scale the destination, not the cached source.
+            // Keying glyphs by that changing transform rerasterised the font each frame.
+            const scale = pixelRatio || 1,
+              key = char + size + color + '|' + scale + '|' + shadow;
             let glyph = this.hudGlyphs.get(key);
             if (glyph) return glyph;
             const font = size + 'px ' + FONT_PIXEL,
               ready = !document.fonts || document.fonts.check(font),
               canvas = document.createElement('canvas'),
-              c = canvas.getContext('2d');
-            canvas.width = Math.ceil(size * scale);
-            canvas.height = Math.ceil(size * 1.25 * scale);
+              c = canvas.getContext('2d', { willReadFrequently: matchMedia('(pointer: coarse)').matches });
+            canvas.width = Math.ceil((size + (shadow ? 1 : 0)) * scale);
+            canvas.height = Math.ceil((size * 1.25 + (shadow ? 1 : 0)) * scale);
             c.scale(scale, scale);
             c.font = font;
             c.textBaseline = 'top';
+            if (shadow) {
+              c.fillStyle = shadow;
+              c.fillText(char, 1, 1);
+            }
             c.fillStyle = color;
             c.fillText(char, 0, 0);
-            glyph = { canvas, width: size, height: size * 1.25 };
+            glyph = { canvas, width: size + (shadow ? 1 : 0), height: size * 1.25 + (shadow ? 1 : 0) };
             if (ready) {
               if (this.hudGlyphs.size > 240) this.hudGlyphs.clear();
               this.hudGlyphs.set(key, glyph);
@@ -8501,14 +8546,39 @@
           drawPixelText(text, x, y, size, color, shadow, align = 'left', lift = null) {
             const left = align === 'right' ? x - text.length * size
               : align === 'center' ? x - (text.length * size) / 2 : x;
+            const offsets = lift ? Array.from(text, (_, i) => lift(i)) : null;
+            // Stable night labels need one copy, including their shadow. Keep the
+            // per-character path while milestone digits hop independently.
+            if (shadow && (!offsets || offsets.every(value => value === 0))) {
+              const scale = pixelRatio || 1,
+                key = text + '|' + size + '|' + color + '|' + shadow + '|' + scale;
+              let run = this.hudRuns.get(key);
+              if (!run) {
+                const canvas = document.createElement('canvas'),
+                  c = canvas.getContext('2d', { willReadFrequently: matchMedia('(pointer: coarse)').matches }),
+                  width = text.length * size + 1, height = size * 1.25 + 1;
+                canvas.width = Math.ceil(width * scale);
+                canvas.height = Math.ceil(height * scale);
+                c.scale(canvas.width / width, canvas.height / height);
+                for (let i = 0; i < text.length; i++) {
+                  if (text[i] === ' ') continue;
+                  const glyph = this.pixelGlyph(text[i], size, color, shadow);
+                  c.drawImage(glyph.canvas, i * size, 0, glyph.width, glyph.height);
+                }
+                run = { canvas, width, height };
+                if (!document.fonts || document.fonts.check(size + 'px ' + FONT_PIXEL)) {
+                  if (this.hudRuns.size >= 48) this.hudRuns.delete(this.hudRuns.keys().next().value);
+                  this.hudRuns.set(key, run);
+                }
+              }
+              this.ctx.drawImage(run.canvas, left, y, run.width, run.height);
+              return;
+            }
             for (let i = 0; i < text.length; i++) {
               if (text[i] === ' ') continue;
-              const dy = lift ? lift(i) : 0;
-              if (shadow) {
-                const back = this.pixelGlyph(text[i], size, shadow);
-                this.ctx.drawImage(back.canvas, left + i * size + 1, y + dy + 1, back.width, back.height);
-              }
-              const glyph = this.pixelGlyph(text[i], size, color);
+              const dy = offsets ? offsets[i] : 0;
+              // Cache the night drop shadow with its glyph: one copy per character.
+              const glyph = this.pixelGlyph(text[i], size, color, shadow);
               this.ctx.drawImage(glyph.canvas, left + i * size, y + dy, glyph.width, glyph.height);
             }
           }
@@ -10827,6 +10897,8 @@
               this.loadScores();
             }
             if (index === 1) this.resetDemo();
+            if (this.runner.attract === this && this.runner.game.state === 'attract')
+              setCanvasSize(this.runner.renderer.ctx, this.resize());
           }
           loadScores() {
             const controller = this.runner.highscoreController;
@@ -10956,9 +11028,27 @@
           }
           resize() {
             this.wide = matchMedia('(orientation: landscape)').matches;
+            const stage = this.runner.sessionView.stage;
+            const portraitDemo = !this.wide && this.index === 1;
+            stage.toggleAttribute('data-portrait-demo', portraitDemo);
+            if (portraitDemo) {
+              // The Canvas is a stage sibling of the menu. Fit it explicitly
+              // into the demo's own free row, above its label and portrait advice.
+              const area = this.elements[1].getBoundingClientRect();
+              const caption = this.elements[1].querySelector('.attract-demo-caption').getBoundingClientRect();
+              const label = this.elements[1].querySelector('.attract-demo-label').getBoundingClientRect();
+              const parent = stage.getBoundingClientRect();
+              const available = Math.max(1, label.top - caption.bottom - 16);
+              const scale = Math.min(area.width / this.runner.game.world.width, available / HEIGHT);
+              const width = this.runner.game.world.width * scale, height = HEIGHT * scale;
+              stage.style.setProperty('--demo-top', (caption.bottom - parent.top + 8 + (available - height) / 2) + 'px');
+              stage.style.setProperty('--demo-left', ((parent.width - width) / 2) + 'px');
+              stage.style.setProperty('--demo-width', width + 'px');
+              stage.style.setProperty('--demo-height', height + 'px');
+            }
             const rect = gameEl.getBoundingClientRect();
             const width = this.wide && rect.height > 0
-              ? Math.max(BASE_W, HEIGHT * rect.width / rect.height)
+              ? HEIGHT * rect.width / rect.height
               : this.runner.game.world.width;
             this.demo.resize(width);
             this.backdrop.resize(width);
@@ -11534,11 +11624,19 @@
           }
           resize() {
             this.renderer.compactHud = matchMedia('(max-width:600px) and (orientation:portrait)').matches;
-            this.game.resize(this.renderer.compactHud ? PORTRAIT_W : BASE_W);
+            this.resizeWorld();
             setCanvasSize(this.renderer.ctx, this.game.state === 'attract'
               ? this.attract.resize() : this.game.world.width);
             this.report.size();
             if (this.paused && !pageEl.hidden) this.draw(1);
+          }
+          resizeWorld() {
+            const rect = gameEl.getBoundingClientRect();
+            const edgeToEdge = this.game.state !== 'attract' &&
+              matchMedia('(any-pointer: coarse) and (orientation: landscape) and (max-height: 500px)').matches;
+            this.game.resize(edgeToEdge && rect.height > 0
+              ? HEIGHT * rect.width / rect.height
+              : this.renderer.compactHud ? PORTRAIT_W : BASE_W);
           }
           canInput() {
             return this.browser.canInput();
@@ -11908,8 +12006,11 @@
             this.sessionView.update(this.game, this.input, this.paused, night);
             const idle = this.game.state === 'attract';
             this.attract.sync();
-            if (wasIdle !== idle) setCanvasSize(this.renderer.ctx,
-              idle ? this.attract.resize() : this.game.world.width);
+            if (wasIdle !== idle) {
+              this.resizeWorld();
+              setCanvasSize(this.renderer.ctx,
+                idle ? this.attract.resize() : this.game.world.width);
+            }
             const selectedMode = this.modeSelect.value;
             const recordMode = this.playing || this.game.inDeathScene ? this.game.mode : selectedMode;
             const highScore =
@@ -11961,7 +12062,7 @@
         const context = canvas.getContext('2d', {
           alpha: false,
           // Prefer CPU raster on touch: full-resolution A53 tests reach 60 instead of 34 FPS.
-          // Keep the full backing resolution and all vector detail.
+          // Raster density is budgeted separately for edge-to-edge phone play.
           willReadFrequently: matchMedia('(pointer: coarse)').matches,
         });
         if (!context) {

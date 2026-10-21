@@ -92,6 +92,16 @@ try {
         const slide = await page.locator('.attract-slide:not([hidden])').boundingBox();
         assert(hint && slide && slide.y + slide.height + 4 <= hint.y,
           `${name}: portrait hint stays below the active attract content: ${JSON.stringify({ hint, slide })}`);
+        if (await page.locator('#attract-demo').isVisible()) {
+          const game = await page.locator('#game').boundingBox();
+          const caption = await page.locator('.attract-demo-caption').boundingBox();
+          const label = await page.locator('.attract-demo-label').boundingBox();
+          assert(game.y >= caption.y + caption.height + 4 && game.y + game.height + 4 <= label.y &&
+            game.y + game.height + 4 <= hint.y,
+            `${name}: complete demo Canvas stays between caption and label, clear of landscape advice: ${JSON.stringify({ game, caption, label, hint })}`);
+          const aspect = await page.locator('canvas').evaluate(c => c.width / c.height);
+          assert(Math.abs(aspect / (game.width / game.height) - 1) < 0.005, 'Portrait demo keeps artwork proportions');
+        }
       }
       const rect = await page.locator('#start-game').boundingBox();
       assert(rect && rect.height >= 60 && rect.width >= 180, 'Prominent start target');
@@ -118,7 +128,12 @@ try {
             previewWidth: window.__dinoRunner.attract.demo.world.width };
         });
         assert(Math.abs(layout.stage.width - layout.available) < 1, name + ': use the full safe width');
-        assert(layout.stage.height <= 521, name + ': compact landscape height');
+        assert(Math.abs(layout.stage.x) < 1, name + ': landscape starts at the horizontal display edge');
+        const expectedHeight = Math.min(layout.available * 220 / 600, options.viewport.height);
+        assert(Math.abs(layout.stage.height - expectedHeight) < 1,
+          name + ': attract height follows width at the original aspect ratio, capped by the screen height');
+        assert(Math.abs(layout.stage.y - (options.viewport.height - expectedHeight) / 2) < 1,
+          name + ': proportional attract area stays vertically centered');
         assert(layout.game.top >= -1 && layout.game.bottom <= options.viewport.height + 1,
           name + ': preview fits vertically');
         assert(Math.abs(layout.renderedAspect / (layout.game.width / layout.game.height) - 1) < 0.005,
@@ -205,7 +220,11 @@ try {
       ctx.arc = function(x, y, radius, ...angles) {
         if (radius === 10 && this.fillStyle === '#ffd257') {
           const p = new DOMPoint(x, y).matrixTransform(this.getTransform());
-          painted = { x: p.x / this.canvas.width, y: p.y / this.canvas.height };
+          // Portrait demos may shrink to their own row. Normalize by the actual
+          // render transform, avoiding rounding in a newly resized backing store.
+          const transform = this.getTransform();
+          const logicalWidth = r.attract.wide ? r.attract.demo.world.width : r.game.world.width;
+          painted = { x: p.x / (transform.a * logicalWidth), y: p.y / (transform.d * 220) };
         }
         return arc.call(this, x, y, radius, ...angles);
       };
@@ -255,8 +274,14 @@ try {
       // With transitions, START fades out inert for 140 ms (T4) before it is hidden.
       if (process.env.DINO_TRANSITIONS === '1') await page.evaluate(() => window.__dinoTest.transitionDone());
       assert.equal(await page.locator('#start-game').isVisible(), false);
-      assert.equal(await page.evaluate(() => window.__dinoRunner.game.world.width),
-        options.viewport.width <= 600 && options.viewport.height >= options.viewport.width ? 420 : 600);
+      const gameplay = await page.evaluate(() => {
+        const r = document.querySelector('#game').getBoundingClientRect();
+        const edge = matchMedia('(any-pointer: coarse) and (orientation: landscape) and (max-height: 500px)').matches;
+        const portrait = matchMedia('(max-width:600px) and (orientation:portrait)').matches;
+        return { actual: window.__dinoGame.world.width, expected: edge ? 220 * r.width / r.height : portrait ? 420 : 600 };
+      });
+      assert(Math.abs(gameplay.actual - gameplay.expected) < 0.1,
+        name + ': gameplay world follows the available canvas without stretching: ' + JSON.stringify(gameplay));
       await page.evaluate(() => {
         const r = window.__dinoRunner;
         r.highscoreController.roundLeft(); r.game.newSession(); r.draw(1);

@@ -7,6 +7,9 @@ in the repository root so its instructions apply to the entire project.
 ## Project Structure & Module Organization
 
 - `dino.html` contains the UI, styles, and Canvas 2D game code, including `Game`, `Renderer`, `Horizon`, and `Runner`.
+- `dino-android/` is the Bubblewrap Trusted Web Activity project. See
+  `doc/ANDROID.md` for tools, signing backup, build/install and domain verification.
+  Keep its `signing/`, local tool paths and generated APK/AAB files out of Git.
 - `service-worker.js` and `manifest.webmanifest` support installation and offline assets. Images, icons, and optional menu music live in the root.
 - `highscores.php` exposes the API; `highscores-lib.php` handles validation and file storage; `admin.php` provides CLI moderation.
 - `score-console.php` provides password-protected web moderation, disabled until
@@ -96,6 +99,12 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   controlled physical-Android checks over USB/CDP. Requires Chrome open and the
   ADB bridges documented in doc/FEATHER.md. The runner restores rotation settings,
   closes its own tab and never uses the live score API.
+- `node tests/android-attract-proportional.mjs`: check the actual production
+  browser and installed TWA attract layout in both landscapes, all three panels,
+  portrait demo separation from caption/label/landscape advice,
+  delivery hash, aspect, centering and trusted Help/Settings input. Requires the
+  app open at its start menu; own dynamic ADB forward, restores rotation and
+  fullscreen preference, blocks live scores. See `doc/ANDROID.md`.
 - `node tests/android-attract.mjs`: verify attract rotation, persistent START,
   touch starts and shield collisions on physical Android. Both Android runners
   accept `DINO_ANDROID_URL` for an existing local server and verify its artifact

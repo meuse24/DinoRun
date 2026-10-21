@@ -1,0 +1,16 @@
+{
+  "name": "dino-run-android",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "description": "Bubblewrap Trusted Web Activity for Dino Run",
+  "scripts": {
+    "doctor": "bubblewrap doctor",
+    "android:build": "pwsh -NoProfile -File ./build.ps1",
+    "android:install": "bubblewrap install",
+    "android:verify": "node verify-device.mjs",
+    "android:update": "pwsh -NoProfile -File ./update.ps1",
+    "assetlinks:deploy": "node deploy-assetlinks.mjs --publish"
+  },
+  "devDependencies": { "@bubblewrap/cli": "1.27.0" }
+}

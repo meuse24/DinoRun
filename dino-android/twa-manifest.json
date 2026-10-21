@@ -1,0 +1,52 @@
+{
+  "packageId": "info.meuse24.dinorun",
+  "host": "meuse24.info",
+  "name": "Dino Run",
+  "launcherName": "Dino Run",
+  "display": "fullscreen",
+  "themeColor": "#F7F7F7",
+  "themeColorDark": "#000000",
+  "navigationColor": "#000000",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#000000",
+  "navigationDividerColorDark": "#000000",
+  "backgroundColor": "#8FD3FF",
+  "enableNotifications": false,
+  "startUrl": "/apps/dino/dino.html",
+  "iconUrl": "https://meuse24.info/apps/dino/icon-512.png",
+  "maskableIconUrl": "https://meuse24.info/apps/dino/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./signing/dino-upload.keystore",
+    "alias": "dino-upload"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://meuse24.info/apps/dino/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://meuse24.info/apps/dino/",
+  "minSdkVersion": 24,
+  "orientation": "default",
+  "fingerprints": [
+    {
+      "name": "Local upload/test signing key",
+      "value": "36:C6:22:A7:88:EB:6C:09:CC:B2:88:29:82:16:92:9F:BB:FF:AA:93:D4:F3:93:69:DA:3A:65:14:5B:8D:9D:EF"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}

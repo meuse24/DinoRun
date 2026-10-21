@@ -181,7 +181,7 @@ try {
     assert.deepEqual(await page.evaluate(() => {
       const g = window.__dinoGame, f = g.feather, t = g.trex;
       const step = 1000 / 60;
-      const width = matchMedia('(max-width:600px) and (orientation:portrait)').matches ? 420 : 600;
+      const width = g.world.width;
       const calls = window.__featherRandomCalls;
       f.spawnTimer = 0;
       f.update(step, t, 6, [{ x: width + 24, width: 50, size: 1 }], null);
@@ -221,7 +221,7 @@ try {
 
     assert.equal(await page.evaluate(() => {
       const g = window.__dinoGame;
-      const width = matchMedia('(max-width:600px) and (orientation:portrait)').matches ? 420 : 600;
+      const width = g.world.width;
       g.feather.charged = false;
       g.feather.pickup = { x: width + 24, y: 157 };
       g.horizon.obstacles.length = 0;

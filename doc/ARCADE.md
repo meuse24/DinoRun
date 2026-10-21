@@ -145,6 +145,63 @@ stops probing. The result is written to the optional test log (`effects-probe`).
 
 ### Frame-time measurements
 
+Build2026-10-21.24 addresses the remaining night HUD cost. Night text previously
+copied a separate shadow and foreground for every character from default Canvas
+contexts into the phone's CPU-rasterised game Canvas. Shadow/foreground now share
+one glyph; stable shadowed labels share one cached run. Both caches request CPU
+rasterisation on coarse-pointer devices, matching the destination and avoiding
+the suspected GPU/CPU transfer overhead. Milestone animation scales the cached
+source rather than changing its raster/cache key every frame; hopping digits
+still draw independently. The run cache retains at most48 entries. Font/outline
+and motion remain; rerasterising/compositing can slightly change edge antialiasing.
+No additional reduction in Canvas density was made.
+
+Physical S10e isolation (`output/night-performance/isolate`): normal day59.85,
+night37.46, night without moon35.37, without mountains27.83, without HUD59.63FPS.
+These sequential diagnostics locate the dominant cost in the HUD; phases occur
+at different scores/animation times and are not additive CPU attribution.
+Combined glyphs alone reached56.53 night FPS; glyph+run caches with default
+contexts reached58.09–58.31. Matching the cache contexts to the CPU destination
+then reached59.85 day/59.86 night/59.86 stressed-night FPS, zero sampled >20ms
+intervals (`output/night-performance/cpu`). Browser-internal transfers were not
+traced, so the transfer explanation is an inference from this intervention.
+Use `DINO_PERF_NIGHT=1` and optionally `DINO_PERF_PHASES=play,night,busy` for the
+same normal-rAF physical comparison; night lighting is forced only in the fixture.
+
+Build2026-10-21.23 caps effective Canvas DPR at2 during landscape touch play.
+CSS dimensions, logical world, physics and attract/portrait density stay intact.
+On the Galaxy S10e the full-width backing changes from2280x864 to1520x576
+(55.6% fewer pixels); fine Canvas edges can look softer. The coarse-pointer
+CPU raster path remains enabled: its upload/raster cost grows with backing size.
+No steady per-frame layout resize loop was observed.
+
+`node tests/android-scaling-performance.mjs` compares pre-scaling Git source,
+current source and, where applicable, an experimental DPR2 variant. Optional
+`DINO_BASELINE_HTML`, `DINO_CURRENT_HTML`, `DINO_PERF_LAYOUTS` and
+`DINO_PERF_VARIANTS` select artifacts/layouts; output defaults to
+`output/scaling-performance`. It uses its own safe origin8892, scoped relay9236,
+trusted fullscreen/START touch, normal rAF and forced effects; no live scores.
+The stress phase adds SHIELD callouts every400ms and periodic LEVEL banners,
+with hazards removed to keep the round running. Each phase samples4.5s after
+warm-up; this is a controlled load comparison, not an exhaustive game session.
+
+Physical SM-G970F/Android12/Chrome155 measurements:
+
+| Landscape stress run | Before scaling (.19) | Full-width (.22) | Fixed (.23) |
+| --- | --- | --- | --- |
+| Initial comparison | 58.56 | 56.78 | — |
+| Repeat | 59.43 | 55.89 | — |
+| Matched ABAB, first pair | — | 59.42 | 59.00 |
+| Matched ABAB, second pair | — | 57.21 | 59.87 |
+| Generated .23 delivery | — | — | 59.87 |
+
+The initial experimental DPR2 runs reached59.44 FPS under stress. The final
+delivery reaches59.87 FPS in normal/stressed play in both orientations, with
+no sampled intervals above20ms. Portrait retains DPR3. Earlier .22 runs show
+the loss varies between runs; one connected device does not establish a60FPS
+guarantee for all phones. Reports/screenshots: `output/scaling-performance/`,
+`repeat/`, `fix/` and `delivery/`; delivery hash is recorded in RELEASE.md.
+
 Desktop Chromium headless, 1280x720, CDP CPU throttling, busy round (a callout
 every 400 ms, banners, milestones, shake; no obstacles), mean FPS:
 

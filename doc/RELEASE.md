@@ -5,14 +5,74 @@ readable root `dino.html`; the game itself still needs no build step to run.
 
 ## Rebuild
 
-Current layout-fix build: `2026-10-21.19`, worker cache `dino-run-v45`.
-The compact-landscape update notice leaves the credit/START column clear;
-short portrait menus reserve space for the landscape hint below scores and
-power-up cards. Delivery: 316,001 bytes, SHA-256
-`09da4544cb4078e8a9f0cfaecae3c35164ccf3052e21a71040a9d87f5fba4961`.
-Chromium source/release comparisons pass all 64 scenes. Further validation is
-recorded in [progress.md](progress.md). This build has not been deployed or
-tested on a physical phone.
+Current night-performance fix: `2026-10-21.24`, worker cache `dino-run-v50`.
+Night HUD glyphs include shadows; stable lines share bounded cached runs, and
+phone text-cache contexts match the CPU-rasterised destination. Animated punches
+reuse a stable source scale. Same Canvas density as .23; slight edge-antialiasing
+changes are possible. See [ARCADE.md](ARCADE.md) for the physical comparison.
+Delivery318399 bytes, SHA-256
+`e849b1aaad7e1bb7989a72a06e9dc377a5d07a319d7a2ffc64e8166f347a7035`.
+Physical final artifact: night59.85FPS landscape/60.07 portrait, stressed
+night59.85 in both, no sampled >20ms frames. Chromium/WebKit arcade3, installed
+skill client, contract/offline7 and final64 pixel-identical source/release scenes
+pass. Strict pre-change vector-cache comparison rejects expected HUD edge
+antialiasing differences; its tolerance remains unchanged. Published HTML then
+worker over FTPS, both live HTTPS hashes verified.
+Published hash confirmed on the physical phone in Chrome and TWA:12 landscape
+and2 portrait production layout/Help/Settings checks pass.
+
+Previous phone-performance fix: `2026-10-21.23`, worker cache `dino-run-v49`.
+Landscape touch play caps internal Canvas density at DPR2 while retaining full
+CSS size and aspect; portrait/attract remain at their previous density. Fine
+Canvas edges can be softer. Physical Galaxy S10e generated-delivery measurements
+reach59.87FPS in normal and stressed play, portrait and landscape. Comparison
+method, run variance and limits: [ARCADE.md](ARCADE.md).
+Delivery317618 bytes, SHA-256
+`90725139d70da5b3218953bf27704baf0ae815a190f1f090746ea1bf40fb01c0`.
+Chromium/WebKit architecture12, skill client, contract/offline7 and Chromium64
+pixel-identical source/release scenes pass. Published HTML then worker over
+FTPS; both live HTTPS hashes verified.
+Exact published hash also passes12 landscape/2 portrait physical browser/TWA
+attract and trusted Help/Settings checks; no APK rebuild required.
+
+Previous portrait-demo fix: `2026-10-21.22`, worker cache `dino-run-v48`.
+The portrait demo Canvas fits between its caption and bottom label, keeping the
+whole animation above the landscape advice. Short screens shrink it uniformly;
+landscape attract and active gameplay retain their previous layout.
+Delivery317478 bytes, SHA-256
+`6f6bc8f19aa4f1bd263272e6d2d9d2b3c210ca24792756f5e1415474482a2610`.
+Chromium/WebKit attract12, skill client, round-end3 and all64 source/release
+comparisons pass. Published HTML then worker, HTTPS hashes verified. Physical
+Galaxy S10e passes12 landscape and2 portrait checks against the exact published
+hash in browser/TWA; native portrait screenshots confirm the demo clears advice.
+
+Previous proportional-attract build: `2026-10-21.21`, worker cache `dino-run-v47`.
+Landscape attract height follows its full-width600:220 aspect ratio, capped only
+by the available viewport height. It stays vertically centered instead of filling
+the screen height. Edge-to-edge phone gameplay remains as in build.20.
+Delivery:316543 bytes, SHA-256
+`c5d3cf8e0e7443b3764004a35f0efe552c8ae4ff1a033a6c23d2267829948900`.
+Chromium/WebKit attract12 and skill action client pass; all64 Chromium delivery
+comparison scenes are pixel-identical. Published HTML then worker over FTPS;
+both HTTPS hashes match. Physical Galaxy S10e/Android12 also passes the actual
+production browser/TWA checks: all three attract panels in both landscapes,
+matching delivery SHA-256, proportions, centering, action hit targets and Help/
+Settings with trusted touch. Screenshots inspected; no live highscore requests.
+
+Previous edge-to-edge build: `2026-10-21.20`, worker cache `dino-run-v46`.
+Landscape attract mode fills the viewport, including the camera cutout area.
+Phone landscape gameplay fills the width and remaining height above its72px
+touch-control row; the logical world adapts through `Game.resize` to keep artwork
+proportions. Portrait layout and simulation speeds/score constants are unchanged.
+Delivery: 316,525 bytes, SHA-256
+`2632f28034f344b4cf908f0d5b69695336e38bd07a28d8728851a33fcbd53197`.
+Chromium source/release comparisons pass all64 scenes; delivery update tests pass
+three layouts. Attract12 and architecture12 pass in Chromium/WebKit. Source also
+passes the physical Galaxy S10e browser/fullscreen menu-overlay runner in six
+orientations, including real touch/resume/jump. The delivery itself was not loaded
+on the phone. More evidence: [progress.md](progress.md). Published on2026-10-21
+at the user's request: HTML first, worker last over FTPS; both HTTPS SHA-256
+hashes match the local files.
 
 ```powershell
 npm ci

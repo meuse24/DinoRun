@@ -1,5 +1,186 @@
 Original prompt: verschaffe dir einen überblick über das game. verwende die besten skills für 2d vektor game developer und prüfe ob die implementierung der nachfolgenden findings sinn machen. insgesamt oder evtl optional über einen schalter in den settings. ohne einfluß auf das aussehen des games. gib mir deine findings.
 
+## 2026-10-21: Recover night gameplay frame rate
+
+- User confirms day60FPS but reports slower night. Continued develop-web-game
+  skill workflow and physical normal-rAF own-origin comparisons. S10e isolation:
+  day59.85/night37.46FPS, no moon35.37, no mountains27.83, no HUD59.63.
+  HUD, rather than the suspected moon compositor, dominates this regression.
+- Build2026-10-21.24/cachev50 combines night glyph/shadow, caches stable shadowed
+  text runs (max48) and uses matching CPU contexts for phone text-cache sources.
+  Source glyph scale stays fixed during milestone destination transforms, avoiding
+  font-cache churn. Hopping digits keep separate rendering. No further resolution
+  cut; slight text-edge antialiasing differences from raster composition are possible.
+- Staged phone measurements: combined glyphs56.53FPS night; stable glyph+run caches
+  58.09–58.31FPS; matching source/destination CPU contexts59.86FPS night and stress,
+  day59.85, zero sampled >20ms intervals. GPU/CPU transfer cause is inferred rather
+  than a traced browser-internal fact. Reports/screenshots: output/night-performance.
+- Existing render-cache strict before/after test rejects expected HUD antialiasing
+  differences (desktop sample max37, mean0.0336 channel levels); tolerance was not
+  loosened. Arcade behavior/readability and bounded-cache reuse/copy checks pass
+  Chromium/WebKit3 layouts; skill client and contract/offline7 pass. Phone night
+  gameplay and skill gameplay screenshots inspected; scene and HUD remain legible.
+- Delivery318399 bytes, SHA256
+  `e849b1aaad7e1bb7989a72a06e9dc377a5d07a319d7a2ffc64e8166f347a7035`.
+- Final generated artifact landscape:59.86 day/59.85 night/59.85 stressed night,
+  zero sampled >20ms intervals, same1520x576 backing. Chromium64 final delivery
+  scenes are pixel-identical to source; final Chromium/WebKit arcade3 and skill
+  client pass. CPU cache sources confirmed at final hash; no live scores.
+- Final artifact portrait:59.85 day/60.07 night/59.85 stressed night, zero sampled
+  >20ms intervals. Own safe-origin phone test restores rotation and removes its
+  tab/bridges/relay. Published HTML then worker over FTPS; both HTTPS hashes match.
+- Published final hash confirmed by physical Chrome/TWA production runner:
+  all12 landscape/2 portrait checks pass, no runtime errors; original rotation,
+  preferences and own forward/tab restored. No APK rebuild needed.
+
+## 2026-10-21: Recover phone gameplay frame rate after full-width scaling
+
+- User reports loss of60FPS in active play. Applied develop-web-game skill.
+  Physical S10e/Android12/Chrome155 comparison with normal rAF and effects on:
+  pre-scaling .19 stressed58.56/59.43FPS; full-width .22 stressed56.78/55.89FPS.
+  The enlarged DPR3 buffer has17.5% more pixels; no repeated resize loop found.
+  This supports backing raster/upload pressure as the cause, rather than proving
+  a browser-internal bottleneck. Portrait measured near60 before and after.
+- Build2026-10-21.23/cachev49 limits active coarse-landscape Canvas DPR to2.
+  Full CSS dimensions/proportions and world/physics remain intact. Backing on
+  the test phone falls2280x864 to1520x576; fine edges may soften. Attract,
+  portrait and desktop keep existing density, and CPU raster path is preserved.
+- Added isolated own-origin physical comparison runner and rotation assertions
+  for reduced landscape/native portrait density. ABAB .22/.23 stress FPS:
+  59.42/59.00 and57.21/59.87, showing both variability and improvement.
+  Generated release artifact then measured59.87FPS normal/stress in portrait
+  and landscape, no sampled >20ms frames. Trusted fullscreen/START input,
+  own-origin hazards suppressed, no live scores; device rotation/bridges/tab
+  restored. Reports and inspected phone screenshots: output/scaling-performance.
+- Delivery317618 bytes, SHA256
+  `90725139d70da5b3218953bf27704baf0ae815a190f1f090746ea1bf40fb01c0`.
+  Chromium architecture12, skill client, contract/offline7 and all64 pixel-identical
+  source/release scenes pass. Skill gameplay screenshot/state inspected.
+- WebKit architecture12 also passes. Its portrait Canvas CSS height remains
+  at the previous landscape height after rotation in this emulation; density
+  assertions use the logical220/world aspect to check actual backing allocation.
+  Physical Chrome portrait geometry/density is correct. Published HTML then
+  worker via authorized FTPS deployment; both HTTPS hashes verified.
+- Exact published .23 hash confirmed in production Chrome and Android TWA:
+  all12 landscape/2 portrait attract/Help/Settings checks pass. Own forward/tab
+  cleaned up and rotation/preference restored. No APK rebuild required.
+
+## 2026-10-21: Keep portrait demo above landscape advice
+
+- User supplied a physical portrait screenshot showing advice covering the Dino.
+  The demo Canvas was centered against the whole stage while the text-only layout
+  test checked the separate demo section. Build2026-10-21.22/cachev48 fits the
+  portrait demo Canvas between its explanatory caption and bottom demo label,
+  preserving aspect and shrinking uniformly only where short screens require it.
+- Layout is recalculated on slide selection and resize, and the scoped CSS
+  override is removed outside portrait demo. The selection path updates only
+  Canvas layout/backing; it does not re-enter Runner.draw while paused. Round-end
+  save/cancel, deferred qualification and Off pass in three Chromium layouts.
+- Added full-Canvas/caption/label/advice separation and aspect assertions. The
+  sun assertion normalizes painted coordinates by the actual renderer transform
+  instead of rounded backing-store dimensions, retaining its strict tolerance.
+  Extended the physical production browser/TWA test with portrait demo bounds.
+- Delivery317478 bytes, SHA256
+  `6f6bc8f19aa4f1bd263272e6d2d9d2b3c210ca24792756f5e1415474482a2610`.
+- Final Chromium/WebKit attract12, installed skill client, Chromium round-end3
+  and all64 pixel-identical source/release scenes pass. Inspected short portrait
+  demo captures. Published HTML then worker over FTPS; both live HTTPS hashes match.
+- Physical Galaxy S10e/Android12: actual published browser/TWA responses match
+  the delivery hash;12 landscape and2 portrait checks pass. Portrait browser360x617
+  Canvas bottom322.885 is above label327.005 and advice361.401; TWA360x760 Canvas
+  bottom419.5 is above label455.505 and advice489.901. Both native screenshots
+  inspected: Dino and ground remain visible. Trusted Help/Settings input passes,
+  no runtime errors/live scores; rotation/preference/own tab/ADB forward restored.
+  Evidence: `output/attract-proportional/physical/` and `output/portrait-demo/`.
+
+## 2026-10-21: Proportional attract scaling
+
+- User requested width-driven scaling of the attract area while retaining its
+  aspect ratio. Build2026-10-21.21/cachev47 sets landscape attract height to
+  `min(36.666667cqw,100dvh)` and keeps vertical centering. Full horizontal width
+  including cutout space is retained. Active gameplay sizing is unchanged.
+- Updated existing geometry assertions for full horizontal coverage,
+  width-derived height, vertical centering, and undistorted preview Canvas.
+  Chromium attract12 and installed skill action client pass. Inspected landscape
+  powerups and skill gameplay/state. WebKit attract12 also passes; all64 Chromium
+  source/release UI and gameplay scenes are pixel-identical.
+- Rebuilt delivery316543 bytes, SHA256
+  `c5d3cf8e0e7443b3764004a35f0efe552c8ae4ff1a033a6c23d2267829948900`.
+  Published as a correction to the previously authorized live update using
+  `npm run deploy`: HTML first, worker last, both HTTPS SHA-256 hashes verified.
+  No new APK is needed.
+- User requested physical verification. Added `tests/android-attract-proportional.mjs`:
+  Galaxy S10e/Android12 passes12 actual production checks (three attract panels,
+  two landscapes, direct Chrome and installed TWA). Both pages' active-worker
+  responses match the exact delivery SHA-256. TWA viewport760x360 gives
+  stage760x278.667 at y40.667; both orientations agree. Browser viewport673x280
+  gives stage673.333x246.885 at y16.557. Canvas proportions and unobstructed
+  primary targets pass, plus Help/Android Back and Settings with12 trusted touches.
+- Inspected all four physical screenshots; no runtime errors or live highscore
+  requests. Rotation/fullscreen preference restored, own browser tab and ADB
+  forward removed. The app was absent under its package ID, so the existing signed
+  APK was reinstalled before testing. No game-code changes or redeployment needed.
+  Evidence: `output/attract-proportional/physical/report.json` and four screenshots.
+
+## 2026-10-21: Edge-to-edge landscape
+
+- User requested use of the complete display, explicitly including camera cutout
+  space. Applied develop-web-game skill. Build2026-10-21.20/cachev46 removes the
+  landscape page's safe-area/minimum padding and gives attract mode the full
+  viewport height. Portrait layout retains its existing sizing.
+- Phone landscape gameplay uses the whole viewport above its72px touch row.
+  Runner computes logical world width from the rendered Canvas aspect and calls
+  `Game.resize`, including on attract/play transitions; physics and score constants
+  stay unchanged. The isolated attract preview uses its actual aspect too, without
+  the former600px lower bound that would stretch artwork in taller menus.
+- Regression assertions check attract's four viewport edges, gameplay/control-row
+  coverage and aspect-derived logical width; feather fixtures now use the game's
+  owned width instead of assuming600px. Chromium attract12, architecture12,
+  lifecycle/offline7, coins9, overlays3, feather3, boss8 and installed skill action
+  client pass. WebKit delivery attract12 and source architecture12 pass.
+- Rebuilt delivery316525 bytes, SHA256
+  `2632f28034f344b4cf908f0d5b69695336e38bd07a28d8728851a33fcbd53197`.
+  All64 Chromium source/release scenes are pixel-identical. Delivery worker-update
+  tests pass3 layouts. Inspected skill gameplay/state, landscape attract powerups
+  and physical fullscreen landscape Settings over edge-to-edge gameplay.
+- Physical Galaxy S10e/Android12 source fixture passes Settings/Help in browser
+  and fullscreen portrait/both landscapes, open-dialog rotation, trusted touches,
+  resume/jump and name cancel/local save. Own fixture has no live API, restores
+  rotation/origin state and closes its tab. This was source-preview verification,
+  not an updated production TWA or the exact compact delivery. Artifacts:
+  `output/edge-to-edge/`. No new APK is required.
+- User subsequently requested deployment. `npm run deploy` published the compact
+  HTML followed by the worker over FTPS; both live HTTPS SHA-256 hashes match
+  local files. Production is now build2026-10-21.20/cachev46. Existing installed
+  sessions receive the normal player-controlled update offer.
+
+## 2026-10-21: Android Trusted Web Activity setup
+
+- Created `dino-android/` as requested, using pinned local Bubblewrap CLI1.27.0
+  and the production webmanifest. Installed SHA-256 checked Temurin17 x64 and
+  Android Build Tools36.1.0, reused Android Studio's SDK. Package
+  `info.meuse24.dinorun`, version1.0.0/code1, target36/min24. The webgame is unchanged.
+- Generated Android Studio project, icons and splash assets. Created a private
+  RSA3072 signing key with random, DPAPI-protected password; all signing material,
+  tool-local files and generated APK/AAB files are Git-ignored. Build/regeneration,
+  FTPS asset-link publishing and scoped physical-device smoke scripts are included.
+- Fixed two upstream defaults exposed by real builds/device testing: minimum
+  API21 conflicts with Browser Helper2.7.4's minimum24; disabling the site-settings
+  shortcut omits a component still accessed at startup. Use min24 and the standard
+  enabled site-settings component. Regeneration stops Gradle first to release R8's
+  Windows file locks, then pins the Gradle distribution checksum.
+- Published only `https://meuse24.info/.well-known/assetlinks.json` using `ftp.txt`
+  over FTPS; HTTPS MIME/hash verification passes and Google's Digital Asset Links
+  API returns `linked:true`. APK v2/v3 signatures and the signed AAB verify.
+- `npm run android:update`, `npm run android:build` and physical
+  `npm run android:verify` pass. Galaxy S10e/Android12: actual TWA referrer and
+  fullscreen, trusted Help/Android Back, Settings, cached offline reload and
+  Home/relaunch. Zero live POSTs. Installed APK hash equals final artifact;
+  screenshots inspected, own ADB forwards removed. Gameplay/audio/rotation are
+  outside this smoke check; offline used an already cached website. No Play upload.
+- Full instructions, signing backup and artifact hashes: `doc/ANDROID.md`.
+  Evidence: `output/android-twa/device-report.json` and physical screenshots.
+
 ## 2026-10-21: Fix compact-menu layout overlaps
 
 - User requested fixes for both audit findings. Applied develop-web-game skill. Build2026-10-21.19/cachev45. Compact-landscape update notice uses the left column, leaving START, credit counter and INSERT COIN clear. Attract content in portrait windows up to600px high uses smaller score rows/headings and tighter power-up cards, leaving the landscape advice below all three rotating panels. START keeps its existing target.

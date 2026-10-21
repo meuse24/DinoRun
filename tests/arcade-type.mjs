@@ -111,6 +111,33 @@ try {
     assert.equal(samples[3].scale, samples[5].scale, 'Punch settles before the milestone ends');
     assert(samples.slice(3).every(sample => sample.lift === 0), 'Digits settle before the milestone ends');
     assert(samples.every(sample => /16px .*Dino Pixel/.test(sample.font)), 'Score uses the pixel face: ' + samples[0].font);
+    const glyphCache = await page.evaluate(() => {
+      const r = window.__dinoRunner.renderer;
+      r.hudGlyphs.clear();
+      r.hudRuns.clear();
+      // Warm every digit once, then vary only the destination punch transform.
+      r.drawPixelText('0123456789', 0, 0, 16, '#ffd257', '#081330');
+      const warmed = [...r.hudGlyphs.values()];
+      for (let frame = 0; frame < 90; frame++) {
+        r.ctx.save();
+        r.ctx.scale(1 + Math.sin(frame / 90 * Math.PI) * 0.1, 1.03);
+        r.drawPixelText('0123456789', 0, 0, 16, '#ffd257', '#081330');
+        r.ctx.restore();
+      }
+      const retained = [...r.hudGlyphs.values()];
+      let copies = 0;
+      const draw = r.ctx.drawImage;
+      r.ctx.drawImage = function(...args) { copies++; return draw.apply(this, args); };
+      try { r.drawPixelText('0123456789', 0, 0, 16, '#ffd257', '#081330'); }
+      finally { r.ctx.drawImage = draw; }
+      for (let score = 0; score < 100; score++)
+        r.drawPixelText('SC ' + score, 0, 0, 16, '#ffd257', '#081330');
+      return { warmed: warmed.length, retained: retained.length,
+        same: warmed.every((glyph, i) => glyph === retained[i]), copies,
+        bounded: r.hudRuns.size <= 48 };
+    });
+    assert.deepEqual(glyphCache, { warmed: 10, retained: 10, same: true, copies: 1, bounded: true },
+      'Animated night score reuses shadowed glyphs instead of rasterising per frame');
     // Event lettering: cached sprites, overshoot pop, rise and fade; level banners sweep.
     const lettering = await page.evaluate(() => {
       const r = window.__dinoRunner, g = r.game, e = r.renderer.effects, sizes = [];

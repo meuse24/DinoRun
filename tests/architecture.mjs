@@ -253,9 +253,34 @@ try {
     });
     assert.equal(await page.evaluate(() => window.__dinoGame.world.width), 420);
     await page.screenshot({ path: path.join(output, 'portrait.png') });
-    for (const [viewport, width] of [[{ width: 844, height: 390 }, 600], [{ width: 390, height: 844 }, 420]]) {
+    for (const [viewport, width] of [[{ width: 844, height: 390 }, 220 * 844 / (390 - 72)], [{ width: 390, height: 844 }, 420]]) {
       await page.setViewportSize(viewport);
-      await page.waitForFunction(width => window.__dinoGame.world.width === width, width);
+      await page.waitForFunction(width => Math.abs(window.__dinoGame.world.width - width) < 0.1, width);
+      const expectedDensity = viewport.width > viewport.height ? 2 : 3;
+      await page.waitForFunction(density => {
+        const canvas = document.querySelector('#game canvas');
+        const rect = canvas.getBoundingClientRect();
+        return Math.abs(canvas.width / rect.width - density) < 0.01 &&
+          Math.abs(canvas.height / (rect.width * 220 / window.__dinoGame.world.width) - density) < 0.01;
+      }, expectedDensity);
+      const raster = await page.locator('#game canvas').evaluate(canvas => {
+        const rect = canvas.getBoundingClientRect();
+        return { x: canvas.width / rect.width,
+          y: canvas.height / (rect.width * 220 / window.__dinoGame.world.width) };
+      });
+      assert.ok(Math.abs(raster.x - expectedDensity) < 0.01, `horizontal raster density ${raster.x}`);
+      assert.ok(Math.abs(raster.y - expectedDensity) < 0.01, `vertical raster density ${raster.y}`);
+      if (viewport.width > viewport.height) {
+        const geometry = await page.evaluate(() => {
+          const stage = document.querySelector('#stage').getBoundingClientRect();
+          const game = document.querySelector('#game').getBoundingClientRect();
+          const controls = document.querySelector('#touch-controls').getBoundingClientRect();
+          return { x: stage.x, y: stage.y, width: stage.width, height: stage.height,
+            gameBottom: game.bottom, controlsTop: controls.top, controlsBottom: controls.bottom };
+        });
+        assert.deepEqual(geometry, { x: 0, y: 0, width: 844, height: 390,
+          gameBottom: 318, controlsTop: 318, controlsBottom: 390 });
+      }
       assert.deepEqual(await page.evaluate(() => {
         const r = window.__dinoRunner, g = r.game;
         return { state: g.state, score: g.score, time: g.gameTime,

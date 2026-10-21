@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "info.meuse24.dinorun",
+      "sha256_cert_fingerprints": [
+        "36:C6:22:A7:88:EB:6C:09:CC:B2:88:29:82:16:92:9F:BB:FF:AA:93:D4:F3:93:69:DA:3A:65:14:5B:8D:9D:EF"
+      ]
+    }
+  }
+]
