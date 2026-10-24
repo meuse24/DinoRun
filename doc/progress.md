@@ -96,3 +96,19 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   12 and delivery lifecycle/offline 7. Static asset/Android-reference checks,
   moved-file hashes, scripts' syntax, documentation links and git diff --check
   pass. No remaining task TODO; no deployment, native APK build or phone run.
+
+## 2026-10-25: Alles committen und Web-Release veröffentlichen
+
+- User explicitly requested committing all changes and deploying. Staged and
+  checked the complete project state; private configuration, credentials, raw
+  WAV/signing material and local reports remain excluded. Commit a6bbc7d:
+  Consolidate documentation, tests and media assets (265 files, including the
+  earlier simulation refactoring, documentation cleanup and asset moves).
+- Verified source/release and media hashes still match the tested artifacts.
+  Authorized dry run confirmed live v61, then npm run deploy -- --tls12 uploaded
+  all seven media files, manifest, HTML and worker last. All ten static files
+  match local SHA-256 over HTTPS. Build 2026-10-25.1/cache v63 is now published.
+- Fresh isolated production Chromium context: correct build/cache, trusted
+  START and playing state, actual worker-controlled offline reload, cached icon
+  and both MP3s pass. No page errors or live highscore writes. Report/screenshot:
+  output/publish-2026-10-25/. No physical-device run or Android APK publication.

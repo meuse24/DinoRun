@@ -6,13 +6,19 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal: Build `2026-10-25.1`, Worker-Cache `dino-run-v63` (nicht veröffentlicht).
+Lokal und veröffentlicht: Build `2026-10-25.1`, Worker-Cache `dino-run-v63`.
 Medien liegen jetzt in `assets/images/` und `assets/audio/`.
 Der Größenbericht nennt 598.855 Bytes Quelle und 328.992 Bytes Auslieferung
 (45,06 % kleiner; gzip 113.690, Brotli 101.749 Bytes).
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
-Zuletzt im bisherigen Protokoll dokumentierte Veröffentlichung:
+Am 2026-10-25 nach Commit `a6bbc7d` mit `npm run deploy -- --tls12`
+veröffentlicht: sieben Medien, Manifest, HTML, zuletzt Worker. Alle zehn Dateien
+über HTTPS per SHA-256 bestätigt. Frischer Chromium-Kontext besteht START,
+Offline-Neuladen sowie gecachte Icons und beide MP3s, ohne Highscore-Schreibzugriff.
+Nachweis: `output/publish-2026-10-25/verification.json`.
+
+Vorher im bisherigen Protokoll dokumentierte Veröffentlichung:
 `2026-10-24.11` / `dino-run-v61` am 2026-10-24. Das ist ein historischer
 Nachweis, keine erneute Abfrage der Live-Website. Details und damalige Prüfungen:
 [Release-Archiv](archive/RELEASE-through-2026-10-24.md).
