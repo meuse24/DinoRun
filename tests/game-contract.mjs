@@ -31,10 +31,25 @@ assert.equal(jsNumber('FPS'), phpNumber('DINO_STEPS_PER_SECOND'));
 assert.equal(jsNumber('CHILI_MULTIPLIER'), phpNumber('DINO_TURBO'));
 assert.equal(jsNumber('POINTS_PER_PX'), phpNumber('DINO_POINTS_PER_PX'));
 assert.equal(jsNumber('SCORE_BONUS_RATE'), phpNumber('DINO_SCORE_BONUS_RATE'));
+const berryRule = vm.runInNewContext('(' + ruleSource.match(/const GLOW_BERRY = Object.freeze\((\{[\s\S]*?\})\);/)[1] + ')', { GROUND_Y: 190 });
+assert.equal(berryRule.firstSpawnMs, phpNumber('DINO_BERRY_FIRST_MS'));
+assert.equal(berryRule.respawnMinMs, phpNumber('DINO_BERRY_GAP_MS'));
+assert.equal(berryRule.points, phpNumber('DINO_BERRY_POINTS'));
 assert.equal(jsNumber('HIGHSCORE_API_VERSION'), phpNumber('DINO_API_VERSION'));
 assert.equal(jsNumber('HIGHSCORE_LIST_SIZE'), phpNumber('DINO_LIST_SIZE'));
 const phpSpeeds = Object.fromEntries([...php.match(/const DINO_MAX_SPEED = \[(.+)\];/)[1]
   .matchAll(/'(\w+)' => ([\d.]+)/g)].map(([, mode, speed]) => [mode, Number(speed)]));
+const clientBound = vm.runInNewContext('(' + ruleSource.match(/function maxPlausibleScore\(mode, durationMs\) \{[\s\S]*?\n        \}/)[0] + ')', {
+  GLOW_BERRY: berryRule, FPS: jsNumber('FPS'), POINTS_PER_PX: jsNumber('POINTS_PER_PX'),
+  CHILI_MULTIPLIER: jsNumber('CHILI_MULTIPLIER'), SCORE_BONUS_RATE: jsNumber('SCORE_BONUS_RATE'),
+  GAME_MODES: Object.fromEntries(Object.entries(phpSpeeds).map(([mode, maxSpeed]) => [mode, { maxSpeed }])),
+});
+for (const mode of Object.keys(phpSpeeds)) for (const duration of [11999,12000,12001,29999,30000,30001,47999,48000,48001,3600000]) {
+  const expected = Math.floor(Math.ceil(duration * phpNumber('DINO_STEPS_PER_SECOND') / 1000)
+    * phpSpeeds[mode] * phpNumber('DINO_TURBO') * phpNumber('DINO_POINTS_PER_PX') * (1 + phpNumber('DINO_SCORE_BONUS_RATE'))) + 1
+    + (duration < 12000 ? 0 : 25 * (1 + Math.floor((duration - 12000) / 18000)));
+  assert.equal(clientBound(mode,duration), expected, `${mode}/${duration}: synchronized berry-inclusive bound`);
+}
 
 // The temporary directory deliberately contains only the HTML. No sibling assets.
 const isolated = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-contract-'));

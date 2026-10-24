@@ -99,6 +99,18 @@ try{
           await page.waitForTimeout(1000);
         }
         if(phase==='night')await page.evaluate(()=>{window.__nightProbe=true;const g=window.__dinoGame;g.sceneryDistance=1000;g.capturePrevious();});
+        // Optional berry phases compare the old scene with one persistent new
+        // pickup, then bounded pickup feedback. Normal rAF and matched hazards.
+        if(phase==='berry')await page.evaluate(()=>{const g=window.__dinoGame;
+          if(!g.berry)return;
+          g.berry.enabled=false;g.berry.pickup=g.berry.item;
+          Object.assign(g.berry.item,{x:g.world.width*.65,prevX:g.world.width*.65,y:108,age:300});
+        });
+        if(phase==='berryCollect')await page.evaluate(()=>{const r=window.__dinoRunner,g=r.game;
+          if(!g.berry)return;
+          g.berry.pickup=null;
+          window.__berryStress=setInterval(()=>r.handleEvent({type:'berry'}),1000);
+        });
         if(phase==='busy')await page.evaluate(()=>{const r=window.__dinoRunner,g=r.game,e=r.renderer.effects;let n=0;
           window.__stress=setInterval(()=>{e.callout('SHIELD!',g.trex.x+24+(n%3)*90,g.trex.y-6,'shield');e.burst(220,100,48,'confetti');if(++n%4===0)e.announce('LEVEL 2','SPEED UP!');},400);});
         await cdp.send('Tracing.start',{categories:'devtools.timeline,v8,blink.user_timing',transferMode:'ReturnAsStream'});

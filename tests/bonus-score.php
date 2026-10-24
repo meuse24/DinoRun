@@ -4,10 +4,11 @@ define('DINO_HIGHSCORES', true);
 require __DIR__ . '/../highscores-lib.php';
 
 foreach (['normal', 'relaxed'] as $mode) {
-    foreach ([1000, 17000, 60000, 3600000] as $duration) {
+    foreach ([1000, 11999, 12000, 12001, 17000, 29999, 30000, 30001, 47999, 48000, 48001, 60000, 3600000] as $duration) {
         $steps = (int) ceil($duration * 60 / 1000);
         $base = $steps * DINO_MAX_SPEED[$mode] * DINO_TURBO * DINO_POINTS_PER_PX;
-        $expected = (int) floor($base * 1.1) + 1;
+        $expected = (int) floor($base * 1.1) + 1
+            + ($duration < 12000 ? 0 : 25 * (1 + intdiv($duration - 12000, 18000)));
         if (dino_max_score($mode, $duration) !== $expected) {
             throw new RuntimeException('Bonus score bound mismatch');
         }

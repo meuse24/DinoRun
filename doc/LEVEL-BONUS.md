@@ -40,9 +40,24 @@ it never freezes an airborne jump or erases an approaching obstacle.
 The1.8-second tally freezes distance, speed, jump physics, recovery and power-up/
 boss timers. It does not earn ordinary distance score. The dino grins, two short
 rows explain the award, and at most six coins fly toward the score. Six bounded
-payment beats add real points, with rising metallic pings. Coin arrival, score
+payment beats add real points, with rising metallic pings. As of build
+`2026-10-24.8` / cache v58, flying coins have a 24-unit face diameter (formerly
+10), an embossed numeral, highlighted gold rim, a soft halo, three fading trail
+dots and a sparkle. They shrink into the HUD while keeping the existing flight
+and payment timing. Coin arrival, score
 increment and sound share the same timing. Zero-value beats create no coin or
 sound. A short final hold/fade leads automatically back to play.
+
+Build `2026-10-24.10` / cache v60 also recaps berries collected in the completed
+section. A pink `BERRIES n` / `25*n PAID` row distinguishes their already awarded
+points from the new level bonus. Up to six representative cached berry sprites
+fly alongside the coins to the same HUD target, within the existing1.8-second
+sequence. Larger counts remain fully visible in the row. The recap never pays
+berry points again, grants lives again, or changes bonus caps/coin payment/audio.
+The count is snapshotted at the level/checkpoint boundary and cleared for the
+next section; collections after that boundary belong to the next recap.
+Effects off and reduced motion keep the row and suppress the flights. Zero
+berries preserve the original two-row panel without additional sprite work.
 
 Jump inputs during the tally do not consume feathers or queue a delayed jump.
 Settings, Help, focus loss and device backgrounding freeze the tally through the

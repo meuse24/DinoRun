@@ -1,5 +1,89 @@
 Original prompt: verschaffe dir einen überblick über das game. verwende die besten skills für 2d vektor game developer und prüfe ob die implementierung der nachfolgenden findings sinn machen. insgesamt oder evtl optional über einen schalter in den settings. ohne einfluß auf das aussehen des games. gib mir deine findings.
 
+## 2026-10-24: Publish and commit glow berry release
+
+- User explicitly requested documentation, commit, deployment and another phone
+  check. Published build2026-10-24.11/cachev61, delivery328884 bytes. Includes
+  accumulated berry feature/recap and sky fix plus the previously published
+  larger bonus coins/portrait advice still uncommitted in this working tree.
+- Final release: PHP lint/boundary checks, berry5 layouts, lifecycle/offline7,
+  bonus3 and Chromium/WebKit sky32 each pass; installed skill client passes.
+- Default encrypted FTPS data upload returned451 and left PHP incomplete.
+  Immediately restored full validator using TLS1.2 and checked FTPS bytes/hash.
+  Added `--tls12` deployment option; encrypted publication then succeeded with
+  validator first, HTML second, worker last. Final PHP readback22787 bytes,
+  SHA-256c2555b4dd108...; live API GET v1 returns200. HTTPS HTMLf28fbfefc0be...
+  and worker19a9e00a9271... equal local artifacts. No score submissions/mutations.
+- Physical S10e final published-hash artifact on isolated origin: trusted
+  collection6, real-rAF berry tallies3 with pause/unchanged berry points, both
+  sky phases and day highscore dialog in portrait/both landscapes pass. Inspected
+  recap/name screenshots. Device rotation/origin storage restored; own tab and
+  scoped bridges removed. Evidence in output/glow-berry/published-device and
+  output/published-glow/verification.json. Earlier performance limits still apply.
+- Secrets, runtime state, generated test output and Android signing remain ignored.
+
+## 2026-10-24: Match outer background to gameplay sky
+
+- User screenshot showed dark upper/lower bars around a daytime game/name dialog.
+  The body followed OS color scheme while Canvas also inverted its palette at
+  the gameplay night threshold. Runner now updates a root data attribute only
+  when the effective play phase changes; scoped play background/hint variables
+  match the renderer. Attract restores the normal OS theme. Dialog/menu variables
+  are unchanged; no simulation or per-frame drawing work added.
+- Build2026-10-24.11/cachev61, release328884 bytes. Verified32 desktop/portrait
+  light/dark/phase/playing/crashed-name-entry states per engine, exact background
+  versus Canvas sky pixels, plus menu restoration in Chromium/WebKit. Generated
+  release passes both engines; screenshots and installed skill client inspected.
+  Evidence: output/sky-background. No deployment requested or performed.
+
+## 2026-10-24: Berry recap during coin flight
+
+- User requested collected berries alongside coins in the level-bonus sequence.
+  Build2026-10-24.10/cachev60. Section berry count is snapshotted at each boundary;
+  the tally adds a pink count/already-paid-points row and at most six cached
+  representative berry flights. No second scoring, new timers/particles or
+  added duration. Existing coin payment/sound unchanged. Effects off/reduced
+  motion keep the row without flights; zero berries retain the old panel.
+- Chromium/WebKit level-bonus suites pass in three layouts each, including
+  immutable section snapshots, next-section/reset behavior, no duplicate points,
+  actual berry sprite draws and effects gating. Tally screenshots inspected.
+  Generated release328547 bytes also passes the Chromium bonus suite and the
+  installed game skill client. Existing working-tree changes retained; no upload
+  requested. This recap change has no additional physical-device verification.
+
+## 2026-10-24: Glow berry implementation
+
+- User requested implementing their edited plan. Build2026-10-24.9/cachev59,
+  prepared locally; no deployment or Git commit requested. Existing working-tree
+  changes (larger bonus coins/portrait advice and their release/docs) retained.
+- Added +25 berry, own seeded cooldown, airborne swept collection, separate
+  berry points/count, shared refreshScore, milestone rewards, cached fuchsia
+  body/aura, bounded sparks, pink callout and two-note sound. Help, session stats
+  and responsive fourth attract card included. Client/PHP limits synchronized.
+- Corrected a plan assumption: Horizon also spawns immediately after its last
+  obstacle exits. Placement accounts for that gate. Separate safe jumps can be
+  too large for normal worlds, so a berry can reward an existing cactus jump;
+  unsupported bird/large-cluster/slow-large cases are excluded. No obstacle RNG
+  draws or spawn suppression added. See doc/GLOW-BERRY.md.
+- Browser suites and physical S10e evidence are recorded in the feature document.
+  Phone: six trusted collections in portrait/both landscapes with effects on/off,
+  sound invocation and settings pause. Short ABBA render/GC comparison ~59.9 FPS
+  in all phases, no measurable frame regression; not a long-term/A53 claim.
+- A preexisting gc-pooling assertion required glyphOffsets after the direct-text
+  renderer had removed that buffer. Reproduced on the saved pre-change build;
+  now accepts stable absence as well as buffer reuse, retaining other assertions.
+- Publishing later requires highscores-lib.php before/together with HTML/worker.
+  No score data, secrets, live API or existing browser tabs were changed.
+- Final validation: berry5 layouts each Chromium(release)/WebKit(source), real
+  safe short-jump windows6–14 steps over allowed cacti and25–31 for plain berries;
+  natural spawns with bonus/boss scheduling in420/600-wide worlds. Release64
+  scenes pixel-identical; installed skill client, offline/lifecycle7, bonus,
+  lives, effects, feather, shield, boss, arcade and pooling pass. PHP lint/boundary
+  checks pass. Final release327711 bytes. Final release S10e trusted-touch6 passes.
+  Separate66-second phone pilot:59.9 FPS in4 windows, mean draw2.42 ms, visible
+  berries included. Device rotation/stay-awake restored. A53/12-minute soak remain
+  unverified; no deployment performed.
+
 ## 2026-10-24: Publish and commit accumulated performance work
 
 - User explicitly requested upload and commit. Final release .4/cachev54 passes
@@ -1165,3 +1249,18 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Deployed build 2026-10-24.6 at the user's request: dry run (live cache v54), then npm run deploy uploaded dino.html and service-worker.js; HTTPS hashes verified (dino.html 96140b8c..., service-worker.js 2eac705b...). Installed production TWA not yet checked with .6.
 - Installed the existing signed TWA APK (info.meuse24.dinorun 1.0.0) on A53 and S10e at the user's request; it was not installed on either. First A53 proportional run failed (not yet fullscreen: Digital Asset Links verification still pending after install); after relaunch domain verified and it passed. Live update offer accepted on both phones by the user. Production TWA with build .6 (hash 96140b8c...): android-attract-proportional 12 landscape + 2 portrait checks pass on A53 and S10e; dino-android verify-device (Help/Back, Settings, offline reload from worker cache, Home/relaunch) passes on both. android-attract-proportional left A53 auto-rotation at 0; restored to auto1/user0. S10e auto1/user1.
 - Fixed tests/shield-bubble.mjs: touch landscape and the restored viewport now expect the edge-to-edge world width (220*width/height on short coarse landscape, otherwise 420/600) instead of a fixed 600; passes in Chromium and WebKit release (3 layouts each). android-scaling-performance.mjs and android-attract-proportional.mjs now settle, write and read back rotation up to four times and assert restoration; A53 checks of both restored auto1/user0 (proportional 12+2 checks passed on the production TWA, scaling demo 59.9 FPS).
+
+## 2026-10-24: More visible portrait rotation hint
+
+- User requested shortening and highlighting the attract-screen landscape advice. Replaced it with "Rotate to play", an embedded phone/rotation SVG, bold 15px text, yellow fill and dark outline. Portrait-only; standalone file remains self-contained. Build .7/cache v57; release regenerated.
+- Chromium attract suite passes all 12 layouts (including 320x568), rotation, panels and START/input; installed skill client passes against release, with gameplay state and screenshots inspected. Portrait score/demo screenshots inspected: hint clear of content and controls. Evidence: output/portrait-hint. No physical-device run or deployment.
+- Final source/release comparison: all 64 UI/gameplay scenes pixel-identical in Chromium; git diff --check passes.
+
+- Deployed build .7/cache v57 at the user's request: dry run confirmed live v56, FTPS uploaded HTML then worker, HTTPS SHA-256 verified (HTML 05c02a0d9d21..., worker aa930eacc2c3...).
+
+## 2026-10-24: Larger level-bonus coins
+
+- User requested larger, more impressive coins flying into the score. Build .8/cache v58: coin face radius 12 instead of 5, slight mid-flight expansion, taper at arrival, embossed numeral, thick rim/edge, highlight, halo, three bounded trail dots and sparkle. Existing six-beat flight/payment/audio timing and Effects off/reduced-motion gating retained. No assets or particle-state allocation added.
+- Updated the existing actual-flight detection in level-bonus test for the new radius. Source and release Chromium bonus suites pass desktop/portrait/compact landscape, including accounting/caps/lives/pause/audio/effects; installed release skill client passes. Tally screenshots in all three layouts and gameplay screenshot/state inspected. Build regenerated; git diff --check passes. Evidence: output/bonus-coins. No deployment or physical-device run.
+
+- Deployed build .8/cache v58 at the user's request. Dry run confirmed live v57; FTPS uploaded HTML then worker. HTTPS SHA-256 verified: HTML 726c1a774d01..., worker 41ace275a9e4....

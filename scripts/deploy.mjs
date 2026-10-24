@@ -11,6 +11,7 @@ const args = process.argv.slice(2);
 const flag = name => args.includes(name);
 const dryRun = flag('--dry-run');
 const plainFtp = flag('--plain-ftp');
+const tls12 = flag('--tls12');
 const force = flag('--force');
 const also = args.flatMap((arg, i) => (arg === '--also' ? [args[i + 1]] : []));
 // Files that may accompany a release. Config, data, secrets and tests never do.
@@ -67,6 +68,7 @@ for (const { local, remote } of uploads) {
   const config = `user = ${quote(`${user}:${password}`)}\n`; // stdin: keeps the password out of the process list
   const result = spawnSync('curl', [
     '--silent', '--show-error', '--fail', '--ftp-create-dirs', ...(plainFtp ? [] : ['--ssl-reqd']),
+    ...(tls12 ? ['--tlsv1.2', '--tls-max', '1.2'] : []),
     '-K', '-', '-T', path.join(root, local), `ftp://${host}/${remoteDir}/${remote}`,
   ], { input: config, encoding: 'utf8' });
   assert.equal(result.status, 0, `Upload of ${remote} failed: ${result.stderr.trim()}`);

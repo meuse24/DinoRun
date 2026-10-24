@@ -84,14 +84,15 @@ try {
       fake.crashed = true; b.buttons[9].pressed = true; poll(true);
       fails = true; poll(true); fails = false; pads = []; poll(true);
       for (let i = 0; i < 1000; i++) poll(true);
-      // Warm HUD renders retain diagnostics and use one offsets buffer.
+      // Warm HUD renders retain diagnostics. The direct-text renderer has no
+      // offsets buffer; older cached-glyph renderers must reuse theirs.
       r.renderer.drawDistanceMeter(r.game.meter, 120, 140, '#535353', 2, 60);
       const hud = r.renderer.hud, offsets = r.renderer.glyphOffsets;
       r.game.meter.flash = 840;
       for (let i = 0; i < 30; i++) r.renderer.drawDistanceMeter(r.game.meter, 120, 140, '#535353', 2, 60);
       return { trace, log, bounded, resetReused, maxActive, identities: identities.size, capped,
         freshInterpolation, reducedMotion, records: records.size,
-        hudReused: hud === r.renderer.hud, offsetsReused: !!offsets && offsets === r.renderer.glyphOffsets,
+        hudReused: hud === r.renderer.hud, offsetsReused: offsets === r.renderer.glyphOffsets,
         hud: { ...r.renderer.hud } };
     }));
     assert.deepEqual(errors, [], 'No browser errors');

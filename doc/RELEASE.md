@@ -5,7 +5,47 @@ readable root `dino.html`; the game itself still needs no build step to run.
 
 ## Rebuild
 
-Current published build: `2026-10-24.6`, worker cache `dino-run-v56` (uploaded 2026-10-24,
+Current published build: `2026-10-24.11`, worker cache `dino-run-v61` (uploaded 2026-10-24).
+The outer page background now follows the rendered gameplay sky through day/
+night changes, pause and name entry, including when the OS uses dark mode.
+Only the play background/hint colors follow the phase; dialog/menu themes stay
+independent. Chromium/WebKit checks cover32 states each and menu restoration.
+Glow berry (+25), cached fuchsia sprites, bounded feedback, Help, four-card
+attract preview and session count. The level tally now also shows the section's
+collected berries and flies their cached sprites alongside coins; already paid
+berry points are not paid again. See [GLOW-BERRY.md](GLOW-BERRY.md).
+This release also changes score plausibility: **upload `highscores-lib.php`
+before or together with HTML/worker**. Existing scores stay intact.
+Published using `npm run deploy -- --tls12 --also highscores-lib.php`: validator
+first, HTML second, worker last. Delivery328884 bytes. HTTPS SHA-256 matches
+`dino.html` `f28fbfefc0be192a45723f99f078eede1540e187070a8fb1702e8a5dfd4c7062`
+and worker `19a9e00a9271807472ecf461f4b24e2feaae2e78dd88aa34604c6004cf5614df`.
+PHP FTPS readback matches22787 bytes / `c2555b4dd108...`; live API GET v1 returns200.
+Final release passes berry5 layouts, lifecycle/offline7, prior bonus3 and
+sky/background32 states per engine. Physical S10e uses this exact published
+HTML hash on an isolated origin: six trusted collections, three real-rAF berry
+tallies with pause/no duplicate payment, both sky phases and daytime name entry
+in portrait/both landscapes. Screenshots inspected; own tab/bridges closed and
+rotation/origin storage restored. See `output/glow-berry/published-device` and
+`output/published-glow/verification.json` (ignored local evidence).
+
+Previously published build: `2026-10-24.8`, worker cache `dino-run-v58` (uploaded 2026-10-24).
+Level-bonus coins are larger with an embossed numeral, gold rim, halo, trail
+and sparkle, tapering into the HUD. Flight/payment timing remains unchanged.
+Delivery 321157 bytes. FTPS upload completed HTML first, worker last; HTTPS
+hashes verified (`dino.html` `726c1a774d01...`, `service-worker.js`
+`41ace275a9e4...`). Source and release Chromium bonus suites pass all three
+layouts; installed release skill client passes. No physical-device verification.
+
+Previously published build: `2026-10-24.7`, worker cache `dino-run-v57` (uploaded 2026-10-24).
+Portrait attract advice is now "Rotate to play" with an embedded phone/rotation
+icon, yellow background and bold text. Delivery 320148 bytes. FTPS upload
+completed HTML first, worker last; HTTPS hashes verified (`dino.html`
+`05c02a0d9d21...`, `service-worker.js` `aa930eacc2c3...`). Chromium attract12,
+release skill client and 64 pixel-identical source/release scenes pass.
+No physical-device verification for this build.
+
+Previously published build: `2026-10-24.6`, worker cache `dino-run-v56` (uploaded 2026-10-24,
 HTTPS hashes verified: `dino.html` `96140b8c...`, `service-worker.js` `2eac705b...`).
 One GPU-eligible Canvas context for attract and play (no CPU gameplay backing);
 HUD pixel text is drawn directly with `fillText` instead of per-glyph cache
@@ -230,6 +270,10 @@ Run it only after the build and the verification below pass.
    `service-worker.js` **last**, so a worker never caches a mismatched game. It
    uses the system `curl` (FTP over TLS required; `--plain-ftp` allows
    unencrypted FTP). The password is passed through stdin, not as an argument.
+   On Windows Schannel, the current host rejected default FTPS data uploads
+   with451 (read from data connection). `--tls12` pins encrypted FTPS to TLS1.2;
+   this succeeded and was byte-verified. Retry with that flag rather than using
+   unencrypted FTP. Check/restore any failed PHP upload before publishing HTML.
 4. It then fetches both files over HTTPS and compares SHA-256 hashes with the
    local files. A mismatch fails the command.
 

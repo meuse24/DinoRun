@@ -156,6 +156,8 @@ try{
         if(g.turbo.remaining>0)t.push('turbo');if(g.turbo.pickup)t.push('chiliPickup');
         if(g.feather.charged)t.push('feather');if(g.feather.pickup)t.push('featherPickup');
         if(g.shield.charged)t.push('shield');if(g.shield.pickup)t.push('shieldPickup');if(g.shield.popRemaining>0)t.push('shieldPop');
+        if(g.berry?.pickup)t.push('berryPickup');
+        if(e.callouts.some(c=>c.style==='berry'))t.push('berryCollect');
         if(g.recoveryRemaining>0)t.push('recovery');if(g.trex.jumping)t.push('jumping');if(g.trex.ducking)t.push('ducking');
         if(e.particles.length>=40)t.push('particles40+');else if(e.particles.length>=15)t.push('particles15+');
         if(e.callouts.length)t.push('callouts');if(e.banner)t.push('banner');if(e.shakeTime>0)t.push('shake');

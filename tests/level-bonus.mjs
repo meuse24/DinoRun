@@ -89,6 +89,16 @@ try {
         check(events.filter(e => e.type === 'bonusTick').length === 6, 'Six bounded coin beats');
         g.update(dt); check(g.score >= 213 && g.bonusScore === 13 && !g.bonus && !g.pendingBonus, 'Resume keeps bonus without duplicate payment');
         const cap = fresh(mode); queue(cap, 100, true, 100); check(cap.pendingBonus.total === 10, 'Ten-percent section cap');
+        const berries = fresh(mode); berries.berries = 2; berries.berryScore = 50; berries.section.berries = 2;
+        queue(berries); berries.refreshScore();
+        check(berries.pendingBonus.berries === 2 && berries.section.berries === 0, 'Snapshot only the completed section berries');
+        berries.berries++; berries.berryScore += 25; berries.section.berries++;
+        berries.refreshScore(); berries.beginBonusIfSafe();
+        check(berries.bonus.berries === 2 && berries.section.berries === 1, 'Later collections belong to the next section');
+        finish(berries);
+        check(berries.berryScore === 75 && berries.score === 288 && berries.bonusScore === 13, 'Berry flights never pay the same points twice');
+        berries.returnToAttract();
+        check(berries.section.berries === 0 && berries.berryScore === 0, 'Round cleanup resets berry recap');
         const damaged = fresh(mode); queue(damaged, 200, false, 4); check(damaged.pendingBonus.total === 4, 'No clean bonus after damage');
         const life = fresh(mode); life.lives = 2; queue(life, 499); life.beginBonusIfSafe(); finish(life);
         check(life.lives === 3 && life.nextLifeScore === 1250, 'Bonus crossing grants one extra life');
@@ -128,31 +138,36 @@ try {
       g.horizon.obstacles = []; g.turbo.pickup = g.feather.pickup = g.shield.pickup = null;
       g.boss.reset(); g.boss.remaining = 1e9; g.gameTime = 5000;
       g.distance = 499 / .025; g.score = 499; g.speed = 7;
+      g.berries = 2; g.berryScore = 50; g.section.berries = 2; g.refreshScore();
       g.section.cleared = 8; g.lives = 2;
       window.__bonusNotes = []; r.sound.bonus = i => window.__bonusNotes.push(i);
       g.queueBonus(); g.beginBonusIfSafe();
-      for (let i = 0; i < 48; i++) r.update(1000 / 60);
+      for (let i = 0; i < 36; i++) r.update(1000 / 60);
       r.draw(1);
     });
     const middle = await page.evaluate(() => JSON.parse(window.render_game_to_text()));
     assert(middle.bonus && middle.bonus.paid > 0 && middle.bonus.paid < middle.bonus.total);
+    assert.equal(middle.bonus.berries, 2); assert.equal(middle.berry.score, 50);
     assert.equal(middle.credits, 2);
     await page.screenshot({ path: path.join(output, name + '-tally.png') });
     const effectCounts = await page.evaluate(() => {
-      const r = window.__dinoRunner, ctx = r.renderer.ctx, arc = ctx.arc;
-      let coins = 0;
+      const r = window.__dinoRunner, ctx = r.renderer.ctx, arc = ctx.arc, draw = ctx.drawImage;
+      const body = r.renderer.berrySprites().body;
+      let coins = 0, berries = 0;
+      ctx.drawImage = function(image, ...args) { if (image === body) berries++; return draw.call(this, image, ...args); };
       ctx.arc = function(x, y, radius, ...angles) {
-        if (radius === 5 && this.fillStyle === '#ffd257') coins++;
+        if (radius === 12 && this.fillStyle === '#ffd257') coins++;
         return arc.call(this, x, y, radius, ...angles);
       };
       try {
-        r.draw(1); const on = coins; coins = 0;
-        r.effectsSetting.set(false, false); r.draw(1); const off = coins;
+        r.draw(1); const on = coins, berriesOn = berries; coins = berries = 0;
+        r.effectsSetting.set(false, false); r.draw(1); const off = coins, berriesOff = berries;
         r.effectsSetting.set(true, false);
-        return { on, off, paid: r.game.bonus.paid };
-      } finally { ctx.arc = arc; }
+        return { on, off, berriesOn, berriesOff, paid: r.game.bonus.paid };
+      } finally { ctx.arc = arc; ctx.drawImage = draw; }
     });
     assert(effectCounts.on > 0 && effectCounts.off === 0, 'Effects off suppresses actual coin flight');
+    assert(effectCounts.berriesOn > 0 && effectCounts.berriesOn <= 6 && effectCounts.berriesOff === 0, 'Bounded berry sprites fly only with effects on');
     assert.equal(effectCounts.paid, middle.bonus.paid, 'Effect setting never changes earned points');
     await page.locator('#settings-open').click();
     const beforePause = await page.evaluate(() => JSON.parse(window.render_game_to_text()));
@@ -170,6 +185,7 @@ try {
       r.draw(1); return { state: JSON.parse(window.render_game_to_text()), notes: window.__bonusNotes };
     });
     assert.equal(completion.state.bonus, null); assert.equal(completion.state.bonusScore, 13);
+    assert.equal(completion.state.berry.score, 50, 'Recap keeps already awarded berry points unchanged');
     assert.equal(completion.state.lives, 3); assert.equal(completion.state.credits, 2);
     assert.deepEqual(completion.notes, [1, 2, 3, 4, 5, 6]);
     if (name === 'desktop' && engine === 'chromium') {

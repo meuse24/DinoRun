@@ -212,7 +212,7 @@ try {
     await checkStart();
     // With transitions, the slide moves in 16 px (T2); measure its final layout.
     if (process.env.DINO_TRANSITIONS === '1') await page.evaluate(() => window.__dinoTest.transitionDone());
-    assert.equal(await page.locator('.attract-powerup:visible').count(), 3);
+    assert.equal(await page.locator('.attract-powerup:visible').count(), 4);
     for (const card of await page.locator('.attract-powerup').all()) {
       assert.equal(await card.evaluate(card => {
         const r = card.getBoundingClientRect();

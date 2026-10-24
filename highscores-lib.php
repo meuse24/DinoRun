@@ -135,10 +135,16 @@ function dino_is_time($value): bool
 }
 
 // Whole round at top speed with Chili, plus capped section bonuses and rounding.
+const DINO_BERRY_FIRST_MS = 12000;
+const DINO_BERRY_GAP_MS = 18000;
+const DINO_BERRY_POINTS = 25;
+
 function dino_max_score(string $mode, int $durationMs): int
 {
     $steps = intdiv($durationMs * DINO_STEPS_PER_SECOND + 999, 1000);
-    return (int) floor($steps * DINO_MAX_SPEED[$mode] * DINO_TURBO * DINO_POINTS_PER_PX * (1 + DINO_SCORE_BONUS_RATE)) + 1;
+    $berryBonus = $durationMs < DINO_BERRY_FIRST_MS ? 0
+        : DINO_BERRY_POINTS * (1 + intdiv($durationMs - DINO_BERRY_FIRST_MS, DINO_BERRY_GAP_MS));
+    return (int) floor($steps * DINO_MAX_SPEED[$mode] * DINO_TURBO * DINO_POINTS_PER_PX * (1 + DINO_SCORE_BONUS_RATE)) + 1 + $berryBonus;
 }
 
 // Score descending, then earlier date, then ID. dino.html uses the same rule.

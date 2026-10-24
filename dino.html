@@ -678,7 +678,7 @@
       }
 
       body {
-        background: var(--bg);
+        background: var(--play-bg, var(--bg));
         color: var(--fg);
         font-family: Arial, sans-serif;
         display: flex;
@@ -979,6 +979,12 @@
           --fg: #dce9ff;
         }
       }
+
+      /* Gameplay sky follows the renderer's day/night phase, independently of
+         the OS preference. Dialog/menu theme variables remain independent. */
+      :root[data-game-sky="day"] { --play-bg: #8fd3ff; --play-fg: #173f69; }
+      :root[data-game-sky="night"] { --play-bg: #101b42; --play-fg: #dce9ff; }
+      #page > .hint { color: var(--play-fg, var(--fg)); }
 
       #page {
         touch-action: none;
@@ -2477,7 +2483,7 @@
       #round-panel.night :is(#attract-score-list, .attract-score-ghost) li:first-child { color: #ffd257; }
       :is(#attract-score-list, .attract-score-ghost) .attract-rank { opacity: 0.65; font-size: 13px; align-self: center; }
       #round-panel #attract-personal-best { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--menu-line); font: 700 12px/1.3 system-ui, sans-serif; }
-      .attract-powerups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 850px; margin: auto; }
+      .attract-powerups { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 1000px; margin: auto; }
       .attract-powerup { padding: 24px 12px; border: 1px solid var(--menu-line); border-radius: 22px; background: var(--menu-panel); box-shadow: 0 4px 0 var(--menu-shadow); }
       .attract-powerup svg { width: 64px; height: 64px; }
       .attract-powerup h3 { font: 900 19px/1.2 system-ui, sans-serif; margin: 12px 0 8px; }
@@ -2486,8 +2492,22 @@
       #round-panel .attract-demo-caption { margin: 0; font: 700 14px/1.4 system-ui, sans-serif; }
       .attract-demo-label { position: absolute; bottom: 0; left: 0; right: 0; font: 800 10px/1.3 system-ui, sans-serif; letter-spacing: 0.14em; opacity: 0.7; }
       #attract-footer { width: min(460px, 100%); justify-self: center; pointer-events: auto; }
-      #landscape-hint { display: none; margin: 0 0 8px; padding: 6px 12px; border: 1px solid var(--menu-line); border-radius: 999px; background: var(--menu-panel); color: var(--menu-ink); text-align: center; font: 700 13px/1.3 system-ui, sans-serif; }
-      @media (orientation: portrait) { #landscape-hint { display: block; } }
+      #round-panel #landscape-hint {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin: 0 0 8px;
+        padding: 6px 12px;
+        border: 2px solid #173f69;
+        border-radius: 999px;
+        background: #ffd257;
+        color: #173f69;
+        text-align: center;
+        font: 800 15px/1.3 system-ui, sans-serif;
+      }
+      #landscape-hint svg { width: 24px; height: 24px; flex: none; }
+      @media (orientation: portrait) { #round-panel #landscape-hint { display: flex; } }
       #round-panel #start-game {
         width: 100%;
         min-height: 72px;
@@ -2512,10 +2532,11 @@
         :is(#stage.idle, #stage.attract-leaving) #round-panel h1 { font-size: clamp(36px, 10vw, 54px); }
         :is(#stage.idle, #stage.attract-leaving) #round-panel h1 .brand-logo { width: 40px; height: 20px; }
         .attract-powerups { grid-template-columns: 1fr; gap: 8px; }
-        .attract-powerup { display: flex; align-items: center; gap: 14px; padding: 12px 16px; text-align: left; border-radius: 16px; }
-        .attract-powerup svg { width: 44px; height: 44px; flex: none; }
-        .attract-powerup h3 { margin: 0 0 3px; font-size: 17px; }
-        #round-panel .attract-powerup p { font-size: 13px; }
+        .attract-powerup { display: flex; align-items: center; gap: 10px; padding: 8px 12px; text-align: left; border-radius: 16px; }
+        .attract-powerup svg { width: 34px; height: 34px; flex: none; }
+        .attract-powerup h3 { margin: 0 0 3px; font-size: 16px; }
+        #round-panel .attract-powerup p { font-size: 12px; line-height: 1.25; }
+        .attract-powerup br { display: none; }
         #round-panel #start-game { min-height: 68px; }
         #stage.idle #touch-controls { bottom: 0; left: 0; right: 0; justify-content: center; }
         #stage.idle:has(#install-game:not([hidden])) #touch-controls { right: auto; justify-content: flex-start; }
@@ -2581,8 +2602,9 @@
         #round-panel #attract-score-source { margin-bottom: 4px; }
         :is(#attract-score-list, .attract-score-ghost) li { font-size: 14px; padding: 2px 0; }
         #round-panel #attract-personal-best { margin-top: 4px; padding-top: 4px; }
-        .attract-powerups { gap: 6px; }
+        .attract-powerups { gap: 4px; }
         .attract-powerup { padding: 4px 12px; }
+        .attract-powerup svg { width: 24px; height: 24px; }
         .attract-powerup h3 { font-size: 14px; margin-bottom: 2px; }
         #round-panel .attract-powerup p { font-size: 11px; line-height: 1.2; }
       }
@@ -3132,7 +3154,7 @@
                 <span class="attract-demo-label">DEMO · YOUR RUN STARTS BELOW</span>
               </section>
               <section id="attract-powerups" class="attract-slide" aria-labelledby="attract-powerups-title" hidden>
-                <div class="attract-heading"><span class="attract-kicker">A LITTLE EXTRA HELP</span><h2 id="attract-powerups-title"><span class="heading-ink"><span class="heading-breath">Power up your run</span></span></h2></div>
+                <div class="attract-heading"><span class="attract-kicker">A LITTLE EXTRA HELP</span><h2 id="attract-powerups-title"><span class="heading-ink"><span class="heading-breath">Power-ups &amp; bonuses</span></span></h2></div>
                 <div class="attract-powerups">
                   <article class="attract-powerup">
                     <svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="18" fill="#173f69" stroke="#ffd257"/><path d="M-5-7C10-11 12 8-9 12Q0 5-5-7" fill="#f04432" stroke="#ffb59a"/><path d="M0-7Q-2-13 3-14" fill="none" stroke="#45b86f" stroke-width="3"/></svg>
@@ -3146,11 +3168,21 @@
                     <svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="18" fill="#594198" stroke="#e7daff" stroke-width="2"/><path d="M0-10 9-6 8 2Q7 8 0 11Q-7 8-8 2L-9-6Z" fill="#ba9dff" stroke="#fff"/><path d="m-4 0 3 4 6-7" fill="none" stroke="#fff" stroke-width="2"/></svg>
                     <div><h3>Shield bubble</h3><p>Survive one hit. <br>Cactus or bird.</p></div>
                   </article>
+                  <article class="attract-powerup">
+                    <svg viewBox="-20 -20 40 40" aria-hidden="true"><circle r="18" fill="#173f69" stroke="#ff7ac4"/><circle cy="2" r="10" fill="#ff2e9a" stroke="#6e0b45" stroke-width="1.5"/><path d="M-9 2A9 9 0 0 0 9 2Q3 7-9 2" fill="#c4146f"/><path d="M0-6Q-10-13-7-6Q-3-3 0-6Q9-14 8-7Q4-3 0-6" fill="#45b86f" stroke="#6e0b45"/><path d="M-7 1Q-7-4-2-5" fill="none" stroke="#ffd1ea" stroke-width="2" stroke-linecap="round"/><circle cx="-4" cy="-3" r="1.5" fill="#fff"/></svg>
+                    <div><h3>Glow berry</h3><p>Jump and catch it. <br>+25 points.</p></div>
+                  </article>
                 </div>
               </section>
             </div>
             <div id="attract-footer">
-              <p id="landscape-hint">Best gameplay in landscape mode!</p>
+              <p id="landscape-hint">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                  <rect x="7.5" y="4.5" width="9" height="15" rx="2" transform="rotate(35 12 12)"/>
+                  <path d="M3 11a9 9 0 0 1 13-7M16 1v3h3M21 13a9 9 0 0 1-13 7M8 23v-3H5"/>
+                </svg>
+                <span>Rotate to play</span>
+              </p>
               <div id="coin-controls">
                 <div class="credit-meter"><span id="attract-coin-mark" class="coin-mark" aria-hidden="true">¢</span><output id="attract-fps" aria-label="Frame rate" aria-live="off" hidden><span>FPS</span><span id="attract-fps-value">—</span></output><span class="credit-label">CREDITS</span><output id="coin-count" aria-live="off" aria-label="0 credits">00</output></div>
                 <button id="insert-coin" type="button" aria-label="Insert coin. Add one credit">
@@ -3919,6 +3951,13 @@
                       <strong>Feather:</strong> one extra jump. Jump, then press jump again in the
                       air. You can hold only one feather. It shows behind your dino.
                     </p>
+                    <p id="glow-berry-help">
+                      <strong>Glow berry:</strong> jump to catch the glowing pink berry for 25 bonus
+                      points. Missing it costs nothing. It does not use or replace your power-ups.
+                      Collected berries also fly to the score during the next level tally;
+                      their points are already included.
+                      Existing highscores stay; new runs can earn these additional points.
+                    </p>
                     <p id="lives-help">
                       <strong>Lives:</strong> start with 3 lives, up to 5. An unprotected hit costs one life,
                       followed by 1.8 seconds of recovery protection. Earn extra lives at 500, 1,250,
@@ -4023,7 +4062,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-24.6';
+        const BUILD = '2026-10-24.11';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4044,6 +4083,9 @@
           popMs: 420,
         });
         const SHIELD_COLORS = ['#ba9dff', '#e7daff', '#ffffff'];
+        const GLOW_BERRY = Object.freeze({ firstSpawnMs: 12000, respawnMinMs: 18000,
+          respawnMaxMs: 26000, points: 25, y: GROUND_Y - 82, radius: 12 });
+        const BERRY_COLORS = ['#ff2e9a', '#ffd1ea', '#ffffff'];
         const FEATHER = Object.freeze({
           firstSpawnMs: 4000,
           respawnMs: 18000,
@@ -4063,6 +4105,7 @@
           callout: { size: 15, fill: ['#fffbe8', '#ffd257'], glow: '#ffd257' },
           feather: { size: 15, fill: ['#f2ffff', '#60dcdf'], glow: '#baf7ef' },
           shield: { size: 15, fill: ['#f7f1ff', '#ba9dff'], glow: '#e7daff' },
+          berry: { size: 15, fill: ['#fff0f8', '#ff5cb4'], glow: '#ff7ac4' },
           chili: { size: 16, fill: ['#fff3c4', '#ff7a3a'], glow: '#ff5a2a' },
           smash: { size: 13, fill: ['#ffffff', '#ffb27a'], glow: '#ff8a4a' },
           record: { size: 17, fill: ['#fffbe8', '#ffc02e'], glow: '#ffd257' },
@@ -4885,6 +4928,21 @@
               };
               tone.start(t);
               tone.stop(t + 0.05);
+            } catch (e) {}
+          }
+          berry() {
+            const audio = this.context;
+            if (!this.enabled || this.volume === 0 || !audio || audio.state !== 'running') return;
+            try {
+              for (const [frequency, delay] of [[659.25, 0], [987.77, 0.07]]) {
+                const tone = audio.createOscillator(), gain = audio.createGain(), t = audio.currentTime + delay;
+                tone.type = 'triangle'; tone.frequency.setValueAtTime(frequency, t);
+                gain.gain.setValueAtTime(0, t); gain.gain.linearRampToValueAtTime(0.08, t + 0.004);
+                gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+                tone.connect(gain); gain.connect(this.output);
+                tone.onended = () => { tone.disconnect(); gain.disconnect(); };
+                tone.start(t); tone.stop(t + 0.14);
+              }
             } catch (e) {}
           }
           bonus(index) {
@@ -6054,7 +6112,7 @@
           // Event lettering above the action. Reduced motion keeps the text, drawn still;
           // the Arcade effects setting (lettering) removes callouts, banners and shake.
           callout(text, x, y, style = 'callout', life = 950) {
-            if (!this.lettering) return;
+            if (!this.lettering && style !== 'berry') return;
             if (this.callouts.length >= 4) this.callouts.shift();
             this.callouts.push({ text, x, y, style, life, maxLife: life });
           }
@@ -6073,6 +6131,7 @@
               const spark = kind === 'spark',
                 feather = kind === 'feather',
                 shield = kind === 'shield',
+                berry = kind === 'berry',
                 rock = kind === 'rock',
                 confetti = kind === 'confetti',
                 impact = kind === 'impact',
@@ -6111,7 +6170,7 @@
                     ? this.rng.range(2.5, 5)
                     : this.rng.range(1.5, 3.5);
               particle.opacity = spark ? 0.9 : trail ? 0.48 : landing ? 0.8 : 1;
-              particle.color = spark
+              particle.color = berry ? BERRY_COLORS[this.rng.int(0, 2)] : spark
                 ? SPARK_COLORS[this.rng.int(0, 2)]
                 : feather
                   ? FEATHER_COLORS[this.rng.int(0, 2)]
@@ -6392,6 +6451,111 @@
           }
         }
 
+        // Bonus-only pickup: its private seeded stream never consumes gameplay RNG.
+        // Fit an authored gap or an existing cactus jump; never move/suppress obstacles.
+        class GlowBerry {
+          constructor(enabled = true, world = { width: BASE_W }) {
+            this.enabled = enabled;
+            this.world = world;
+            this.item = { x: 0, prevX: 0, y: GLOW_BERRY.y, age: 0, placement: 'gap' };
+            this.playerBox = { x: 0, y: 0, width: 44, height: 47 };
+            this.sweptBox = { x: 0, y: GLOW_BERRY.y - 12, width: 24, height: 24 };
+            this.rng = new RandomSource(() => {
+              this.seed = (Math.imul(this.seed, 1664525) + 1013904223) >>> 0;
+              return this.seed / 4294967296;
+            });
+            this.reset();
+          }
+          reset() {
+            this.seed = 0x6b657272;
+            this.pickup = null;
+            this.spawnTimer = GLOW_BERRY.firstSpawnMs;
+            this.retrying = false;
+            this.lastAttempt = null;
+          }
+          finish() {
+            this.pickup = null;
+            this.spawnTimer = this.rng.range(GLOW_BERRY.respawnMinMs, GLOW_BERRY.respawnMaxMs);
+            this.retrying = false;
+            this.lastAttempt = null;
+          }
+          update(dt, game, travelSpeed) {
+            if (!this.enabled || game.rockTraining) return false;
+            if (game.pendingBonus || game.boss.reserved) {
+              if (this.pickup) this.finish();
+              return false;
+            }
+            const trex = game.trex;
+            if (this.pickup) {
+              const p = this.pickup, oldX = p.x;
+              p.x -= travelSpeed * dt / STEP;
+              if (p.x - 10 <= this.world.width) {
+                if (!p.age) game.emit('berrySpawn', { x: p.x, y: p.y });
+                p.age += dt;
+              }
+              this.playerBox.x = trex.x;
+              this.playerBox.y = trex.y;
+              this.sweptBox.x = p.x - 12;
+              this.sweptBox.width = oldX - p.x + 24;
+              if (trex.jumping && intersects(this.playerBox, this.sweptBox)) {
+                this.finish();
+                return true;
+              }
+              if (p.x < -24) this.finish();
+              return false;
+            }
+            this.spawnTimer -= dt;
+            const last = game.horizon.obstacles[game.horizon.obstacles.length - 1];
+            if (this.spawnTimer > TIME_EPSILON && !(this.retrying && last && last !== this.lastAttempt)) return false;
+            this.retrying = true;
+            this.lastAttempt = last;
+            this.spawnTimer = 300;
+            if (!last) return false; // Unknown next gap: do not guess.
+            // Allow for acceleration and a subsequent Chili throughout the approach.
+            const approachSteps = this.world.width / Math.max(1, game.speed) + 80;
+            const speed = Math.min(game.config.maxSpeed, game.speed + game.config.acceleration * approachSteps)
+              * CHILI_MULTIPLIER;
+            // The previous jump already spends time rising before the obstacle,
+            // and crossing its full width. Reserve the REMAINING landing travel,
+            // then three steps to reach berry height, rather than a second full jump.
+            let velocity = -(CONFIG.initialJumpVelocity + (Math.min(game.config.maxSpeed,
+              game.speed + game.config.acceleration * approachSteps) - 6) / 10);
+            let height = 0, flight = 0, clearance = 0;
+            do {
+              height -= velocity; velocity += CONFIG.gravity; flight++;
+              if (!clearance && height >= GROUND_Y - last.y + 4) clearance = flight;
+            } while (height > 0 && flight < 60);
+            const before = Math.max(0, (flight - clearance + 3) * speed - last.width * last.size) + 24;
+            const after = speed * 30 + 68;
+            const right = last.x + last.width * last.size;
+            // Horizon also spawns immediately when its last obstacle leaves the
+            // world. That can shorten a large authored gap; account for BOTH gates.
+            const nextGap = Math.min(last.gap, this.world.width + 10);
+            let x = Math.min(this.world.width + 24, right + nextGap - after), placement = 'gap';
+            if (x - right < before) {
+              // A 300 ms retry can skip the short safe window on a narrow world.
+              // Wake at its predicted edge, without running gap physics every frame.
+              if (nextGap >= before + after)
+                this.spawnTimer = clamp((right - (this.world.width + 24 - before)) / travelSpeed * STEP, STEP, 300);
+              // On narrow worlds two separate jumps may not fit. A berry above
+              // a newly approaching cactus rewards its existing safe jump instead.
+              // Never add a jump obligation near a bird or an already close hazard.
+              if (last.type.name === 'ptero' || (last.type.name === 'large'
+                && (last.size > 2 || game.speed < 6 || (last.size === 2 && game.speed < 9)))
+                || last.x < this.world.width - 16) return false;
+              x = last.x + last.width * last.size / 2;
+              placement = 'cactus';
+            }
+            const playerX = game.turbo.remaining > 0 ? TREX_START_X + this.world.width / 3 : trex.x;
+            if ((Math.min(x, this.world.width + 10) - playerX - 44 - speed * 6) / (speed * FPS) < 0.45) return false;
+            for (const pickup of [game.turbo.pickup, game.feather.pickup, game.shield.pickup])
+              if (pickup && Math.abs(pickup.x - x) < SHIELD.spawnGap) return false;
+            Object.assign(this.item, { x, prevX: x, y: GLOW_BERRY.y, age: 0, placement });
+            this.pickup = this.item;
+            return false;
+          }
+        }
+
         // Rare corridor encounter. Timing is independent of the shared gameplay RNG.
         class RockBoss {
           constructor(enabled = true, world = { width: BASE_W }, training = false) {
@@ -6469,6 +6633,7 @@
             mode = 'normal',
             featherEnabled = true,
             shieldEnabled = true,
+            berryEnabled = true,
             bossEnabled = true,
             rockTraining = false,
             bonusEnabled = true,
@@ -6482,6 +6647,7 @@
             this.turbo = new ChiliTurbo(this.rng, this.world);
             this.feather = new JumpFeather(featherEnabled, this.world);
             this.shield = new ShieldBubble(shieldEnabled, this.world);
+            this.berry = new GlowBerry(berryEnabled, this.world);
             this.boss = new RockBoss(bossEnabled, this.world, rockTraining);
             this.meter = new DistanceMeter();
             this.bonusEnabled = bonusEnabled;
@@ -6572,6 +6738,7 @@
               this.turbo.reset();
               this.feather.reset();
               this.shield.reset();
+              this.berry.reset();
               this.boss.reset();
               this.recordAtStart = this.highScore;
               this.recordCelebrated = false;
@@ -6641,6 +6808,7 @@
             this.turbo.reset();
             this.feather.reset();
             this.shield.reset();
+            this.berry.reset();
             this.boss.reset();
             this.meter.reset();
             this.capturePrevious();
@@ -6676,9 +6844,11 @@
           }
           resetBonus() {
             this.bonusScore = 0;
+            this.berryScore = 0;
+            this.berries = 0;
             this.bonus = null;
             this.pendingBonus = null;
-            this.section = { level: 1, baseScore: 0, cleared: 0, clean: true, time: 0 };
+            this.section = { level: 1, baseScore: 0, cleared: 0, berries: 0, clean: true, time: 0 };
           }
           queueBonus() {
             if (!this.bonusEnabled || this.rockTraining || this.pendingBonus || this.bonus || this.crashed) return;
@@ -6690,13 +6860,14 @@
             const obstacles = Math.min(this.section.cleared, LEVEL_BONUS.obstacles, budget);
             const clean = this.section.clean ? Math.min(LEVEL_BONUS.clean, budget - obstacles) : 0;
             this.pendingBonus = { level: this.level, checkpoint: !levelUp, cleared: this.section.cleared,
-              obstacles, clean, total: obstacles + clean };
-            this.section = { level: this.level, baseScore, cleared: 0, clean: true, time: this.gameTime };
+              obstacles, clean, berries: this.section.berries || 0, total: obstacles + clean };
+            this.section = { level: this.level, baseScore, cleared: 0, berries: 0, clean: true, time: this.gameTime };
           }
           beginBonusIfSafe() {
             if (!this.pendingBonus || this.crashed || this.trex.jumping || this.boss.reserved
               || this.horizon.obstacles.length || this.turbo.pickup || this.turbo.remaining > 0
               || this.feather.pickup || this.shield.pickup) return;
+            if (this.berry.pickup) this.berry.finish();
             this.bonus = { ...this.pendingBonus, elapsed: 0, paid: 0, tick: 0 };
             this.pendingBonus = null;
             this.clearJumpBuffer();
@@ -6711,7 +6882,7 @@
               const paid = Math.floor(bonus.total * tick / 6), points = paid - bonus.paid;
               bonus.paid = paid;
               this.bonusScore += points;
-              this.score = Math.floor(this.distance * POINTS_PER_PX) + this.bonusScore;
+              this.refreshScore();
               this.awardLives();
               this.highScore = Math.max(this.highScore, this.score);
               if (points) this.emit('bonusTick', { index: tick, points, score: this.score });
@@ -6733,6 +6904,9 @@
               this.lives++;
               this.emit('extraLife', { lives: this.lives, threshold, nextScore: this.nextLifeScore });
             }
+          }
+          refreshScore() {
+            this.score = Math.floor(this.distance * POINTS_PER_PX) + this.bonusScore + this.berryScore;
           }
           takeHit(obstacle) {
             if (!this.playing || this.rockTraining || this.recoveryRemaining > 0) return false;
@@ -6758,6 +6932,7 @@
             this.turbo.stop(this.trex);
             this.feather.reset();
             this.shield.reset();
+            this.berry.reset();
             Object.assign(this.trex, {
               dead: true,
               deathTime: 0,
@@ -6787,6 +6962,7 @@
             if (this.turbo.pickup) capture(this.turbo.pickup);
             if (this.feather.pickup) capture(this.feather.pickup);
             if (this.shield.pickup) capture(this.shield.pickup);
+            if (this.berry.pickup) capture(this.berry.pickup);
             this.previous.sceneryDistance = this.sceneryDistance;
             this.previous.groundTravel = this.horizon.groundIndex * 24 + this.horizon.groundOffset;
             this.previous.gameTime = this.gameTime;
@@ -6861,7 +7037,7 @@
                 this.horizon.updateScenery(dt, travelSpeed);
               else {
                 this.distance += travelSpeed;
-                this.score = Math.floor(this.distance * POINTS_PER_PX) + this.bonusScore;
+                this.refreshScore();
                 // A milestone reached on the contact frame can save the last life.
                 this.awardLives();
                 this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
@@ -6882,6 +7058,14 @@
                 if (this.shield.update(
                   dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.feather.pickup, this.boss.reserved || !!this.pendingBonus,
                 )) this.emit('shield');
+                if (this.berry.update(dt, this, travelSpeed)) {
+                  this.berries++;
+                  this.section.berries = (this.section.berries || 0) + 1;
+                  this.berryScore += GLOW_BERRY.points;
+                  this.refreshScore();
+                  this.awardLives();
+                  this.emit('berry');
+                }
                 this.night = Math.floor(this.score / 700) % 2 === 1;
                 this.nightAlpha += clamp(
                   (this.night ? 1 : 0) - this.nightAlpha,
@@ -7005,7 +7189,7 @@
           // so known texts are prepared one per idle slot instead of during play.
           prewarmLettering() {
             const texts = [['3', 'count'], ['2', 'count'], ['1', 'count'], ['GO!', 'go'],
-              ['NEW HIGH SCORE!', 'record'], ['STONE JAW', 'boss'], ['BOSS CLEAR!', 'clear']];
+              ['+25', 'berry'], ['NEW HIGH SCORE!', 'record'], ['STONE JAW', 'boss'], ['BOSS CLEAR!', 'clear']];
             if (this.effects.lettering)
               texts.push(['AIR JUMP!', 'feather'], ['FEATHER!', 'feather'], ['SHIELD!', 'shield'],
                 ['SAVED!', 'shield'], ['CHILI BOOST!', 'chili'], ['SMASH!', 'smash'],
@@ -7184,6 +7368,7 @@
             if (!this.compactHud && game.state !== 'attract')
               this.drawDistanceMeter(game.meter, game.score, highScore, fg, game.level, fps);
             this.drawPickup(this.turboView);
+            this.drawBerry();
             if (this.featherView.pickup) {
               const { x, y } = this.featherView.pickup;
               this.drawFeatherBadge(x, y, 1.15);
@@ -7206,6 +7391,7 @@
           }
           drawBonus(bonus) {
             const ctx = this.ctx, cx = this.world.width / 2;
+            const berries = bonus.berries || 0, totalY = berries ? 102 : 82;
             const moving = !this.game.trex.reducedMotion.matches && this.effects.lettering;
             const enter = clamp(bonus.elapsed / 220, 0, 1), leave = clamp((bonus.elapsed - 1560) / 240, 0, 1);
             const y = 62 + (moving ? (1 - easeOutBack(enter)) * -12 : 0);
@@ -7213,23 +7399,74 @@
             ctx.globalAlpha = moving ? Math.min(1, enter * 2) * (1 - leave) : 1;
             const width = Math.min(340, this.world.width - 24), rowSize = this.compactHud ? 14 : 12;
             ctx.fillStyle = '#102d4beF'; ctx.strokeStyle = '#ffd257'; ctx.lineWidth = 1.5;
-            roundedRect(ctx, cx - width / 2, y, width, 108, 10); ctx.fill(); ctx.stroke();
+            roundedRect(ctx, cx - width / 2, y, width, berries ? 128 : 108, 10); ctx.fill(); ctx.stroke();
             this.drawArcade(bonus.checkpoint ? 'CHECKPOINT!' : 'LEVEL ' + bonus.level, 'level', cx, y + 18, 0.9);
             this.drawPixelText('CLEARED ' + bonus.cleared, cx - width / 2 + 14, y + 36, rowSize, '#fffbe8', null);
             this.drawPixelText('+' + bonus.obstacles, cx + width / 2 - 14, y + 36, rowSize, '#ffd257', null, 'right');
             this.drawPixelText(bonus.clean ? 'NO HITS' : 'NO HITS -', cx - width / 2 + 14, y + 56, rowSize, '#fffbe8', null);
             this.drawPixelText('+' + bonus.clean, cx + width / 2 - 14, y + 56, rowSize, '#ffd257', null, 'right');
-            this.drawPixelText('BONUS +' + bonus.paid, cx, y + 82, 15, '#ffd257', '#081330', 'center');
+            if (berries) {
+              this.drawPixelText('BERRIES ' + berries, cx - width / 2 + 14, y + 76, rowSize, '#ffd1ea', null);
+              this.drawPixelText(berries * GLOW_BERRY.points + ' PAID', cx + width / 2 - 14, y + 76, rowSize, '#ff7ac4', null, 'right');
+            }
+            this.drawPixelText('BONUS +' + bonus.paid, cx, y + totalY, 15, '#ffd257', '#081330', 'center');
             if (moving && bonus.total) for (let i = 0; i < 6; i++) {
               if (Math.floor(bonus.total * (i + 1) / 6) === Math.floor(bonus.total * i / 6)) continue;
               const p = (bonus.elapsed - 150 - i * 150) / 350;
               if (p < 0 || p > 1) continue;
               const endX = this.compactHud ? cx : this.world.width - 42, endY = this.compactHud ? 6 : 21;
-              const x = cx + (endX - cx) * p, coinY = y + 86 + (endY - y - 86) * p - Math.sin(p * Math.PI) * 18;
-              ctx.save(); ctx.translate(x, coinY); ctx.scale(0.35 + Math.abs(Math.cos(p * Math.PI * 2)) * 0.65, 1);
-              ctx.fillStyle = '#ffd257'; ctx.strokeStyle = '#a54b2b'; ctx.lineWidth = 1;
-              ctx.beginPath(); ctx.arc(0, 0, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-              ctx.fillStyle = '#a54b2b'; ctx.fillRect(-0.6, -2.5, 1.2, 5); ctx.restore();
+              const startY = y + totalY + 4;
+              const x = cx + (endX - cx) * p, coinY = startY + (endY - startY) * p - Math.sin(p * Math.PI) * 18;
+              // Large minted coins taper into the HUD; the short trail stays bounded.
+              const size = (1 + Math.sin(p * Math.PI) * 0.18) * (1 - 0.6 * p ** 3);
+              ctx.save();
+              for (let trail = 3; trail > 0; trail--) {
+                const t = Math.max(0, p - trail * 0.045);
+                const tx = cx + (endX - cx) * t;
+                const ty = startY + (endY - startY) * t - Math.sin(t * Math.PI) * 18;
+                ctx.globalAlpha *= 0.18;
+                ctx.fillStyle = '#fff4b0';
+                ctx.beginPath(); ctx.arc(tx, ty, (7 - trail) * size, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha /= 0.18;
+              }
+              ctx.translate(x, coinY); ctx.scale(size, size);
+              ctx.fillStyle = '#ffe793'; ctx.globalAlpha *= 0.16;
+              ctx.beginPath(); ctx.arc(0, 0, 19, 0, Math.PI * 2); ctx.fill();
+              ctx.globalAlpha /= 0.16;
+              ctx.scale(0.3 + Math.abs(Math.cos(p * Math.PI * 2)) * 0.7, 1);
+              ctx.fillStyle = '#b96718'; ctx.strokeStyle = '#603812'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.arc(1.5, 2, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+              ctx.fillStyle = '#ffd257'; ctx.strokeStyle = '#fff4b0';
+              ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+              ctx.strokeStyle = '#c18020'; ctx.lineWidth = 1.2;
+              ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, Math.PI * 2); ctx.stroke();
+              // Embossed numeral and a bright rim catch light as the coin flips.
+              ctx.strokeStyle = '#a45c19'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+              ctx.beginPath(); ctx.moveTo(-2.5, -3); ctx.lineTo(0, -5);
+              ctx.lineTo(0, 5); ctx.moveTo(-3, 5); ctx.lineTo(3, 5); ctx.stroke();
+              ctx.strokeStyle = '#fffbe8'; ctx.lineWidth = 2;
+              ctx.beginPath(); ctx.arc(0, 0, 10.5, Math.PI * 1.08, Math.PI * 1.65); ctx.stroke();
+              ctx.restore();
+              const glint = Math.sin(p * Math.PI) * size;
+              ctx.save(); ctx.translate(x + 10 * size, coinY - 11 * size);
+              ctx.strokeStyle = '#fffbe8'; ctx.lineWidth = 1.5;
+              ctx.beginPath(); ctx.moveTo(-4 * glint, 0); ctx.lineTo(4 * glint, 0);
+              ctx.moveTo(0, -6 * glint); ctx.lineTo(0, 6 * glint); ctx.stroke(); ctx.restore();
+            }
+            if (moving && berries) {
+              const sprites = this.berrySprites(), count = Math.min(6, berries);
+              for (let i = 0; i < count; i++) {
+                const p = (bonus.elapsed - 250 - i * 110) / 420;
+                if (p < 0 || p > 1) continue;
+                const startX = cx - width / 2 + 34 + i * 12,
+                  endX = this.compactHud ? cx : this.world.width - 42,
+                  endY = this.compactHud ? 6 : 21,
+                  x = startX + (endX - startX) * p,
+                  berryY = y + 76 + (endY - y - 76) * p - Math.sin(p * Math.PI) * 24,
+                  size = 1.2 * (1 - 0.6 * p ** 3);
+                ctx.drawImage(sprites.aura, x - 22 * size, berryY - 22 * size, 44 * size, 44 * size);
+                ctx.drawImage(sprites.body, x - 13 * size, berryY - 16 * size, 26 * size, 30 * size);
+              }
             }
             ctx.restore();
           }
@@ -7242,7 +7479,7 @@
           }
           // Event words pop in with overshoot, drift up with a small wobble, then fade.
           drawCallouts(effects) {
-            const still = this.game.trex.reducedMotion.matches;
+            const still = this.game.trex.reducedMotion.matches || !effects.lettering;
             for (const callout of effects.callouts) {
               const age = callout.maxLife - callout.life,
                 t = age / callout.maxLife,
@@ -8787,6 +9024,49 @@
             }
           }
 
+          berrySprites() {
+            const scale = Math.min(3, Math.max(1, this.ctx.getTransform().a || 1));
+            if (this.berryCache?.scale === scale) return this.berryCache;
+            const body = document.createElement('canvas'), aura = document.createElement('canvas');
+            body.width = Math.ceil(26 * scale); body.height = Math.ceil(30 * scale);
+            aura.width = aura.height = Math.ceil(44 * scale);
+            const b = body.getContext('2d'), a = aura.getContext('2d');
+            b.scale(scale, scale); b.translate(13, 16);
+            b.fillStyle = '#ff2e9a'; b.strokeStyle = '#6e0b45'; b.lineWidth = 1.5;
+            b.beginPath(); b.arc(0, 0, 10, 0, Math.PI * 2); b.fill(); b.stroke();
+            b.fillStyle = '#c4146f';
+            b.beginPath(); b.arc(0, 0, 8.5, 0, Math.PI); b.quadraticCurveTo(3, 4, 8.5, 0); b.fill();
+            b.fillStyle = '#45b86f'; b.strokeStyle = '#6e0b45'; b.lineWidth = 1;
+            b.beginPath(); b.moveTo(0, -8); b.quadraticCurveTo(-10, -15, -7, -8);
+            b.quadraticCurveTo(-3, -5, 0, -8); b.quadraticCurveTo(9, -16, 8, -9);
+            b.quadraticCurveTo(4, -5, 0, -8); b.fill(); b.stroke();
+            b.strokeStyle = '#ffd1ea'; b.lineWidth = 2; b.lineCap = 'round';
+            b.beginPath(); b.arc(0, 0, 7, Math.PI * 1.03, Math.PI * 1.5); b.stroke();
+            b.fillStyle = '#fff'; b.beginPath(); b.arc(-4, -5, 1.5, 0, Math.PI * 2); b.fill();
+            a.scale(scale, scale);
+            const glow = a.createRadialGradient(22, 22, 5, 22, 22, 22);
+            glow.addColorStop(0, 'rgba(255,64,170,.38)'); glow.addColorStop(1, 'rgba(255,64,170,0)');
+            a.fillStyle = glow; a.fillRect(0, 0, 44, 44);
+            return (this.berryCache = { scale, body, aura });
+          }
+          drawBerry() {
+            const p = this.game.berry.pickup;
+            if (!p) return;
+            const view = this.view(p), ctx = this.ctx, sprites = this.berrySprites(),
+              moving = this.effects.lettering && !this.game.trex.reducedMotion.matches,
+              entry = moving ? clamp(p.age / 220, 0, 1) : 1,
+              size = moving ? 0.7 + 0.3 * entry : 1;
+            ctx.save();
+            if (this.effects.lettering) {
+              const pulse = moving ? 1 + Math.sin(p.age / 450) * 0.1 + (1 - entry) * 0.3 : 1;
+              ctx.globalAlpha = moving ? 0.8 + Math.sin(p.age / 450) * 0.2 : 0.85;
+              ctx.drawImage(sprites.aura, view.x - 22 * pulse, view.y - 22 * pulse, 44 * pulse, 44 * pulse);
+            }
+            ctx.globalAlpha = 1;
+            ctx.drawImage(sprites.body, view.x - 13 * size, view.y - 16 * size, 26 * size, 30 * size);
+            ctx.restore();
+          }
+
           drawFeatherBadge(x, y, scale = 0.7) {
             const ctx = this.ctx;
             ctx.save();
@@ -9064,6 +9344,7 @@
             this.jumps = 0;
             this.deaths = 0;
             this.chilis = 0;
+            this.berries = 0;
             this.roasted = 0;
             this.best = 0;
           }
@@ -9079,6 +9360,9 @@
               case 'crash':
                 this.deaths++;
                 this.best = Math.max(this.best, event.score);
+                break;
+              case 'berry':
+                this.berries++;
                 break;
               case 'turbo':
                 this.chilis++;
@@ -9105,6 +9389,7 @@
                 }),
               ],
               ['Chilis collected', this.chilis],
+              ['Glow berries collected', this.berries],
               ['Cacti cleared', this.roasted],
             ];
           }
@@ -10047,6 +10332,8 @@
           const steps = Math.ceil((durationMs * FPS) / 1000);
           return (
             Math.floor(steps * GAME_MODES[mode].maxSpeed * CHILI_MULTIPLIER * POINTS_PER_PX * (1 + SCORE_BONUS_RATE)) + 1
+            + (durationMs < GLOW_BERRY.firstSpawnMs ? 0 : GLOW_BERRY.points *
+              (1 + Math.floor((durationMs - GLOW_BERRY.firstSpawnMs) / GLOW_BERRY.respawnMinMs)))
           );
         }
         // "10 Oct 2026": English and unambiguous everywhere. Assembled from parts because en-GB
@@ -10873,7 +11160,7 @@
             this.demoSeed = 937;
             const random = () => ((this.demoSeed = (Math.imul(this.demoSeed, 1664525) + 1013904223) >>> 0) / 4294967296);
             this.demo = new Game({ random, cosmeticRandom: random, bonusEnabled: false,
-              width: runner.game.world.width, featherEnabled: false, shieldEnabled: false, bossEnabled: false });
+              width: runner.game.world.width, featherEnabled: false, shieldEnabled: false, berryEnabled: false, bossEnabled: false });
             // These previews never show gameplay callouts; keep their text caches lazy.
             this.demoRenderer = new Renderer(context, this.demo, { prewarm: false });
             this.demoRenderer.effects.rng = new RandomSource(random);
@@ -10882,7 +11169,7 @@
             // height without stretching artwork or resizing the real game.
             this.backdrop = new Game({ width: runner.game.world.width, bonusEnabled: false,
               random: () => 0.5, cosmeticRandom: () => 0.5,
-              featherEnabled: false, shieldEnabled: false, bossEnabled: false });
+              featherEnabled: false, shieldEnabled: false, berryEnabled: false, bossEnabled: false });
             this.backdropRenderer = new Renderer(context, this.backdrop, { prewarm: false });
             this.reset();
           }
@@ -11495,6 +11782,7 @@
               reducedMotion: this.browser.motionQuery.matches,
               featherEnabled: testHooks.featherEnabled !== false,
               shieldEnabled: testHooks.shieldEnabled !== false,
+              berryEnabled: testHooks.berryEnabled !== false,
               bossEnabled: testHooks.bossEnabled !== false,
               width: matchMedia('(max-width:600px) and (orientation:portrait)').matches
                 ? PORTRAIT_W : BASE_W,
@@ -11783,6 +12071,15 @@
                 this.sessionView.dismiss('feather');
                 this.announce('Feather ready. Release Jump, then press again in the air.');
                 break;
+              case 'berrySpawn':
+                if (effects.lettering) effects.burst(event.x, event.y, 4, 'berry');
+                break;
+              case 'berry':
+                this.sound.berry();
+                if (effects.lettering) effects.burst(game.trex.x + 22, 108, 6, 'berry');
+                effects.callout('+25', game.trex.x + (effects.callouts.some(c => c.text === '1UP!') ? 80 : 24),
+                  Math.max(90, game.trex.y - 6), 'berry', 750);
+                break;
               case 'shield':
                 this.sound.shield();
                 effects.burst(game.trex.x + 22, game.trex.y + 24, 10, 'shield');
@@ -11816,7 +12113,8 @@
                 this.shownLevel = game.level;
                 this.sessionView.hintUntil = 0;
                 this.announce((event.checkpoint ? 'Checkpoint' : 'Level ' + event.level) +
-                  '. ' + event.cleared + ' obstacles cleared. Bonus ' + event.total + ' points.');
+                  '. ' + event.cleared + ' obstacles cleared. Bonus ' + event.total + ' points.' +
+                  (event.berries ? ' ' + event.berries + ' berries, ' + event.berries * GLOW_BERRY.points + ' points already added.' : ''));
                 break;
               case 'bonusTick':
                 this.sound.bonus(event.index);
@@ -12030,6 +12328,12 @@
             this.sessionView.updateCredits(this.credits.balance);
             this.sessionView.update(this.game, this.input, this.paused, night);
             const idle = this.game.state === 'attract';
+            const sky = idle ? null : night ? 'night' : 'day';
+            if (this.pageSky !== sky) {
+              this.pageSky = sky;
+              if (sky) document.documentElement.dataset.gameSky = sky;
+              else delete document.documentElement.dataset.gameSky;
+            }
             this.attract.sync();
             if (wasIdle !== idle) {
               this.resizeWorld();
@@ -12139,6 +12443,7 @@
             chili: { remainingMs: game.turbo.remaining, pickup: game.turbo.pickup },
             feather: { charged: game.feather.charged, pickup: game.feather.pickup },
             shield: { charged: game.shield.charged, pickup: game.shield.pickup, popRemainingMs: game.shield.popRemaining },
+            berry: { pickup: game.berry.pickup, timerMs: game.berry.spawnTimer, count: game.berries, score: game.berryScore },
             boss: { phase: game.boss.phase, remainingMs: game.boss.remaining, completed: game.boss.completed, result: game.boss.result,
               rock: game.boss.rock ? { x: game.boss.rock.x, y: game.boss.rock.y,
                 width: game.boss.rock.width, height: game.boss.rock.height,
