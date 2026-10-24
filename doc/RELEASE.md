@@ -6,10 +6,12 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal und veröffentlicht: Build `2026-10-25.1`, Worker-Cache `dino-run-v63`.
+Lokal: Build `2026-10-25.2`, Worker-Cache `dino-run-v64` (noch nicht veröffentlicht).
+Veröffentlicht: `2026-10-25.1` / `dino-run-v63`.
+Der neue Build korrigiert die Flugziele von Bonusmünzen und Beeren im Hochformat.
 Medien liegen jetzt in `assets/images/` und `assets/audio/`.
-Der Größenbericht nennt 598.855 Bytes Quelle und 328.992 Bytes Auslieferung
-(45,06 % kleiner; gzip 113.690, Brotli 101.749 Bytes).
+Der Größenbericht nennt 602.822 Bytes Quelle und 331.083 Bytes Auslieferung
+(45,08 % kleiner; gzip 114.291, Brotli 102.364 Bytes).
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
 Am 2026-10-25 nach Commit `a6bbc7d` mit `npm run deploy -- --tls12`

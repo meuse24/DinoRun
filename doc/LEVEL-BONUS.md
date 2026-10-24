@@ -59,6 +59,16 @@ next section; collections after that boundary belong to the next recap.
 Effects off and reduced motion keep the row and suppress the flights. Zero
 berries preserve the original two-row panel without additional sprite work.
 
+Build `2026-10-25.2` fixes the portrait flight target: both coins and berries
+reach the center of the visible `#hud-score`, rather than the top-center edge
+of the game canvas. `BonusFlightView` maps DOM HUD/canvas bounds to world
+coordinates and reuses `Renderer.drawBonusFlights()` on a transparent,
+pointer-transparent layer spanning game and HUD. Only an animated portrait
+tally attaches this layer; its pixel density is capped at 2. Effects off,
+reduced motion, round end and landscape remove it. Resize and paused orientation
+changes recompute the target. Landscape keeps the existing in-canvas artwork
+and target; award timing, score, lives and audio are unchanged.
+
 Jump inputs during the tally do not consume feathers or queue a delayed jump.
 Settings, Help, focus loss and device backgrounding freeze the tally through the
 existing pause lifecycle. Touch controls remain available; normal input resumes

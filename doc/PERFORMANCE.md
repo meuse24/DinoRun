@@ -1,15 +1,22 @@
 # Rendering, Caches und Performance-Prüfung
 
-Stand: lokaler Build `2026-10-25.1`. Aktuelle Implementierung in
+Stand: lokaler Build `2026-10-25.2`. Aktuelle Implementierung in
 [dino.html](../dino.html); alte Messreihen sind unten verlinkt.
 
 ## Aktueller Renderpfad
 
-Ein GPU-fähiger Canvas-2D-Kontext mit `willReadFrequently: false` wird für
+Ein GPU-fähiger Haupt-Canvas-2D-Kontext mit `willReadFrequently: false` wird für
 Attract und Spiel verwendet. Das erlaubt dem Browser seine Beschleunigungswahl,
 ist aber kein Nachweis tatsächlicher GPU-Residency. Touch-Querformat nutzt das
 DPR2-Budget. CSS-Abmessungen und logische Spielwelten bleiben davon getrennt.
 Der Zwischenstand mit getrenntem CPU-Spiel- und GPU-Vorschau-Backing ist ersetzt.
+
+Nur während eines bewegten Hochformat-Bonustallies hängt `BonusFlightView`
+eine transparente Zeichenebene mit maximal DPR2 über Spiel und DOM-HUD ein.
+Sie zeichnet Münzen und Beeren mit denselben Renderer-Routinen bis zum Score;
+DOM-Grenzen werden nur während dieses kurzen Effekts gemessen. Sie wird bei
+Effekte aus, Reduced Motion, Querformat und außerhalb des Tallies entfernt.
+Der normale Framepfad bekommt weder eine zweite Spielfläche noch Canvas-Readback.
 
 `Renderer.drawPixelText()` zeichnet das Pixel-HUD direkt mit `fillText`;
 ruhige Zeilen brauchen einen Aufruf plus gegebenenfalls den 1-px-Nachtschatten.

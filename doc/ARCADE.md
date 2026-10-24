@@ -2,7 +2,7 @@
 
 ## Phone render path (build 2026-10-24.6)
 
-One GPU-eligible Canvas context serves attract and play; landscape touch uses
+One GPU-eligible main Canvas context serves attract and play; landscape touch uses
 the DPR2 budget. HUD pixel text (`drawPixelText`) is drawn directly with
 `fillText` in the pixel face: one call per steady line, plus one for the 1px
 night shadow; hopping milestone digits are placed per glyph at one-em advances.
@@ -10,6 +10,8 @@ Per-glyph cache canvases were cheap on CPU raster but held A53 GPU gameplay near
 31 FPS. Arcade lettering and the recovery ghost keep their cached sprites
 (glow/blur per frame would cost more); sustained runs show no slow-frame excess
 while they are visible. Details: [PERFORMANCE.md](PERFORMANCE.md).
+Portrait level tallies briefly add a transparent flight layer so coins and
+berries can reach the separate DOM score above the game; see [LEVEL-BONUS.md](LEVEL-BONUS.md).
 
 ## Level bonus (build 2026-10-21.10)
 

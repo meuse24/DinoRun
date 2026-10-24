@@ -11,6 +11,9 @@ The optional song and hosted installation assets keep their existing roles.
   changes and round eligibility are reported through callbacks.
 - `HighscoreView` owns DOM rendering, name-picker input, dialog and focus.
 - `Runner` connects these components and the browser/input/audio adapters.
+- `BonusFlightView` maps the portrait DOM score to drawing coordinates during
+  bonus tallies. It owns the temporary transparent flight layer; the renderer
+  supplies the shared artwork. Simulation and payments remain in `Game`.
 
 No framework, dependency container, general event bus or additional packaging is
 needed for these two boundaries.

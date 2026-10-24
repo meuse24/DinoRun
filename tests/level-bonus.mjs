@@ -152,7 +152,8 @@ try {
     assert.equal(middle.credits, 2);
     await page.screenshot({ path: path.join(output, name + '-tally.png') });
     const effectCounts = await page.evaluate(() => {
-      const r = window.__dinoRunner, ctx = r.renderer.ctx, arc = ctx.arc, draw = ctx.drawImage;
+      const r = window.__dinoRunner, ctx = r.bonusFlights?.active ? r.bonusFlights.ctx : r.renderer.ctx,
+        arc = ctx.arc, draw = ctx.drawImage;
       const body = r.renderer.berrySprites().body;
       let coins = 0, berries = 0;
       ctx.drawImage = function(image, ...args) { if (image === body) berries++; return draw.call(this, image, ...args); };
@@ -162,15 +163,93 @@ try {
       };
       try {
         r.draw(1); const on = coins, berriesOn = berries; coins = berries = 0;
-        r.effectsSetting.set(false, false); r.draw(1); const off = coins, berriesOff = berries;
+        r.effectsSetting.set(false, false); r.draw(1); const off = coins, berriesOff = berries,
+          layersOff = document.querySelectorAll('#bonus-flights').length;
         r.effectsSetting.set(true, false);
-        return { on, off, berriesOn, berriesOff, paid: r.game.bonus.paid };
+        return { on, off, berriesOn, berriesOff, layersOff, paid: r.game.bonus.paid };
       } finally { ctx.arc = arc; ctx.drawImage = draw; }
     });
     assert(effectCounts.on > 0 && effectCounts.off === 0, 'Effects off suppresses actual coin flight');
     assert(effectCounts.berriesOn > 0 && effectCounts.berriesOn <= 6 && effectCounts.berriesOff === 0, 'Bounded berry sprites fly only with effects on');
+    assert.equal(effectCounts.layersOff, 0, 'Effects off removes the flight layer');
     assert.equal(effectCounts.paid, middle.bonus.paid, 'Effect setting never changes earned points');
+    // Capture real draw transforms, including the portrait layer above the game.
+    await page.evaluate(() => {
+      window.__sampleBonusFlights = () => {
+        const r = window.__dinoRunner, bonus = r.game.bonus, savedTime = bonus.elapsed;
+        const sample = (elapsed, kind) => {
+          bonus.elapsed = elapsed; r.draw(1);
+          const ctx = r.bonusFlights?.active ? r.bonusFlights.ctx : r.renderer.ctx,
+            canvas = ctx.canvas, rect = canvas.getBoundingClientRect(),
+            arc = ctx.arc, draw = ctx.drawImage, body = r.renderer.berrySprites().body;
+          let position;
+          const record = (x, y) => {
+            if (position) return;
+            const p = ctx.getTransform().transformPoint({ x, y });
+            position = { x: rect.left + p.x * rect.width / canvas.width,
+              y: rect.top + p.y * rect.height / canvas.height };
+          };
+          ctx.arc = function(x, y, radius, ...angles) {
+            if (kind === 'coin' && radius === 12 && this.fillStyle === '#ffd257') record(x, y);
+            return arc.call(this, x, y, radius, ...angles);
+          };
+          ctx.drawImage = function(image, ...args) {
+            if (kind === 'berry' && image === body) record(args[0] + args[2] / 2, args[1] + args[3] * 16 / 30);
+            return draw.call(this, image, ...args);
+          };
+          try { r.draw(1); return position; }
+          finally { ctx.arc = arc; ctx.drawImage = draw; }
+        };
+        try {
+          const coinMiddle = sample(325, 'coin'), coinEnd = sample(500, 'coin'), berryEnd = sample(670, 'berry'),
+            portrait = r.renderer.compactHud, score = document.getElementById('hud-score').getBoundingClientRect(),
+            game = r.renderer.ctx.canvas.getBoundingClientRect();
+          const target = portrait ? { x: score.left + score.width / 2, y: score.top + score.height / 2 }
+            : { x: game.left + (r.game.world.width - 42) * game.width / r.game.world.width,
+              y: game.top + 21 * game.height / 220 };
+          const layer = document.getElementById('bonus-flights')?.getBoundingClientRect();
+          return { portrait, coinMiddle, coinEnd, berryEnd, target, gameTop: game.top,
+            targetInsideLayer: !!layer && target.x > layer.left && target.x < layer.right && target.y > layer.top && target.y < layer.bottom,
+            layers: document.querySelectorAll('#bonus-flights').length };
+        } finally { bonus.elapsed = savedTime; r.draw(1); }
+      };
+    });
+    const checkFlights = async () => {
+      const result = await page.evaluate(() => window.__sampleBonusFlights());
+      for (const kind of ['coinEnd', 'berryEnd']) {
+        assert(result[kind], kind + ' actually drawn');
+        assert(Math.hypot(result[kind].x - result.target.x, result[kind].y - result.target.y) < 0.1,
+          kind + ' reaches visible score: ' + JSON.stringify(result));
+      }
+      if (result.portrait) {
+        assert(result.coinEnd.x - result.coinMiddle.x > 10, 'Portrait coins fly right toward the score');
+        assert(result.coinEnd.y < result.gameTop, 'Flight remains visible above the game canvas');
+        assert.equal(result.layers, 1);
+        assert(result.targetInsideLayer, 'Target is inside the visible flight surface');
+        assert.equal(await page.locator('#bonus-flights').evaluate(c => getComputedStyle(c).pointerEvents), 'none');
+      } else assert.equal(result.layers, 0);
+      return result;
+    };
+    const flights = await checkFlights();
+    if (name === 'portrait') {
+      for (const viewport of [{width:390,height:844}, {width:844,height:390}, {width:320,height:568}]) {
+        await page.setViewportSize(viewport);
+        await page.evaluate(() => { window.__dinoRunner.resize(); window.__dinoRunner.draw(1); });
+        await checkFlights();
+      }
+      await page.evaluate(() => { const r = window.__dinoRunner; r.game.bonus.elapsed = 620; r.draw(1); });
+      await page.screenshot({path:path.join(output, name + '-hud-flight.png')});
+      await page.evaluate(time => { const r = window.__dinoRunner; r.game.bonus.elapsed = time; r.draw(1); }, middle.bonus.elapsed);
+    }
     await page.locator('#settings-open').click();
+    if (name === 'portrait') {
+      await page.setViewportSize({width:390,height:844});
+      await page.evaluate(() => window.__dinoRunner.resize());
+      await checkFlights();
+      await page.setViewportSize({width:320,height:568});
+      await page.evaluate(() => window.__dinoRunner.resize());
+      await checkFlights();
+    }
     const beforePause = await page.evaluate(() => JSON.parse(window.render_game_to_text()));
     await page.evaluate(() => { for (let i = 0; i < 60; i++) window.__dinoRunner.update(1000 / 60); });
     assert.deepEqual(await page.evaluate(() => JSON.parse(window.render_game_to_text())), beforePause);
@@ -179,6 +258,7 @@ try {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.waitForTimeout(40);
     await page.evaluate(() => window.__dinoRunner.draw(1));
+    assert.equal(await page.locator('#bonus-flights').count(), 0, 'Reduced motion removes the temporary flight layer');
     await page.screenshot({ path: path.join(output, name + '-reduced.png') });
     const completion = await page.evaluate(() => {
       const r = window.__dinoRunner;
@@ -221,7 +301,7 @@ try {
     else await page.keyboard.press('Space');
     assert.equal(await page.evaluate(() => window.__dinoGame.trex.jumping), true, 'Controls work immediately after tally');
     assert.deepEqual(errors, []);
-    reports.push({ name, model, middle, completion }); await context.close();
+    reports.push({ name, model, middle, completion, flights }); await context.close();
   }
   fs.writeFileSync(path.join(output, 'bonus.json'), JSON.stringify(reports, null, 2));
   console.log(`${engine}: bonus accounting, safety, cap, lives, pause, input and ${reports.length} layouts passed`);

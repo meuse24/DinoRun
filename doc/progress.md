@@ -112,3 +112,32 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   START and playing state, actual worker-controlled offline reload, cached icon
   and both MP3s pass. No page errors or live highscore writes. Report/screenshot:
   output/publish-2026-10-25/. No physical-device run or Android APK publication.
+
+## 2026-10-25: Portrait bonus flights reach the visible score
+
+- User reports coins/berries flying straight upward rather than to the score
+  in portrait. Reproduced with the actual pre-change .1 HTML: both endpoints
+  x160/y208.09 versus visible DOM score x256/y144.875 (320x568 viewport).
+  The old renderer targeted world center/y6, and the game canvas clipped the
+  part above it. New regression fails on that saved baseline before the fix.
+- Applied develop-web-game. Factored shared flight drawing from the tally panel;
+  BonusFlightView measures the portrait canvas/HUD and draws the same coin/berry
+  artwork on a temporary transparent DPR2 layer spanning both. No input target,
+  timer, award, sound or simulation change. Layer is pointer-transparent, reused
+  between tallies and detached outside animated portrait bonuses. CSS also hides
+  it immediately for reduced motion/effects off while a modal pauses the loop.
+- Exact draw-transform assertions check coin/berry arrival inside the visible
+  score, rightward coin travel, actual layer bounds and landscape target. Added
+  phone resize/landscape/portrait and paused resizing, no leftover layers with
+  effects off/reduced motion. Chromium and WebKit each pass three bonus layouts
+  against source and delivery; portrait tally/near-arrival screenshots inspected.
+  Installed skill client passes source; gameplay screenshot/state inspected.
+- Build 2026-10-25.2/cache v64; generated delivery331083 bytes. Saved baseline and
+  reports under output/bonus-flight-fix/ and output/level-bonus/.
+- Final delivery validation: Chromium and WebKit bonus suites each pass three
+  layouts plus portrait resizing/rotation/paused resizing; endpoints coincide
+  with the visible HUD within0.1 CSS-px (measured error <0.00001 px at320x568).
+  Chromium architecture12, lifecycle/offline7, assets/deployment plan, berry5
+  layouts, effects2 layouts and reproducible64-scene source/release comparison
+  pass. Installed skill client passes final release; screenshot/state inspected.
+  No browser errors, live score writes or physical-device run.
