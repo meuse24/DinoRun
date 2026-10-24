@@ -111,36 +111,31 @@ try {
     assert.equal(samples[3].scale, samples[5].scale, 'Punch settles before the milestone ends');
     assert(samples.slice(3).every(sample => sample.lift === 0), 'Digits settle before the milestone ends');
     assert(samples.every(sample => /16px .*Dino Pixel/.test(sample.font)), 'Score uses the pixel face: ' + samples[0].font);
-    const glyphCache = await page.evaluate(() => {
-      const r = window.__dinoRunner.renderer;
-      r.hudGlyphs.clear();
-      r.hudRuns.clear();
-      // Warm every digit once, then vary only the destination punch transform.
-      r.drawPixelText('0123456789', 0, 0, 16, '#ffd257', '#081330');
-      const warmed = [...r.hudGlyphs.values()];
-      for (let frame = 0; frame < 90; frame++) {
-        r.ctx.save();
-        r.ctx.scale(1 + Math.sin(frame / 90 * Math.PI) * 0.1, 1.03);
-        r.drawPixelText('0123456789', 0, 0, 16, '#ffd257', '#081330');
-        r.ctx.restore();
-      }
-      const retained = [...r.hudGlyphs.values()];
+    const pixelText = await page.evaluate(() => {
+      const r = window.__dinoRunner.renderer, ctx = r.ctx, calls = [];
       let copies = 0;
-      const draw = r.ctx.drawImage;
-      r.ctx.drawImage = function(...args) { copies++; return draw.apply(this, args); };
-      try { r.drawPixelText('0123456789', 0, 0, 16, '#ffd257', '#081330'); }
-      finally { r.ctx.drawImage = draw; }
-      for (let score = 0; score < 100; score++)
-        r.drawPixelText('SC ' + score, 0, 0, 16, '#ffd257', '#081330');
-      const preference = r.ctx.getContextAttributes?.().willReadFrequently;
-      const matching = [...r.hudGlyphs.values(), ...r.hudRuns.values()].every(sprite =>
-        sprite.canvas.getContext('2d').getContextAttributes?.().willReadFrequently === preference);
-      return { warmed: warmed.length, retained: retained.length,
-        same: warmed.every((glyph, i) => glyph === retained[i]), copies,
-        bounded: r.hudRuns.size <= 48, matching };
+      const fill = ctx.fillText, draw = ctx.drawImage;
+      ctx.fillText = function(text, x, y) { calls.push({ text, x, y, font: this.font, style: this.fillStyle }); return fill.apply(this, arguments); };
+      ctx.drawImage = function() { copies++; return draw.apply(this, arguments); };
+      const before = { font: ctx.font, align: ctx.textAlign, baseline: ctx.textBaseline };
+      try {
+        r.drawPixelText('SC 00100', 100, 10, 16, '#ffd257', '#081330', 'right');
+        const steady = calls.splice(0);
+        r.drawPixelText('0123', 0, 0, 16, '#ffd257', null, 'left', (i) => -i);
+        const lifted = calls.splice(0);
+        const after = { font: ctx.font, align: ctx.textAlign, baseline: ctx.textBaseline };
+        return { steady, lifted, copies, restored: JSON.stringify(before) === JSON.stringify(after) };
+      } finally { ctx.fillText = fill; ctx.drawImage = draw; }
     });
-    assert.deepEqual(glyphCache, { warmed: 10, retained: 10, same: true, copies: 1, bounded: true, matching: true },
-      'Animated night score reuses shadowed glyphs instead of rasterising per frame');
+    // Direct text keeps GPU canvases fast; per-glyph canvas copies halved A53 play.
+    assert.equal(pixelText.copies, 0, 'HUD text copies no cached canvases');
+    assert.equal(pixelText.steady.length, 2, 'A steady shadowed line is one shadow and one face fill');
+    assert.deepEqual(pixelText.steady.map(c => [c.text, c.x, c.y, c.style]),
+      [['SC 00100', -27, 11, '#081330'], ['SC 00100', -28, 10, '#ffd257']], 'Right-aligned with a 1px night shadow');
+    assert(pixelText.steady.every(c => /16px .*Dino Pixel/.test(c.font)), 'Pixel face: ' + pixelText.steady[0].font);
+    assert.deepEqual(pixelText.lifted.map(c => [c.text, c.x, c.y]), [['0', 0, 0], ['1', 16, -1], ['2', 32, -2], ['3', 48, -3]],
+      'Hopping digits keep one-em advances and individual lifts');
+    assert(pixelText.restored, 'Pixel text leaves the context font and alignment unchanged');
     // Event lettering: cached sprites, overshoot pop, rise and fade; level banners sweep.
     const lettering = await page.evaluate(() => {
       const r = window.__dinoRunner, g = r.game, e = r.renderer.effects, sizes = [];

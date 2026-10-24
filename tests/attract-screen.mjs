@@ -290,7 +290,7 @@ try {
       return { jumped, ducked };
     });
     assert.deepEqual(demoActions, { jumped: true, ducked: true }, 'Demo demonstrates both controls');
-    await page.evaluate(() => { window.__previewCanvas = document.querySelector('#canvas'); window.__roundCanvas = null; });
+    await page.evaluate(() => { window.__previewCanvas = document.querySelector('#canvas'); });
     // Every slide can start a real, empty round via the same touch/mouse target.
     for (const index of [0, 1, 2]) {
       await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, 'next'); r.draw(1); }, index);
@@ -305,23 +305,14 @@ try {
       assert.equal(started.chili.remainingMs, 0);
       const canvasMode = await page.evaluate(() => {
         const c = document.querySelector('#canvas'), r = window.__dinoRunner;
-        const reused = !window.__roundCanvas || window.__roundCanvas === c;
-        window.__roundCanvas = c;
-        // Events from the retained, inactive preview must not pause the round.
-        if (c !== window.__previewCanvas) {
-          window.__previewCanvas.dispatchEvent(new Event('contextlost'));
-          window.__previewCanvas.dispatchEvent(new Event('contextrestored'));
-        }
-        return { reused, count: document.querySelectorAll('#game canvas').length,
-          connected: r.renderer.ctx.canvas === c && c.isConnected, paused: r.paused,
-          software: c.getContext('2d').getContextAttributes?.().willReadFrequently,
-          touch: matchMedia('(pointer: coarse)').matches };
+        return { same: c === window.__previewCanvas, count: document.querySelectorAll('#game canvas').length,
+          connected: r.renderer.ctx.canvas === c && c.isConnected,
+          software: c.getContext('2d').getContextAttributes?.().willReadFrequently };
       });
-      assert(canvasMode.reused && canvasMode.connected, 'Rounds reuse their backing and draw into the visible Canvas');
+      assert(canvasMode.same && canvasMode.connected, 'Rounds draw into the same visible Canvas as attract');
       assert.equal(canvasMode.count, 1, 'Only one Canvas is attached');
-      assert.equal(canvasMode.paused, false, 'Inactive Canvas events cannot pause gameplay');
-      if (canvasMode.software !== undefined) assert.equal(canvasMode.software, canvasMode.touch,
-        'Touch gameplay retains its tested CPU path');
+      if (canvasMode.software !== undefined) assert.equal(canvasMode.software, false,
+        'Gameplay keeps the GPU-eligible context');
       // With transitions, START fades out inert for 140 ms (T4) before it is hidden.
       if (process.env.DINO_TRANSITIONS === '1') await page.evaluate(() => window.__dinoTest.transitionDone());
       assert.equal(await page.locator('#start-game').isVisible(), false);
@@ -338,7 +329,7 @@ try {
         r.highscoreController.roundLeft(); r.game.newSession(); r.draw(1);
       });
       assert.equal(await page.evaluate(() => document.querySelector('#canvas') === window.__previewCanvas), true,
-        'Returning to attract reuses the original GPU-eligible backing');
+        'Returning to attract keeps the same Canvas');
     }
     await page.locator('#start-game').focus();
     await page.keyboard.press('Enter');

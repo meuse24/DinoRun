@@ -4023,7 +4023,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-24.5';
+        const BUILD = '2026-10-24.6';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4158,7 +4158,7 @@
         };
         const gameEl = document.getElementById('game');
         const pageEl = document.getElementById('page');
-        let canvas = document.getElementById('canvas');
+        const canvas = document.getElementById('canvas');
         const live = document.getElementById('status');
         let pixelRatio = 1;
 
@@ -6965,7 +6965,6 @@
         class Renderer {
           constructor(ctx, game, { prewarm = true } = {}) {
             this.ctx = ctx;
-            this.softwareRaster = false;
             this.game = game;
             this.world = game.world;
             this.darkQuery = matchMedia('(prefers-color-scheme: dark)');
@@ -6989,16 +6988,12 @@
             this.shieldView = Object.create(game.shield);
             this.textSprites = new Map();
             this.hud = null;
-            this.hudGlyphs = new Map();
-            this.glyphStyles = [];
-            this.glyphOffsets = [];
             this.scoreHop = (i) => {
               const t = this.scoreHopElapsed - 60 - i * 35,
                 y = t > 0 && t < 220 ? -Math.sin((t / 220) * Math.PI) * 4 : 0;
               this.scoreHopLift = Math.min(this.scoreHopLift, y);
               return y;
             };
-            this.hudRuns = new Map();
             // Canvas text never triggers a face load early enough; request both up front,
             // then rasterise the known lettering while the browser is idle.
             if (prewarm) Promise.all([
@@ -7613,7 +7608,7 @@
               canvas = document.createElement('canvas');
             canvas.width = Math.ceil(width * scale);
             canvas.height = Math.ceil(height * scale);
-            const sprite = canvas.getContext('2d', { willReadFrequently: true }),
+            const sprite = canvas.getContext('2d'),
               view = Object.assign(Object.create(trex), {
                 x: pad,
                 y: pad,
@@ -8553,105 +8548,39 @@
             ctx.restore();
           }
 
-          // Pixel-face glyphs are rasterised once per character, size, colour and pixel scale;
-          // the HUD then only copies them, instead of shaping web-font text every frame.
-          pixelGlyph(char, size, color, shadow = null) {
-            // Milestone punches scale the destination, not the cached source.
-            // Keying glyphs by that changing transform rerasterised the font each frame.
-            const scale = pixelRatio || 1;
-            let style = this.lastGlyphStyle;
-            if (!style || style.size !== size || style.color !== color || style.scale !== scale || style.shadow !== shadow) {
-              style = null;
-              for (const candidate of this.glyphStyles) {
-                if (candidate.size === size && candidate.color === color && candidate.scale === scale && candidate.shadow === shadow) {
-                  style = candidate;
-                  break;
-                }
-              }
-              if (!style) {
-                style = { size, color, scale, shadow, suffix: size + color + '|' + scale + '|' + shadow, keys: new Map() };
-                if (this.glyphStyles.length >= 16) this.glyphStyles.length = 0;
-                this.glyphStyles.push(style);
-              }
-              this.lastGlyphStyle = style;
-            }
-            let key = style.keys.get(char);
-            if (key === undefined) {
-              key = char + style.suffix;
-              if (style.keys.size >= 64) style.keys.clear();
-              style.keys.set(char, key);
-            }
-            let glyph = this.hudGlyphs.get(key);
-            if (glyph) return glyph;
-            const font = size + 'px ' + FONT_PIXEL,
-              ready = !document.fonts || document.fonts.check(font),
-              canvas = document.createElement('canvas'),
-              c = canvas.getContext('2d', { willReadFrequently: this.softwareRaster });
-            canvas.width = Math.ceil((size + (shadow ? 1 : 0)) * scale);
-            canvas.height = Math.ceil((size * 1.25 + (shadow ? 1 : 0)) * scale);
-            c.scale(scale, scale);
-            c.font = font;
-            c.textBaseline = 'top';
-            if (shadow) {
-              c.fillStyle = shadow;
-              c.fillText(char, 1, 1);
-            }
-            c.fillStyle = color;
-            c.fillText(char, 0, 0);
-            glyph = { canvas, width: size + (shadow ? 1 : 0), height: size * 1.25 + (shadow ? 1 : 0) };
-            if (ready) {
-              if (this.hudGlyphs.size > 240) this.hudGlyphs.clear();
-              this.hudGlyphs.set(key, glyph);
-            }
-            return glyph;
-          }
-          // Press Start 2P advances exactly one em per glyph; `lift(i)` offsets single glyphs.
+          // Press Start 2P advances exactly one em per glyph, so a steady line is one
+          // fillText and `lift(i)` offsets single glyphs. Drawing directly lets GPU
+          // canvases use their glyph atlas: copying dozens of per-glyph cache canvases
+          // each frame held A53 GPU gameplay near 31 instead of 60 FPS.
           drawPixelText(text, x, y, size, color, shadow, align = 'left', lift = null) {
-            const left = align === 'right' ? x - text.length * size
-              : align === 'center' ? x - (text.length * size) / 2 : x;
-            let offsets = null, lifted = false;
-            if (lift) {
-              offsets = this.glyphOffsets;
-              offsets.length = text.length;
+            const ctx = this.ctx,
+              left = align === 'right' ? x - text.length * size
+                : align === 'center' ? x - (text.length * size) / 2 : x;
+            ctx.save();
+            ctx.font = size + 'px ' + FONT_PIXEL;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            if (!lift) {
+              // A hard 1px night drop shadow, then the face.
+              if (shadow) {
+                ctx.fillStyle = shadow;
+                ctx.fillText(text, left + 1, y + 1);
+              }
+              ctx.fillStyle = color;
+              ctx.fillText(text, left, y);
+            } else {
               for (let i = 0; i < text.length; i++) {
-                const y = offsets[i] = lift(i);
-                if (y !== 0) lifted = true;
+                const dy = lift(i);
+                if (text[i] === ' ') continue;
+                if (shadow) {
+                  ctx.fillStyle = shadow;
+                  ctx.fillText(text[i], left + i * size + 1, y + dy + 1);
+                }
+                ctx.fillStyle = color;
+                ctx.fillText(text[i], left + i * size, y + dy);
               }
             }
-            // Stable night labels need one copy, including their shadow. Keep the
-            // per-character path while milestone digits hop independently.
-            if (shadow && !lifted) {
-              const scale = pixelRatio || 1,
-                key = text + '|' + size + '|' + color + '|' + shadow + '|' + scale;
-              let run = this.hudRuns.get(key);
-              if (!run) {
-                const canvas = document.createElement('canvas'),
-                  c = canvas.getContext('2d', { willReadFrequently: this.softwareRaster }),
-                  width = text.length * size + 1, height = size * 1.25 + 1;
-                canvas.width = Math.ceil(width * scale);
-                canvas.height = Math.ceil(height * scale);
-                c.scale(canvas.width / width, canvas.height / height);
-                for (let i = 0; i < text.length; i++) {
-                  if (text[i] === ' ') continue;
-                  const glyph = this.pixelGlyph(text[i], size, color, shadow);
-                  c.drawImage(glyph.canvas, i * size, 0, glyph.width, glyph.height);
-                }
-                run = { canvas, width, height };
-                if (!document.fonts || document.fonts.check(size + 'px ' + FONT_PIXEL)) {
-                  if (this.hudRuns.size >= 48) this.hudRuns.delete(this.hudRuns.keys().next().value);
-                  this.hudRuns.set(key, run);
-                }
-              }
-              this.ctx.drawImage(run.canvas, left, y, run.width, run.height);
-              return;
-            }
-            for (let i = 0; i < text.length; i++) {
-              if (text[i] === ' ') continue;
-              const dy = offsets ? offsets[i] : 0;
-              // Cache the night drop shadow with its glyph: one copy per character.
-              const glyph = this.pixelGlyph(text[i], size, color, shadow);
-              this.ctx.drawImage(glyph.canvas, left + i * size, y + dy, glyph.width, glyph.height);
-            }
+            ctx.restore();
           }
           drawDistanceMeter(meter, score, high, fg, level, fps) {
             const ctx = this.ctx,
@@ -10879,17 +10808,15 @@
               this.motionQuery.addEventListener('change', motionChanged);
             else this.motionQuery.addListener(motionChanged);
           }
-          bindCanvasEvents(target = canvas) {
+          bindCanvasEvents() {
             const runner = this.runner;
             // A lost 2D context pauses like focus loss; the round continues after restoration.
-            target.addEventListener('contextlost', () => {
-              if (target !== canvas) return;
+            canvas.addEventListener('contextlost', () => {
               this.contextLost = true;
               runner.report.record('canvas', 'lost');
               runner.updatePause();
             });
-            target.addEventListener('contextrestored', () => {
-              if (target !== canvas) return;
+            canvas.addEventListener('contextrestored', () => {
               this.contextLost = false;
               runner.report.record('canvas', 'restored');
               // Restored contexts start with default state: reapply scale and smoothing.
@@ -11573,14 +11500,6 @@
                 ? PORTRAIT_W : BASE_W,
             });
             this.renderer = new Renderer(context, this.game);
-            this.previewContext = context;
-            // Touch attract benefits from GPU-eligible drawing, while real
-            // rounds (including pickup/rotation scenes) are faster on CPU.
-            // Keep two bounded backings and attach only the active Canvas.
-            // Input stays on pageEl/gameEl; the Canvas carries no focus or input.
-            this.playContext = matchMedia('(pointer: coarse)').matches
-              ? canvas.cloneNode(false).getContext('2d', { alpha: false, willReadFrequently: true }) || context
-              : context;
             this.effectsSetting = new EffectsSetting();
             this.effectsSetting.on((enabled) => {
               this.renderer.effects.lettering = enabled;
@@ -11593,7 +11512,6 @@
             this.input = new InputController(this);
             this.gamepad = new GamepadController(this);
             this.report = new TestReport(this);
-            if (this.playContext !== context) this.browser.bindCanvasEvents(this.playContext.canvas);
             this.headingMotion = new HeadingMotion(motionEnabled);
             this.headingMotion.initialize(document);
             this.motion = new ElementMotion();
@@ -11729,19 +11647,7 @@
             }
             this.updateMusic();
           }
-          syncCanvas() {
-            const next = this.game.state === 'attract' ? this.previewContext : this.playContext;
-            if (this.renderer.ctx === next) return;
-            canvas.replaceWith(next.canvas);
-            canvas = next.canvas;
-            this.renderer.ctx = next;
-            this.renderer.softwareRaster = next !== this.previewContext;
-            // Night HUD bitmaps must match the destination's raster preference.
-            this.renderer.hudGlyphs.clear();
-            this.renderer.hudRuns.clear();
-          }
           resize() {
-            this.syncCanvas();
             this.renderer.compactHud = matchMedia('(max-width:600px) and (orientation:portrait)').matches;
             this.resizeWorld();
             setCanvasSize(this.renderer.ctx, this.game.state === 'attract'
@@ -12124,7 +12030,6 @@
             this.sessionView.updateCredits(this.credits.balance);
             this.sessionView.update(this.game, this.input, this.paused, night);
             const idle = this.game.state === 'attract';
-            this.syncCanvas();
             this.attract.sync();
             if (wasIdle !== idle) {
               this.resizeWorld();
@@ -12181,8 +12086,9 @@
         // Bootstrap: wire the embedded components once; no required runtime files.
         const context = canvas.getContext('2d', {
           alpha: false,
-          // Allow accelerated attract drawing. Runner retains a CPU context for
-          // touch gameplay; matching HUD caches follow the active context.
+          // One GPU-eligible context for attract and play. HUD text is drawn
+          // directly (see drawPixelText); per-glyph canvas copies, not GPU raster,
+          // made earlier phone gameplay slower than the CPU path.
           willReadFrequently: false,
         });
         if (!context) {

@@ -125,8 +125,11 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/android-sustained-performance.mjs`: one long physical fullscreen
   round (default A53, `release/dino.html`, landscape, 12 min) with a simple pilot
   and refilled lives; FPS/draw/thermal per window. `DINO_SUSTAINED_MIN`,
-  `_WINDOW_S`, `_LAYOUT`, `_MIN_FPS`. Own origin8898/relay9239; temporarily keeps
-  the screen on, restores rotation/stay-awake, blocks live scores.
+  `_WINDOW_S`, `_LAYOUT`, `_MIN_FPS`; A/B `_VARIANTS=current,gpu,gpuSingle`, trusted
+  taps `_TAP_MS`, rotation `_ROTATE_S`; slow frames tagged with active content.
+  Diagnostics: `_NO_OBSTACLES`, `_HIDE`, `_SKIP`, `_BITMAP_HUD`, `_DIRECT_TEXT`.
+  Own origin8898/relay9239; temporarily keeps the screen on, restores
+  rotation/stay-awake, blocks live scores.
 - `node tests/android-attract.mjs`: verify attract rotation, persistent START,
   touch starts and shield collisions on physical Android. Both Android runners
   accept `DINO_ANDROID_URL` for an existing local server and verify its artifact

@@ -196,3 +196,39 @@ night59.86/59.87/59.87/59.64; portrait59.64/59.85/59.86/59.86FPS,4.5s per phase,
 p95=16.8ms, at most0.37% intervals over20ms. No browser errors; rotation
 restored to auto1/user0. Demo screenshot inspected. Cooler than the earlier
 ~34°C audit, so this confirms the final build under these conditions only.
+
+## Build 2026-10-24.6 / cache v56: one GPU context, direct HUD text
+
+Sustained A/B on A53 (`tests/android-sustained-performance.mjs`, 4x5 min,
+trusted taps every 1s, rotation every 2 min, thermal 1): build .5 hybrid
+59.58/58.88 FPS, all-GPU 31.05/31.17 FPS (71% frames >20ms) from the first
+window. Not heat, taps, rotation, obstacles or the backing swap. The isolated
+scaling fixture now also gives all-GPU demo 60.18 but play 35.8; the earlier
+60 FPS all-GPU play sample does not reproduce. Bisection: skipping HUD
+`drawPixelText` restores 57-60 FPS on GPU; ImageBitmap glyph caches do not
+help (~29, and CPU drops to ~28); direct `fillText` in the pixel face gives
+59.4-60.1. Copying dozens of per-glyph cache canvases per frame was the cost;
+the attract demo draws no HUD, which is why GPU attract was fast.
+
+Implemented: `drawPixelText` uses `fillText`, glyph/run caches removed; one
+GPU-eligible context (no CPU play backing, no `syncCanvas`); ghost sprite
+without the CPU hint. Delivery 319645 bytes, SHA-256 `96140b8c...`.
+
+Physical results on that delivery (`output/hud-direct/`), Chrome 155:
+
+| Check | A53 | S10e |
+| --- | ---: | ---: |
+| 10 min play, taps + rotation: mean / worst window | 59.86 / 59.69 | 59.85 / 59.76 |
+| frames >20 ms / slow-frame share | 0.04% / 0.36% | 0.02% / 0.85% |
+| landscape attract panels (12 s each) | 59.92 / 59.93 / 59.94 | 59.78 / 59.86 / 59.86 |
+| functional suite, post-input portrait / landscape | 58.4 / 58.7 | 58.3 / 58.3 |
+
+The previous CPU gameplay path had a 3.8-4% slow-frame share in 20 min A53 runs.
+Content lift among slow frames stays near 1 for callouts (0.93/0.95), recovery
+ghost (0.98/0.84) and shake (1.00/1.11), so a lettering atlas is not warranted.
+The functional suite passed touch, feather, duck, pause, rotation, Help,
+death/restart, name dialog and offline reload on both phones; HUD screenshots
+inspected. Its first attempt hit a stale build .5 service worker on test origin
+8897 (hash check failed as intended) and was rerun on fresh origin 8899. One A53
+attract attempt timed out waiting for setup and passed on retry. Rotation
+restored on both phones (A53 auto1/user0, S10e auto1/user1).

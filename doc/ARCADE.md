@@ -1,15 +1,15 @@
 # Arcade typography and feedback
 
-## Phone render path (build 2026-10-24.5)
+## Phone render path (build 2026-10-24.6)
 
-Attract allows the browser's default acceleration choice and landscape touch
-attract uses the existing gameplay DPR2 budget. Touch rounds retain the CPU
-context and matching HUD glyph/run caches described below: an extra physical
-rotation/pickup test caught an all-GPU gameplay regression on A53. Two retained
-backings share one visible Canvas slot. Portrait retains its density; DOM
-text/buttons retain their sharpness.
-Physical S10e/A53 day, night and stressed-night comparisons and the fidelity
-tradeoff are recorded in [ATTRACT-PERFORMANCE.md](ATTRACT-PERFORMANCE.md).
+One GPU-eligible Canvas context serves attract and play; landscape touch uses
+the DPR2 budget. HUD pixel text (`drawPixelText`) is drawn directly with
+`fillText` in the pixel face: one call per steady line, plus one for the 1px
+night shadow; hopping milestone digits are placed per glyph at one-em advances.
+Per-glyph cache canvases were cheap on CPU raster but held A53 GPU gameplay near
+31 FPS. Arcade lettering and the recovery ghost keep their cached sprites
+(glow/blur per frame would cost more); sustained runs show no slow-frame excess
+while they are visible. Details: [ATTRACT-PERFORMANCE.md](ATTRACT-PERFORMANCE.md).
 
 ## Level bonus (build 2026-10-21.10)
 

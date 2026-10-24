@@ -5,19 +5,23 @@ readable root `dino.html`; the game itself still needs no build step to run.
 
 ## Rebuild
 
-Current prepared build: `2026-10-24.5`, worker cache `dino-run-v55`.
-GPU-eligible attract and landscape touch DPR2 in attract as well as play;
-touch gameplay retains its CPU context and matching HUD caches. Portrait
-density and DOM UI are unchanged; fine landscape Canvas
-edges can be softer. Physical comparisons: [ATTRACT-PERFORMANCE.md](ATTRACT-PERFORMANCE.md).
-Delivery321988 bytes, SHA-256
-`02314104de941b682d8f3b43d71f2006889e6df18e63d5fd189c1132361617fb`.
-Prepared locally; this build has not been uploaded.
-Verified:64 pixel-identical Chromium source/release scenes,12 attract layouts
-per engine, architecture12/arcade3/transitions86/lifecycle-offline7 each in
-Chromium and WebKit, and the installed release skill client. Physical Android
-details and the rejected all-GPU gameplay candidate are documented in the linked
-performance report.
+Current prepared build: `2026-10-24.6`, worker cache `dino-run-v56`.
+One GPU-eligible Canvas context for attract and play (no CPU gameplay backing);
+HUD pixel text is drawn directly with `fillText` instead of per-glyph cache
+canvases. Landscape touch keeps the DPR2 budget; portrait density and DOM UI are
+unchanged. Delivery 319645 bytes, SHA-256
+`96140b8c390d8aca65248d1e77776e1576bb7ef5dcdaec37250fe0933b0031c1`.
+Prepared locally; this build has not been uploaded. Verified: 64 pixel-identical
+Chromium source/release scenes; Chromium attract12, arcade3, architecture12,
+lifecycle-offline7, lives, level bonus, feather, boss, transitions86, menus,
+effects, game-over and release skill client; WebKit arcade, release attract12,
+architecture12, lifecycle-offline7, lives and transitions86. Physical A53/S10e
+results: [ATTRACT-PERFORMANCE.md](ATTRACT-PERFORMANCE.md).
+`tests/shield-bubble.mjs` fails identically on the previous build: it still expects
+world width 600 in 844x390 touch landscape, which edge-to-edge play changed.
+
+Previous prepared build `2026-10-24.5` (cache v55, never uploaded) used a CPU
+gameplay backing beside a GPU-eligible attract backing.
 
 Current published build: `2026-10-24.4`, worker cache `dino-run-v54`.
 Attract demo/backdrop renderers skip unused gameplay lettering prewarming;
