@@ -5,13 +5,14 @@ readable root `dino.html`; the game itself still needs no build step to run.
 
 ## Rebuild
 
-Current prepared build: `2026-10-24.6`, worker cache `dino-run-v56`.
+Current published build: `2026-10-24.6`, worker cache `dino-run-v56` (uploaded 2026-10-24,
+HTTPS hashes verified: `dino.html` `96140b8c...`, `service-worker.js` `2eac705b...`).
 One GPU-eligible Canvas context for attract and play (no CPU gameplay backing);
 HUD pixel text is drawn directly with `fillText` instead of per-glyph cache
 canvases. Landscape touch keeps the DPR2 budget; portrait density and DOM UI are
 unchanged. Delivery 319645 bytes, SHA-256
 `96140b8c390d8aca65248d1e77776e1576bb7ef5dcdaec37250fe0933b0031c1`.
-Prepared locally; this build has not been uploaded. Verified: 64 pixel-identical
+Verified before upload: 64 pixel-identical
 Chromium source/release scenes; Chromium attract12, arcade3, architecture12,
 lifecycle-offline7, lives, level bonus, feather, boss, transitions86, menus,
 effects, game-over and release skill client; WebKit arcade, release attract12,
@@ -23,7 +24,7 @@ world width 600 in 844x390 touch landscape, which edge-to-edge play changed.
 Previous prepared build `2026-10-24.5` (cache v55, never uploaded) used a CPU
 gameplay backing beside a GPU-eligible attract backing.
 
-Current published build: `2026-10-24.4`, worker cache `dino-run-v54`.
+Previously published build: `2026-10-24.4`, worker cache `dino-run-v54`.
 Attract demo/backdrop renderers skip unused gameplay lettering prewarming;
 the invisible landscape backdrop pauses while the demo is shown. Canvas density
 and visual effects are unchanged. Delivery321505 bytes, SHA-256
