@@ -1,0 +1,136 @@
+// Sustained physical-phone gameplay: one long real round with obstacles, night,
+// boss and effects, sampled in windows together with thermal state. Own origin,
+// tab and bridges; restores rotation and stay-awake settings, no live scores.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import http from 'node:http';
+import path from 'node:path';
+import {execFileSync,spawn} from 'node:child_process';
+import {pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
+
+const root=path.resolve(import.meta.dirname,'..');
+const pwPath=process.env.DINO_PLAYWRIGHT||'D:/projects/pacman/node_modules/playwright/index.mjs';
+const pw=await import(pathToFileURL(pwPath).href);
+const adbPath=path.join(process.env.LOCALAPPDATA,'Android/Sdk/platform-tools/adb.exe');
+const serial=process.env.DINO_ANDROID_SERIAL||'RFCW10RPKVW';
+const adb=(...args)=>execFileSync(adbPath,['-s',serial,...args],{encoding:'utf8'}).trim();
+const output=path.resolve(root,process.env.DINO_TEST_OUTPUT||`output/sustained-performance/${serial}`);
+fs.mkdirSync(output,{recursive:true});
+const htmlPath=process.env.DINO_CURRENT_HTML||'release/dino.html';
+const source=fs.readFileSync(path.resolve(root,htmlPath),'utf8');
+const minutes=Number(process.env.DINO_SUSTAINED_MIN||12),windowMs=Number(process.env.DINO_SUSTAINED_WINDOW_S||30)*1000;
+const layout=process.env.DINO_SUSTAINED_LAYOUT||'landscape';
+const minFps=process.env.DINO_SUSTAINED_MIN_FPS?Number(process.env.DINO_SUSTAINED_MIN_FPS):null;
+assert(['landscape','portrait'].includes(layout),'DINO_SUSTAINED_LAYOUT must be landscape or portrait');
+const port=8898,relayPort=9239,origin=`http://127.0.0.1:${port}`;
+const server=http.createServer((req,res)=>{
+  res.setHeader('Cache-Control','no-store');
+  if(new URL(req.url,origin).pathname==='/game.html')res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end(source);
+  else res.writeHead(204).end();
+});
+const device=()=>{
+  const thermal=adb('shell','dumpsys','thermalservice');
+  return{battery:Number(adb('shell','dumpsys','battery').match(/temperature:\s*(\d+)/)?.[1])/10,
+    thermal:Number(thermal.match(/Thermal Status:\s*(\d+)/)?.[1]),
+    skin:Number(thermal.match(/mValue=([\d.]+), mType=3/)?.[1])||null};
+};
+const stats=a=>{if(!a.length)return null;const s=[...a].sort((x,y)=>x-y),mean=a.reduce((x,y)=>x+y,0)/a.length;
+  return{fps:+(1000/mean).toFixed(2),meanMs:+mean.toFixed(2),p50:+s[Math.floor(s.length*.5)].toFixed(2),
+    p95:+s[Math.floor(s.length*.95)].toFixed(2),p99:+s[Math.floor(s.length*.99)].toFixed(2),
+    over20:+(100*a.filter(x=>x>20).length/a.length).toFixed(2),over33:+(100*a.filter(x=>x>33.4).length/a.length).toFixed(2)};};
+const settings={auto:adb('shell','settings','get','system','accelerometer_rotation'),user:adb('shell','settings','get','system','user_rotation'),
+  stayOn:adb('shell','settings','get','global','stay_on_while_plugged_in')};
+const report={serial,model:adb('shell','getprop','ro.product.model'),android:adb('shell','getprop','ro.build.version.release'),
+  artifact:htmlPath,sourceHash:createHash('sha256').update(source).digest('hex'),layout,minutes,windowMs,settings,
+  start:device(),windows:[],errors:[]};
+const save=()=>fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
+let browser,page,relay,forward,reverse=false;
+try{
+  await new Promise(r=>server.listen(port,'127.0.0.1',r));
+  assert(!adb('reverse','--list').includes(`tcp:${port}`),`Port ${port} already reversed`);
+  adb('reverse',`tcp:${port}`,`tcp:${port}`);reverse=true;
+  forward=adb('forward','tcp:0','localabstract:chrome_devtools_remote');
+  relay=spawn(process.execPath,[path.join(root,'tests/android-cdp-relay.mjs')],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],
+    env:{...process.env,DINO_PLAYWRIGHT:pwPath,DINO_CDP_UPSTREAM:`http://127.0.0.1:${forward}`,DINO_CDP_RELAY_PORT:String(relayPort)}});
+  await new Promise((resolve,reject)=>{relay.stdout.on('data',d=>{if(String(d).includes('ready'))resolve();});
+    relay.stderr.on('data',d=>reject(Error(String(d))));relay.on('exit',c=>reject(Error('Relay exited '+c)));});
+  browser=await pw.chromium.connectOverCDP(`http://127.0.0.1:${relayPort}`,{noDefaults:true});report.chrome=browser.version();
+  adb('shell','am','start','-n','com.android.chrome/com.google.android.apps.chrome.Main');
+  // The game holds no wake lock; keep the screen on for the run, restored below.
+  adb('shell','svc','power','stayon','usb');
+  page=await browser.contexts()[0].newPage();await page.bringToFront();
+  page.on('pageerror',e=>report.errors.push(String(e)));
+  await page.addInitScript(()=>{
+    const audio=new EventTarget();audio.pause=()=>{};audio.play=()=>Promise.resolve();
+    window.__dinoTest={credits:99,highscoreApiUrl:null,musicAudio:audio,transitions:false};
+    localStorage.setItem('dino-fullscreen-disabled','true');localStorage.setItem('dino-effects','on');
+    localStorage.setItem('dino-sound-muted','true');
+    navigator.serviceWorker.register=()=>Promise.reject(Error('Isolated performance fixture'));
+  });
+  const cdp=await page.context().newCDPSession(page);
+  const touch=async selector=>{await page.locator(selector).scrollIntoViewIfNeeded();const b=await page.locator(selector).boundingBox();assert(b,selector);
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:b.x+b.width/2,y:b.y+b.height/2}]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});};
+  adb('shell','settings','put','system','accelerometer_rotation','0');
+  adb('shell','settings','put','system','user_rotation',layout==='landscape'?'1':'0');
+  await page.goto(`${origin}/game.html`);await page.waitForFunction(()=>!!window.__dinoRunner);
+  await page.waitForFunction(p=>(innerHeight>innerWidth)===p,layout==='portrait');
+  await touch('#settings-open');await page.waitForFunction(()=>document.querySelector('#settings').open);
+  await touch('#fullscreen-toggle');await page.waitForFunction(()=>!!document.fullscreenElement);await touch('#settings-close');
+  await page.evaluate(()=>window.__dinoRunner.effectsSetting.set(true,false));
+  await touch('#start-game');await page.waitForFunction(()=>window.__dinoGame.playing&&!window.__dinoGame.countingDown);
+  await page.evaluate(()=>{
+    const r=window.__dinoRunner,g=r.game;
+    // Real obstacles, boss, level bonuses and night stay in the round. A simple
+    // pilot jumps/ducks; missed hits still cost a life with its effects, but
+    // lives are refilled before the last one so the round never ends.
+    const takeHit=g.takeHit.bind(g);window.__hits=0;
+    g.takeHit=o=>{if(g.lives<=1)g.lives=3;const hit=takeHit(o);if(hit)window.__hits++;return hit;};
+    g.on(e=>{if(e.type!=='step'||!g.playing)return;const t=g.trex;
+      const o=g.horizon.obstacles.find(o=>o.x+o.width*o.size>t.x),near=o&&o.x-(t.x+t.width)<g.speed*18;
+      const high=near&&o.type.name==='ptero'&&o.y<t.y-10;
+      g.duck(!!high&&!t.jumping);
+      if(near&&!high&&!t.jumping)g.jump();
+      if(!near&&!t.jumping&&t.ducking)g.duck(false);});
+    const draw=r.draw.bind(r);window.__work=[];
+    r.draw=(...args)=>{const s=performance.now(),result=draw(...args);window.__work.push(performance.now()-s);return result;};
+    window.__deltas=[];let last=performance.now();
+    const frame=t=>{window.__deltas.push(t-last);last=t;requestAnimationFrame(frame);};requestAnimationFrame(frame);
+    window.__take=()=>{const out={deltas:window.__deltas.slice(1),work:window.__work,
+      state:{playing:g.playing,paused:r.paused,hidden:document.hidden,fullscreen:!!document.fullscreenElement,
+        score:g.score,speed:+g.speed.toFixed(2),night:+(g.nightAlpha||0).toFixed(2),boss:!!g.boss?.rock,lives:g.lives,hits:window.__hits,
+        backing:[r.renderer.ctx.canvas.width,r.renderer.ctx.canvas.height]}};
+      window.__deltas=[];window.__work=[];return out;};
+  });
+  const started=Date.now(),end=started+minutes*60000;
+  console.log(`Sustained ${layout} run on ${report.model} for ${minutes} min, ${windowMs/1000}s windows`);
+  while(Date.now()<end){
+    await page.waitForTimeout(Math.min(windowMs,end-Date.now()));
+    const sample=await page.evaluate(()=>window.__take());
+    const entry={t:Math.round((Date.now()-started)/1000),...stats(sample.deltas),draw:stats(sample.work),...sample.state,device:device()};
+    report.windows.push(entry);save();
+    console.log(`${String(entry.t).padStart(4)}s ${entry.fps} FPS p95 ${entry.p95} >20ms ${entry.over20}% draw ${entry.draw?.meanMs}ms `+
+      `thermal ${entry.device.thermal} ${entry.device.battery}°C score ${entry.score} night ${entry.night} hits ${entry.hits}`);
+    assert(entry.playing&&!entry.paused&&!entry.hidden,`Round stopped, paused or hidden: ${JSON.stringify(sample.state)}`);
+  }
+  await page.screenshot({path:path.join(output,`${layout}-end.png`)});
+  const w=report.windows,avg=list=>+(list.reduce((a,x)=>a+x.fps,0)/list.length).toFixed(2);
+  report.summary={firstTwoFps:avg(w.slice(0,2)),lastTwoFps:avg(w.slice(-2)),minWindowFps:Math.min(...w.map(x=>x.fps)),
+    maxThermal:Math.max(...w.map(x=>x.device.thermal)),maxBattery:Math.max(...w.map(x=>x.device.battery)),hits:w.at(-1).hits};
+  console.log(JSON.stringify(report.summary));
+  assert.deepEqual(report.errors,[]);
+  if(minFps!==null)assert(report.summary.minWindowFps>=minFps,`Window below ${minFps} FPS: ${report.summary.minWindowFps}`);
+}finally{
+  await page?.evaluate(()=>localStorage.clear()).catch(()=>{});
+  await page?.close().catch(()=>{});await browser?.close().catch(()=>{});relay?.kill();
+  const restore=(ns,k,v)=>adb('shell','settings',v==='null'?'delete':'put',ns,k,...(v==='null'?[]:[v]));
+  restore('system','user_rotation',settings.user);restore('system','accelerometer_rotation',settings.auto);
+  restore('global','stay_on_while_plugged_in',settings.stayOn);
+  if(forward)adb('forward','--remove',`tcp:${forward}`);if(reverse)adb('reverse','--remove',`tcp:${port}`);
+  await new Promise(r=>server.close(r));
+  report.restored={auto:adb('shell','settings','get','system','accelerometer_rotation'),user:adb('shell','settings','get','system','user_rotation'),
+    stayOn:adb('shell','settings','get','global','stay_on_while_plugged_in')};
+  save();
+  assert.deepEqual(report.restored,settings,'Device settings restored');
+}
