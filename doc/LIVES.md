@@ -1,6 +1,6 @@
 # Lives and score rewards
 
-Build `2026-10-21.5`, worker cache `dino-run-v31`.
+Introduced in build `2026-10-21.5`, worker cache `dino-run-v31`.
 
 ## Player contract
 
@@ -54,7 +54,7 @@ feedback and existing sounds. `render_game_to_text` includes lives, maximum,
 next threshold and recovery time.
 
 ```powershell
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
+# Playwright uses the local installation from npm ci.
 node tests/lives.mjs
 node tests/shield-bubble.mjs
 node tests/rock-boss.mjs

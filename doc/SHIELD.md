@@ -1,13 +1,14 @@
 # Shield bubble
 
-## Plan and player contract
+## Player contract
 
 - Collect a violet bubble with a shield emblem automatically, using the existing
   player hit area. Store one charge until a damaging cactus or bird collision.
 - Pop the bubble and remove that entire obstacle (including a cactus cluster).
-  The next separate damaging collision is lethal, even during the pop animation.
-  No global invulnerability window or score bonus. Chili burns cacti first and
-  preserves the shield; birds consume it. Feather and shield can coexist.
+  The next separate damaging collision uses the normal [life/recovery rules](LIVES.md).
+  The shield itself grants no global invulnerability window or score bonus.
+  Chili burns cacti first and preserves the shield; birds consume it.
+  Feather and shield can coexist.
 - First eligible spawn: ten seconds of obstacle play; consumed or missed bubbles
   wait 24 seconds. Retry occupied slots after 300 ms. Keep 180 logical pixels
   clear around obstacles and other pickups, and reserve the incoming corridor.
@@ -22,18 +23,6 @@ Build 2026-10-18.12 also lets one shield charge shatter the Stone Jaw boss on
 contact. It removes that whole boss, preserving the existing single-hit rule.
 Chili cannot destroy stone. See [BOSS.md](BOSS.md) for the encounter contract.
 
-## Implementation and verification sequence
-
-1. Save Git baseline 7530590; implement a DOM-free ShieldBubble component and
-   integrate spawning, collection and single-hit consumption into Game.
-2. Add rendering, audio, accessible feedback and help; update BUILD.
-3. Add deterministic offline browser regressions for natural/swept collection,
-   safe slots, no stacking, cooldowns, cactus/bird/cluster hits, subsequent death,
-   simultaneous contacts, turbo/feather coexistence, pause/reset/rotation and
-   reduced motion. Check desktop and touch portrait/landscape in both engines.
-4. Run existing gameplay, architecture, feather and installed skill-client tests;
-   inspect gameplay screenshots and errors. Rebuild and verify compact delivery.
-5. Record outcomes here and in progress.md; commit completed changes in Git.
 
 ## Research applied
 
@@ -58,7 +47,7 @@ Use a local Playwright installation, or point DINO_PLAYWRIGHT to its ESM entry.
 On this workstation:
 
 ```powershell
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
+# Playwright uses the local installation from npm ci.
 $env:DINO_TEST_OUTPUT = "$PWD/output/shield"
 node tests/shield-bubble.mjs
 node tests/game-contract.mjs

@@ -1,20 +1,19 @@
+import { standaloneFixture } from './helpers/browser.mjs';
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Arcade credits: real button input, all start paths, persistence, cap and sound DSP.
 // Offline file only; no payment service or live score requests.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/coins'), engine);
 fs.mkdirSync(output, { recursive: true });
-const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-coins-'));
-const file = path.join(temporary, 'dino.html');
-fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), file);
+const fixture = standaloneFixture('dino-coins-');
+const file = fixture.file;
 const browser = await pw[engine].launch({ headless: true });
 const reports = [];
 try {
@@ -211,5 +210,5 @@ try {
   fs.writeFileSync(path.join(output, 'coins.json'), JSON.stringify(reports, null, 2));
   console.log(`${engine}: coin input, start gating, persistence, consumption, cap, focus and ${engine === 'chromium' ? 'audio DSP' : 'audio lifecycle'} passed in ${reports.length} layouts`);
 } finally {
-  await browser.close(); fs.rmSync(temporary, { recursive: true, force: true });
+  await browser.close(); fixture.cleanup();
 }

@@ -3,19 +3,6 @@
 The game remains one HTML file, with no build step or required runtime imports.
 The optional song and hosted installation assets keep their existing roles.
 
-## Refactoring plan (2026-10-15)
-
-1. Move score qualification, round lifetime, saving, retries and online loading
-   from `HighscoreView` to a DOM-independent `HighscoreController`. Keep dialog
-   timing, focus, labels and rendering in the view/coordinator.
-2. Replace the mutable global `viewWidth` with a world owned by each `Game`.
-   Pass that world explicitly to its entities and renderer/effects. Route browser
-   orientation changes through `Game.resize(width)` without resetting the round.
-3. Test deferred score responses and independent game sizes, then run the
-   existing Chromium/WebKit lifecycle, mobile and visual/deterministic checks.
-   Run the develop-web-game action client and inspect screenshots.
-4. Record results in `progress.md` and commit the reviewed change.
-
 ## Boundaries
 
 - `Game` and its entities own fixed-step simulation and logical world dimensions.
@@ -54,8 +41,9 @@ node tests/jump-feather.mjs
 node tests/render-cache.mjs output/architecture/baseline.html
 ```
 
-Before editing, save the baseline HTML from Git (this refactoring uses
-`f74c0b8:dino.html`). The comparison script requires that saved file; the other
+Before editing, save a matching baseline HTML from Git. The original
+2026-10-15 comparison used `f74c0b8:dino.html`; do not assume that old build
+remains compatible with later gameplay changes. The comparison script requires that saved file; the other
 tests do not. On this Windows installation, WebKit needs
 `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1` to bypass its broken host validator;
 tests still launch the actual WebKit engine. See `FEATHER.md` for setup details.
@@ -83,3 +71,25 @@ action client. All 140 comparison scenes are pixel-identical to `f74c0b8`;
 five 12,000-frame simulation/effect traces per engine match the baseline.
 Screenshots were inspected. No physical-device rerun was performed for this
 refactoring; the Android preview remains stopped.
+
+
+## Simulation phases (2026-10-24.12)
+
+`Game.update()` owns fixed-step validation, clocks, player/death/jump-buffer
+updates and the final meter/step event. `updatePlaying()` schedules the boss
+before Chili, then advances scenery and the active world. `updateWorld()`
+updates distance/score/life milestones, obstacles, pickups and night, resolves
+ordinary obstacles before the boss, then checks records and section bonuses.
+`updatePickups()`, `resolveObstacleCollisions()` and `resolveBossCollision()`
+keep those rules together without introducing another state owner.
+
+This order is intentional: life milestones can protect a contact on the same
+frame, pickups can supply protection before collision, and synchronous event
+listeners still see the same intermediate states. Preserve random consumption,
+spawn-corridor checks and post-crash guards when changing a phase.
+
+Feather and shield share `advancePickup()` (movement and swept collection test)
+and `pickupSpawnIsClear()` (obstacle/collectible clearance). Charge, consume,
+expiry and respawn stay in their respective classes. Collection dimensions
+and the asymmetric feather/shield spacing remain explicit; these helpers do
+not generalize Chili or berry placement.

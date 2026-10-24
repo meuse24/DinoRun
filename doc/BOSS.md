@@ -1,6 +1,6 @@
 # Stone Jaw rock boss
 
-## Player contract and plan
+## Player contract
 
 - A rare rock boss replaces a short stretch of regular obstacles. First eligible
   encounter after 36 seconds of obstacle play; later encounters wait 44–58 seconds.
@@ -16,21 +16,13 @@
   charge. Feather remains usable. Passing or shield-breaking counts once, with
   rock debris, a short synthesized sound and BOSS CLEAR. No extra score: existing
   server score plausibility and modes remain unchanged.
+- An unprotected contact uses the normal [life/recovery rules](LIVES.md); only
+  the final life ends the round.
 - Keep simulation DOM-free, share Game.world, freeze with gameplay pause, reset
   with rounds/sessions, and exclude bosses from the attract demo. Inline Canvas
   vectors and existing capped effects; reduced motion suppresses decorative pulses
   and debris. No new runtime library or external image/audio asset.
 
-## Implementation sequence
-
-1. Add RockBoss scheduling/entity, safe spawn reservation and collision outcomes.
-2. Draw the rock/opening, warning and clearance; integrate synthesized audio,
-   accessible announcements, concise English Help and text-state inspection.
-3. Test actual jump trajectories across both modes/speeds, lower/upper impacts,
-   shield/Chili/feather, spawn isolation, lifecycle/pause/resize/reduced motion,
-   keyboard/touch and browser errors. Inspect screenshots and the skill client.
-4. Rebuild the standalone delivery, run relevant existing regressions, record
-   evidence and commit the finished feature.
 
 ## Implementation and verification (build 2026-10-18.12)
 
@@ -146,7 +138,7 @@ and two rising notes for a clean passage, or a red X and two falling notes for c
 The symbol stays for the 0.7-second clearance interval. No particles
 or death sequence accompany the result. Feedback lasts about200ms; sound respects mute and effects volume.
 No personal records, top-ten qualification, online submission or session stats
-are recorded. Normal play retains lethal collisions and shield behavior.
+are recorded. Normal play uses the [life/recovery rules](LIVES.md) and shield behavior.
 
 `node tests/rock-training.mjs [game.html]` covers six consecutive encounters:
 three clean jumps, a missed jump, a held roof collision and a clean recovery.

@@ -1,12 +1,12 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Deterministic particle lifetime/reset and controller regressions against a saved HTML.
 // Usage: node tests/gc-pooling.mjs <baseline.html>
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import { pathToFileURL } from 'node:url';
 assert(process.argv[2], 'Pass a saved pre-change HTML');
 const root = path.resolve(import.meta.dirname, '..');
-const pw = await import(process.env.DINO_PLAYWRIGHT ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const engine = process.env.DINO_BROWSER || 'chromium';
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/gc-optimization'), `pooling-${engine}`);
 fs.mkdirSync(output, { recursive: true });

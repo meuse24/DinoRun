@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Workflow tests without a browser DOM, plus independent worlds and rotation.
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -201,8 +202,7 @@ await check('online loading deduplicates and supports refresh after failure', as
   assert.equal(f.requests.length, 2);
 });
 
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const browser = await pw[engine].launch({ headless: true });
 try {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 },

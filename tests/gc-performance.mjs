@@ -1,14 +1,14 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Isolated alternating before/after Chromium work-time, GC trace and allocation sampling.
 // Usage: node tests/gc-performance.mjs <baseline.html>
 // DINO_CPU_RATE=4 approximates CPU contention; it does not emulate a physical phone.
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 assert(process.argv[2], 'Pass a saved pre-change HTML');
 const root = path.resolve(import.meta.dirname, '..');
-const pw = await import(process.env.DINO_PLAYWRIGHT ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const rate = Number(process.env.DINO_CPU_RATE || 1);
 const frames = Number(process.env.DINO_BENCH_FRAMES || 1200);
 const rounds = Number(process.env.DINO_BENCH_ROUNDS || 4);

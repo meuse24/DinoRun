@@ -18,13 +18,13 @@ and opens the existing session summary. Returning to attract preserves session
 statistics and simulation time; only New session clears them. Highscores, game
 mode and audio preferences retain their existing persistence behavior.
 
-The PWA cache is v12. Source stays self-contained; optional MP3 files and hosted
+The flow was introduced with PWA cache v12; current versions are in [RELEASE.md](RELEASE.md). Source stays self-contained; optional MP3 files and hosted
 installation assets keep their existing roles.
 
 ## Repeatable checks
 
 ```powershell
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
+# Playwright uses the local installation from npm ci.
 node tests/game-over-flow.mjs
 node tests/game-over-flow.mjs release/dino.html
 node tests/game-contract.mjs

@@ -1,19 +1,18 @@
+import { standaloneFixture, capturePageErrors } from './helpers/browser.mjs';
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Actual standalone HTML, isolated from scores/network. Optional delivery path.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/shield'), engine);
 fs.mkdirSync(output, { recursive: true });
-const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-shield-'));
-const file = path.join(temporary, 'dino.html');
-fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), file);
+const fixture = standaloneFixture('dino-shield-');
+const file = fixture.file;
 const report = [];
 let browser;
 const state = page => page.evaluate(() => JSON.parse(window.render_game_to_text()));
@@ -49,9 +48,8 @@ try {
     // WebKit's layout/media queries stale on the first rotation back to portrait.
     const context = await browser.newContext({ ...options, screen: options.viewport, serviceWorkers: 'block' });
     await context.route(/^https?:/, route => route.abort());
-    const page = await context.newPage(), errors = [], requests = [];
-    page.on('pageerror', e => errors.push(String(e)));
-    page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
+    const page = await context.newPage(), requests = [];
+    const errors = capturePageErrors(page);
     page.on('request', r => requests.push(r.url()));
     await page.addInitScript(() => {
       let seed = 937;
@@ -340,5 +338,5 @@ try {
   console.log(`Shield collection, one-hit protection, coexistence, lifecycle and help passed in ${engine} ${browser.version()} (${report.length} layouts).`);
 } finally {
   await browser?.close();
-  fs.rmSync(temporary, { recursive: true, force: true });
+  fixture.cleanup();
 }

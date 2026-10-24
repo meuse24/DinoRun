@@ -1,22 +1,21 @@
+import { standaloneFixture } from './helpers/browser.mjs';
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Arcade effects switch and automatic performance probe: default on, saved choice,
 // Canvas lettering/shake gating, CSS effect scope, Help propagation, probe decisions
 // (fast, 30 Hz cap, slow, janky) and the time-capped slow-device decision.
 // Isolated offline file play; no live score requests. Optional delivery HTML.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/effects-setting'), engine);
 fs.mkdirSync(output, { recursive: true });
-const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-effects-'));
-const file = path.join(temporary, 'dino.html');
-fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), file);
+const fixture = standaloneFixture('dino-effects-');
+const file = fixture.file;
 const browser = await pw[engine].launch({ headless: true });
 try {
   for (const [name, viewport] of [['desktop', { width: 1280, height: 720 }], ['portrait', { width: 360, height: 700 }]]) {
@@ -111,5 +110,5 @@ try {
   console.log(`${engine}: effects switch, persistence, gating, Help and probe decisions passed in 2 layouts`);
 } finally {
   await browser.close();
-  fs.rmSync(temporary, { recursive: true, force: true });
+  fixture.cleanup();
 }

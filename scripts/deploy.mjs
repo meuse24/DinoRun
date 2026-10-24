@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { deploymentFiles } from './lib/hosted-assets.cjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const args = process.argv.slice(2);
@@ -14,12 +15,8 @@ const plainFtp = flag('--plain-ftp');
 const tls12 = flag('--tls12');
 const force = flag('--force');
 const also = args.flatMap((arg, i) => (arg === '--also' ? [args[i + 1]] : []));
-// Files that may accompany a release. Config, data, secrets and tests never do.
-const OPTIONAL = new Set([
-  'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png', 'dino.png', 'dino.svg',
-  'dino-jump-jump.mp3', 'dino-boom-in-the-dunes.mp3',
-  'highscores.php', 'highscores-lib.php', 'highscores-admin-lib.php', 'admin.php', 'score-console.php',
-]);
+// Plan validation happens before credentials or network access.
+const uploads = deploymentFiles(also);
 
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 const read = file => fs.readFileSync(path.join(root, file));
@@ -44,14 +41,7 @@ assert(read('release/dino.html').toString('utf8').includes(build),
   `release/dino.html does not contain BUILD ${build}; run npm run build`);
 assert(fs.statSync(path.join(root, 'release/dino.html')).mtimeMs >= fs.statSync(path.join(root, 'dino.html')).mtimeMs,
   'release/dino.html is older than dino.html; run npm run build');
-for (const name of also) assert(OPTIONAL.has(name) && fs.existsSync(path.join(root, name)), `Not an allowed extra file: ${name}`);
-
-// Order matters: assets and HTML first, the worker last, so no mismatched cache is installed.
-const uploads = [
-  ...also.map(name => ({ local: name, remote: name })),
-  { local: 'release/dino.html', remote: 'dino.html' },
-  { local: 'service-worker.js', remote: 'service-worker.js' },
-];
+for (const { local } of uploads) assert(fs.existsSync(path.join(root, local)), `Missing release file: ${local}`);
 
 const live = await fetch(new URL('service-worker.js', baseUrl) + '?t=' + Date.now(), { cache: 'no-store' }).catch(() => null);
 const liveCache = live?.ok ? (await live.text()).match(/CACHE_NAME = '([^']+)'/)?.[1] : null;
@@ -76,7 +66,7 @@ for (const { local, remote } of uploads) {
 }
 
 // Verify by hash over HTTPS (the server may need a moment to serve the new file).
-for (const { local, remote } of uploads.filter(u => /\.(html|js)$/.test(u.remote))) {
+for (const { local, remote } of uploads.filter(u => !u.remote.endsWith('.php'))) {
   const expected = sha256(read(local));
   let actual;
   for (let attempt = 0; attempt < 5 && actual !== expected; attempt++) {

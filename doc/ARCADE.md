@@ -9,7 +9,7 @@ night shadow; hopping milestone digits are placed per glyph at one-em advances.
 Per-glyph cache canvases were cheap on CPU raster but held A53 GPU gameplay near
 31 FPS. Arcade lettering and the recovery ghost keep their cached sprites
 (glow/blur per frame would cost more); sustained runs show no slow-frame excess
-while they are visible. Details: [ATTRACT-PERFORMANCE.md](ATTRACT-PERFORMANCE.md).
+while they are visible. Details: [PERFORMANCE.md](PERFORMANCE.md).
 
 ## Level bonus (build 2026-10-21.10)
 
@@ -105,7 +105,7 @@ Score rules, physics, spawning, highscore eligibility and audio are unchanged.
 ## Repeatable verification
 
 ```powershell
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
+# Playwright uses the local installation from npm ci.
 node tests/arcade-type.mjs
 node tests/attract-screen.mjs
 node tests/game-over-flow.mjs
@@ -154,7 +154,11 @@ interval exceeds 40 ms. A fast result is not saved, so each launch re-probes; a
 slow result is saved as `auto-off`; a manual choice is saved as `on`/`off` and
 stops probing. The result is written to the optional test log (`effects-probe`).
 
-### Frame-time measurements
+### Historical frame-time measurements
+
+These measurements describe the earlier render path. Its HUD glyph/run caches
+were removed in build 2026-10-24.6; use [PERFORMANCE.md](PERFORMANCE.md) for the
+current architecture. The results below do not benchmark the current build.
 
 Build2026-10-21.24 addresses the remaining night HUD cost. Night text previously
 copied a separate shadow and foreground for every character from default Canvas

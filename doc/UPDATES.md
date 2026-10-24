@@ -1,6 +1,6 @@
 # Player-controlled hosted updates
 
-## Plan and player contract
+## Player contract
 
 Implemented for build `2026-10-21.1`, cache `dino-run-v27`.
 
@@ -66,7 +66,8 @@ No root-level worker or new CDN dependency is introduced.
   revalidation too so installation fetches obtain the current HTML. No immutable
   CDN caching for these stable URLs. Worker installation uses `cache: 'reload'`
   to avoid silently reusing a fresh local HTTP-cache entry.
-- Keep existing manifest/icons, PHP/config/data and optional music in place.
+- Publish the current manifest, icons in `assets/images/` and music in
+  `assets/audio/` before the worker. Keep PHP/config/data in place.
   The minified HTML alone still supports standalone offline file play, but is
   not the whole hosted PWA deployment. Nothing is uploaded by the build; use
   `npm run deploy` (see RELEASE.md, Upload) for the ordered upload and hash check.

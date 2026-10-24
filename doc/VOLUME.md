@@ -9,13 +9,13 @@ standalone play and are independently cached for hosted offline installation,
 including byte-range responses. A missing song does not block game installation
 or prevent switching to the other song.
 
-`dino-boom-in-the-dunes.mp3` is converted from the supplied `Theme_song2.wav`
+`assets/audio/dino-boom-in-the-dunes.mp3` is converted from the supplied `asset-sources/audio/Theme_song2.wav`
 using the first song's mono, 22,050 Hz, constant 64 kbit/s MP3 settings.
 The WAV is 121.2 seconds; a pitch-preserving 1.5% tempo increase keeps the MP3
 below two minutes (119.420 seconds, 956,179 bytes). The original WAV is untouched.
 
 ```powershell
-ffmpeg -hide_banner -nostdin -i Theme_song2.wav -map 0:a:0 -vn -af atempo=1.015 -ac 1 -ar 22050 -c:a libmp3lame -b:a 64k -map_metadata -1 -metadata title="Dino Run - Boom in the Dunes" -metadata artist="m24" dino-boom-in-the-dunes.mp3
+ffmpeg -hide_banner -nostdin -i asset-sources/audio/Theme_song2.wav -map 0:a:0 -vn -af atempo=1.015 -ac 1 -ar 22050 -c:a libmp3lame -b:a 64k -map_metadata -1 -metadata title="Dino Run - Boom in the Dunes" -metadata artist="m24" assets/audio/dino-boom-in-the-dunes.mp3
 ```
 
 Settings has separate **Music volume** and **Effects volume** sliders from
@@ -49,7 +49,7 @@ Sources: [media volume](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMed
 ## Verification
 
 ```powershell
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
+# Playwright uses the local installation from npm ci.
 node tests/volume-controls.mjs
 node tests/theme-songs.mjs
 $env:DINO_BROWSER = 'webkit'

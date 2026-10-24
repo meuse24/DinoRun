@@ -1,14 +1,13 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Real-rAF, trusted-touch berry checks. Own origin/tab/bridges; no live scores.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import {execFileSync,spawn} from 'node:child_process';
-import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 const root=path.resolve(import.meta.dirname,'..');
-const pwPath=process.env.DINO_PLAYWRIGHT||'D:/projects/pacman/node_modules/playwright/index.mjs';
-const pw=await import(pathToFileURL(pwPath).href);
+const pw=await loadPlaywright();
 const serial=process.env.DINO_ANDROID_SERIAL||'RF8MB125SXA';
 const adb=(...args)=>execFileSync(path.join(process.env.LOCALAPPDATA,'Android/Sdk/platform-tools/adb.exe'),['-s',serial,...args],{encoding:'utf8',windowsHide:true}).trim();
 assert(!adb('shell','dumpsys','window').includes('mDreamingLockscreen=true'),'Unlock phone and open Chrome');
@@ -30,7 +29,7 @@ try{
   adb('reverse',`tcp:${port}`,`tcp:${port}`);reverse=true;
   forward=adb('forward','tcp:0','localabstract:chrome_devtools_remote');
   relay=spawn(process.execPath,[path.join(root,'tests/android-cdp-relay.mjs')],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],
-    env:{...process.env,DINO_PLAYWRIGHT:pwPath,DINO_CDP_UPSTREAM:`http://127.0.0.1:${forward}`,DINO_CDP_RELAY_PORT:String(relayPort)}});
+    env:{...process.env,DINO_CDP_UPSTREAM:`http://127.0.0.1:${forward}`,DINO_CDP_RELAY_PORT:String(relayPort)}});
   await new Promise((resolve,reject)=>{relay.stdout.on('data',d=>{if(String(d).includes('ready'))resolve();});relay.stderr.on('data',d=>reject(Error(String(d))));relay.on('exit',c=>reject(Error('Relay exited '+c)));});
   browser=await pw.chromium.connectOverCDP(`http://127.0.0.1:${relayPort}`,{noDefaults:true});
   page=await browser.contexts()[0].newPage();await page.bringToFront();

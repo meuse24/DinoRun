@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Matched physical-device comparison: pre-scaling Git source, current source,
 // and an optional lower-raster-density experiment. Own origin/tab/CDP bridges.
 import assert from 'node:assert/strict';
@@ -5,11 +6,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import {execFileSync,spawn} from 'node:child_process';
-import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 
 const root=path.resolve(import.meta.dirname,'..');
-const pw=await import(pathToFileURL(process.env.DINO_PLAYWRIGHT || 'D:/projects/pacman/node_modules/playwright/index.mjs').href);
+const pw=await loadPlaywright();
 const adbPath=path.join(process.env.LOCALAPPDATA,'Android/Sdk/platform-tools/adb.exe');
 const adb=(...args)=>execFileSync(adbPath,['-s',process.env.DINO_ANDROID_SERIAL||'RF8MB125SXA',...args],{encoding:'utf8'}).trim();
 const output=path.join(root,process.env.DINO_TEST_OUTPUT||'output/scaling-performance');fs.mkdirSync(output,{recursive:true});
@@ -36,7 +36,7 @@ try{
   assert(!adb('reverse','--list').includes(`tcp:${port}`));adb('reverse',`tcp:${port}`,`tcp:${port}`);reverse=true;
   forward=adb('forward','tcp:0','localabstract:chrome_devtools_remote');
   relay=spawn(process.execPath,[path.join(root,'tests/android-cdp-relay.mjs')],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe'],
-    env:{...process.env,DINO_PLAYWRIGHT:process.env.DINO_PLAYWRIGHT||'D:/projects/pacman/node_modules/playwright/index.mjs',DINO_CDP_UPSTREAM:`http://127.0.0.1:${forward}`,DINO_CDP_RELAY_PORT:String(relayPort)}});
+    env:{...process.env,DINO_CDP_UPSTREAM:`http://127.0.0.1:${forward}`,DINO_CDP_RELAY_PORT:String(relayPort)}});
   await new Promise((resolve,reject)=>{relay.stdout.on('data',d=>{if(String(d).includes('ready'))resolve()});relay.stderr.on('data',d=>reject(Error(String(d))));relay.on('exit',c=>reject(Error('Relay exited '+c)));});
   browser=await pw.chromium.connectOverCDP(`http://127.0.0.1:${relayPort}`,{noDefaults:true});report.chrome=browser.version();
   adb('shell','am','start','-n','com.android.chrome/com.google.android.apps.chrome.Main');

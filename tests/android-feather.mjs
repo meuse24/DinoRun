@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Physical Android check. Requires an authorized device, Chrome open and USB bridges:
 // adb forward tcp:9223 localabstract:chrome_devtools_remote
 // adb reverse tcp:8877 tcp:8877
@@ -8,7 +9,6 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/feather'), 'device');
@@ -33,8 +33,7 @@ const metadata = {
   input: 'Chrome CDP trusted touch on physical device; no viewport/device emulation',
   timing: 'normal requestAnimationFrame game loop; controlled pickup/obstacle fixtures',
 };
-const { chromium } = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const { chromium } = await loadPlaywright();
 let browser, page, savedRecords;
 let reverseRemoved = false;
 const errors = [], layouts = [];

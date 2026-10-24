@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Regression checks for heading text caching and deferred presentation only.
 // Exercise the game-owned presenter through the existing Runner inspection hook.
 import assert from 'node:assert/strict';
@@ -6,8 +7,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const engine = process.env.DINO_BROWSER || 'chromium';
 const browser = await pw[engine].launch({ headless: true });
 try {

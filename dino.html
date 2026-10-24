@@ -26,7 +26,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta property="og:image" content="https://meuse24.info/apps/dino/dino.png" />
+    <meta property="og:image" content="https://meuse24.info/apps/dino/assets/images/dino.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="720" />
     <meta property="og:image:height" content="184" />
@@ -56,9 +56,9 @@
         const links = hosted
           ? [
               { rel: 'manifest', href: 'manifest.webmanifest' },
-              { rel: 'icon', type: 'image/png', sizes: '192x192', href: 'icon-192.png' },
-              { rel: 'icon', type: 'image/png', sizes: '512x512', href: 'icon-512.png' },
-              { rel: 'apple-touch-icon', sizes: '180x180', href: 'icon-180.png' },
+              { rel: 'icon', type: 'image/png', sizes: '192x192', href: 'assets/images/icon-192.png' },
+              { rel: 'icon', type: 'image/png', sizes: '512x512', href: 'assets/images/icon-512.png' },
+              { rel: 'apple-touch-icon', sizes: '180x180', href: 'assets/images/icon-180.png' },
             ]
           : [{ rel: 'icon', type: 'image/png', sizes: '192x192', href: 'data:image/png;base64,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' }];
         for (const attributes of links) {
@@ -4062,7 +4062,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-24.11';
+        const BUILD = '2026-10-25.1';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4623,8 +4623,8 @@
 
         // Audio: optional menu tracks and synthesized game sounds.
         const MENU_TRACKS = {
-          'boom-in-the-dunes': 'dino-boom-in-the-dunes.mp3',
-          'dino-jump-jump': 'dino-jump-jump.mp3',
+          'boom-in-the-dunes': 'assets/audio/dino-boom-in-the-dunes.mp3',
+          'dino-jump-jump': 'assets/audio/dino-jump-jump.mp3',
         };
         const DEFAULT_MENU_TRACK = 'boom-in-the-dunes';
         const volumeLevel = (value) => clamp(Math.round(Number(value) || 0), 0, 100);
@@ -6327,6 +6327,29 @@
           }
         }
 
+        // Move once and test the swept pickup against the player's collection box.
+        // Standing bounds remain explicit because each pickup has its own contract.
+        function advancePickup(pickup, trex, dt, travelSpeed, halfWidth, halfHeight,
+          playerWidth = trex.width, playerHeight = trex.height) {
+          const oldX = pickup.x;
+          pickup.x -= ((travelSpeed * FPS) / 1000) * dt;
+          const ducking = trex.ducking && !trex.jumping;
+          return intersects({
+            x: trex.x, y: ducking ? GROUND_Y - 30 : trex.y,
+            width: ducking ? 59 : playerWidth, height: ducking ? 30 : playerHeight,
+          }, {
+            x: pickup.x - halfWidth, y: pickup.y - halfHeight,
+            width: oldX - pickup.x + halfWidth * 2, height: halfHeight * 2,
+          });
+        }
+        function pickupSpawnIsClear(x, obstacles, obstacleGap, firstPickup, firstGap,
+          secondPickup, secondGap) {
+          return obstacles.every((o) =>
+            x + obstacleGap < o.x || x - obstacleGap > o.x + o.width * o.size,
+          ) && (!firstPickup || Math.abs(firstPickup.x - x) > firstGap)
+            && (!secondPickup || Math.abs(secondPickup.x - x) > secondGap);
+        }
+
         // One stored rescue jump. Deterministic timing leaves the obstacle/chili
         // random stream alone; pickups are bounded and never stack.
         class JumpFeather {
@@ -6347,22 +6370,7 @@
           update(dt, trex, travelSpeed, obstacles, chiliPickup, shieldPickup = null, spawnBlocked = false) {
             if (!this.enabled || this.charged) return false;
             if (this.pickup) {
-              const oldX = this.pickup.x;
-              this.pickup.x -= ((travelSpeed * FPS) / 1000) * dt;
-              const ducking = trex.ducking && !trex.jumping;
-              const player = {
-                x: trex.x,
-                y: ducking ? GROUND_Y - 30 : trex.y,
-                width: ducking ? 59 : 44,
-                height: ducking ? 30 : 47,
-              };
-              const swept = {
-                x: this.pickup.x - 11,
-                y: this.pickup.y - 14,
-                width: oldX - this.pickup.x + 22,
-                height: 28,
-              };
-              if (intersects(player, swept)) {
+              if (advancePickup(this.pickup, trex, dt, travelSpeed, 11, 14, 44, 47)) {
                 this.charged = true;
                 this.pickup = null;
                 this.spawnTimer = FEATHER.respawnMs;
@@ -6378,10 +6386,8 @@
             this.spawnTimer -= dt;
             if (this.spawnTimer <= 0) {
               const x = this.world.width + 24;
-              const safe = obstacles.every((o) =>
-                x + FEATHER.spawnGap < o.x || x - FEATHER.spawnGap > o.x + o.width * o.size,
-              ) && (!chiliPickup || Math.abs(chiliPickup.x - x) > FEATHER.spawnGap)
-                && (!shieldPickup || Math.abs(shieldPickup.x - x) > SHIELD.spawnGap);
+              const safe = pickupSpawnIsClear(x, obstacles, FEATHER.spawnGap,
+                chiliPickup, FEATHER.spawnGap, shieldPickup, SHIELD.spawnGap);
               if (safe) this.pickup = { x, y: GROUND_Y - 33 };
               else this.spawnTimer = 300;
             }
@@ -6414,17 +6420,7 @@
             this.popRemaining = Math.max(0, this.popRemaining - dt);
             if (!this.enabled || this.charged) return false;
             if (this.pickup) {
-              const oldX = this.pickup.x;
-              this.pickup.x -= ((travelSpeed * FPS) / 1000) * dt;
-              const ducking = trex.ducking && !trex.jumping;
-              const player = {
-                x: trex.x, y: ducking ? GROUND_Y - 30 : trex.y,
-                width: ducking ? 59 : trex.width, height: ducking ? 30 : trex.height,
-              };
-              if (intersects(player, {
-                x: this.pickup.x - 16, y: this.pickup.y - 16,
-                width: oldX - this.pickup.x + 32, height: 32,
-              })) {
+              if (advancePickup(this.pickup, trex, dt, travelSpeed, 16, 16)) {
                 this.charged = true;
                 this.pickup = null;
                 this.spawnTimer = SHIELD.respawnMs;
@@ -6440,10 +6436,8 @@
             this.spawnTimer -= dt;
             if (this.spawnTimer <= 0) {
               const x = this.world.width + 24;
-              const safe = obstacles.every((o) =>
-                x + SHIELD.spawnGap < o.x || x - SHIELD.spawnGap > o.x + o.width * o.size,
-              ) && (!chiliPickup || Math.abs(chiliPickup.x - x) > SHIELD.spawnGap)
-                && (!featherPickup || Math.abs(featherPickup.x - x) > SHIELD.spawnGap);
+              const safe = pickupSpawnIsClear(x, obstacles, SHIELD.spawnGap,
+                chiliPickup, SHIELD.spawnGap, featherPickup, SHIELD.spawnGap);
               if (safe) this.pickup = { x, y: GROUND_Y - 33 };
               else this.spawnTimer = 300;
             }
@@ -7009,127 +7003,7 @@
               }
             }
             if (this.playing) {
-              this.recoveryRemaining = Math.max(0, this.recoveryRemaining - dt);
-              const before = this.gameTime;
-              this.gameTime += dt;
-              for (let mark = 0; mark <= this.countdown && this.countdown > 0; mark += COUNTDOWN_STEP_MS)
-                if ((mark ? before + TIME_EPSILON < mark : before === 0) && this.gameTime + TIME_EPSILON >= mark)
-                  this.emit('countdown', { value: (this.countdown - mark) / COUNTDOWN_STEP_MS });
-              if (this.gameTime + TIME_EPSILON >= this.clearTime) {
-                const bossEvent = this.pendingBonus && this.boss.phase === 'idle' ? null : this.boss.update(dt, this.speed * this.turbo.multiplier,
-                  !this.horizon.obstacles.length && !this.turbo.pickup && !this.feather.pickup
-                    && !this.shield.pickup && this.turbo.remaining <= 0
-                    && Math.abs(this.trex.x - TREX_START_X) <= 1);
-                if (bossEvent) this.emit(bossEvent);
-              }
-              for (const event of this.turbo.update(
-                dt,
-                this.trex,
-                this.speed,
-                this.horizon.obstacles,
-                this.shield.pickup,
-                this.boss.reserved || !!this.pendingBonus,
-              ))
-                this.emit(event.type, event);
-              const travelSpeed = this.speed * this.turbo.multiplier;
-              this.sceneryDistance += travelSpeed;
-              if (this.gameTime + TIME_EPSILON < this.clearTime)
-                this.horizon.updateScenery(dt, travelSpeed);
-              else {
-                this.distance += travelSpeed;
-                this.refreshScore();
-                // A milestone reached on the contact frame can save the last life.
-                this.awardLives();
-                this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
-                this.horizon.update(
-                  dt,
-                  travelSpeed,
-                  this.score,
-                  this.speed,
-                  this.config.gapMultiplier,
-                  // Keep a clear corridor behind visible collectibles too.
-                  this.boss.reserved || !!this.pendingBonus
-                    || (!!this.feather.pickup && this.feather.pickup.x > this.world.width + 10 - FEATHER.spawnGap)
-                    || (!!this.shield.pickup && this.shield.pickup.x > this.world.width + 10 - SHIELD.spawnGap),
-                );
-                if (this.feather.update(
-                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.shield.pickup, this.boss.reserved || !!this.pendingBonus,
-                )) this.emit('feather');
-                if (this.shield.update(
-                  dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.feather.pickup, this.boss.reserved || !!this.pendingBonus,
-                )) this.emit('shield');
-                if (this.berry.update(dt, this, travelSpeed)) {
-                  this.berries++;
-                  this.section.berries = (this.section.berries || 0) + 1;
-                  this.berryScore += GLOW_BERRY.points;
-                  this.refreshScore();
-                  this.awardLives();
-                  this.emit('berry');
-                }
-                this.night = Math.floor(this.score / 700) % 2 === 1;
-                this.nightAlpha += clamp(
-                  (this.night ? 1 : 0) - this.nightAlpha,
-                  -dt / 12000,
-                  dt / 12000,
-                );
-                // Turbo adds at most 3.34 px of player movement per step; keep collision bounds in mind.
-                for (let i = this.horizon.obstacles.length - 1; i >= 0; i--) {
-                  const obstacle = this.horizon.obstacles[i];
-                  if (!obstacle.bonusCleared && obstacle.x + obstacle.width * obstacle.size < this.trex.x) {
-                    obstacle.bonusCleared = true;
-                    this.section.cleared++;
-                  }
-                  if (!boxesCollide(this.trex, obstacle)) continue;
-                  if (!this.trex.turbo || obstacle.type.name === 'ptero') this.section.clean = false;
-                  if (this.trex.turbo && obstacle.type.name !== 'ptero') {
-                    this.emit('destroy', {
-                      x: obstacle.x + (obstacle.width * obstacle.size) / 2,
-                      y: obstacle.y + 20,
-                    });
-                    this.horizon.obstacles.splice(i, 1);
-                  } else if (this.recoveryRemaining > 0) {
-                    this.horizon.obstacles.splice(i, 1);
-                  } else if (this.shield.consume()) {
-                    this.horizon.obstacles.splice(i, 1);
-                    this.emit('shieldPop', { obstacle: obstacle.type.name });
-                  } else {
-                    this.takeHit(obstacle);
-                    if (this.crashed) break;
-                    this.horizon.obstacles.splice(i, 1);
-                  }
-                }
-                const rock = this.boss.rock;
-                if (!this.crashed && rock) {
-                  if (this.rockTraining) {
-                    if (boxesCollide(this.trex, rock)) rock.failed = true;
-                    if (rock.x + rock.width < this.trex.x) this.clearBoss(!rock.failed);
-                  } else if (boxesCollide(this.trex, rock)) {
-                    this.section.clean = false;
-                    if (this.recoveryRemaining > 0) this.clearBoss(false, 'recovery');
-                    else if (this.shield.consume()) {
-                      this.emit('shieldPop', { obstacle: 'rockBoss' });
-                      this.clearBoss(false, 'shield');
-                    } else {
-                      this.takeHit(rock);
-                      if (!this.crashed) this.clearBoss(false, 'life');
-                    }
-                  } else if (rock.x + rock.width < this.trex.x) this.clearBoss(true);
-                }
-                if (
-                  !this.crashed && !this.rockTraining &&
-                  !this.recordCelebrated &&
-                  this.recordAtStart > 0 &&
-                  this.score > this.recordAtStart
-                ) {
-                  this.recordCelebrated = true;
-                  this.emit('record', {
-                    score: this.score,
-                  });
-                }
-                if (!this.rockTraining) this.highScore = Math.max(this.highScore, this.score);
-                this.queueBonus();
-                this.beginBonusIfSafe();
-              }
+              this.updatePlaying(dt);
             }
             this.meter.update(dt, this.score);
             this.emit('step', {
@@ -7137,6 +7011,142 @@
               played: wasPlaying,
               landed: wasJumping && !this.trex.jumping && !this.crashed,
             });
+          }
+          // Phase order is gameplay: boss scheduling precedes Chili, then world travel.
+          updatePlaying(dt) {
+            this.recoveryRemaining = Math.max(0, this.recoveryRemaining - dt);
+            const before = this.gameTime;
+            this.gameTime += dt;
+            for (let mark = 0; mark <= this.countdown && this.countdown > 0; mark += COUNTDOWN_STEP_MS)
+              if ((mark ? before + TIME_EPSILON < mark : before === 0) && this.gameTime + TIME_EPSILON >= mark)
+                this.emit('countdown', { value: (this.countdown - mark) / COUNTDOWN_STEP_MS });
+            if (this.gameTime + TIME_EPSILON >= this.clearTime) {
+              const bossEvent = this.pendingBonus && this.boss.phase === 'idle' ? null : this.boss.update(dt, this.speed * this.turbo.multiplier,
+                !this.horizon.obstacles.length && !this.turbo.pickup && !this.feather.pickup
+                  && !this.shield.pickup && this.turbo.remaining <= 0
+                  && Math.abs(this.trex.x - TREX_START_X) <= 1);
+              if (bossEvent) this.emit(bossEvent);
+            }
+            for (const event of this.turbo.update(
+              dt,
+              this.trex,
+              this.speed,
+              this.horizon.obstacles,
+              this.shield.pickup,
+              this.boss.reserved || !!this.pendingBonus,
+            ))
+              this.emit(event.type, event);
+            const travelSpeed = this.speed * this.turbo.multiplier;
+            this.sceneryDistance += travelSpeed;
+            if (this.gameTime + TIME_EPSILON < this.clearTime)
+              this.horizon.updateScenery(dt, travelSpeed);
+            else {
+              this.updateWorld(dt, travelSpeed);
+            }
+          }
+          updateWorld(dt, travelSpeed) {
+            this.distance += travelSpeed;
+            this.refreshScore();
+            // A milestone reached on the contact frame can save the last life.
+            this.awardLives();
+            this.speed = Math.min(this.config.maxSpeed, this.speed + this.config.acceleration);
+            this.horizon.update(
+              dt,
+              travelSpeed,
+              this.score,
+              this.speed,
+              this.config.gapMultiplier,
+              // Keep a clear corridor behind visible collectibles too.
+              this.boss.reserved || !!this.pendingBonus
+                || (!!this.feather.pickup && this.feather.pickup.x > this.world.width + 10 - FEATHER.spawnGap)
+                || (!!this.shield.pickup && this.shield.pickup.x > this.world.width + 10 - SHIELD.spawnGap),
+            );
+            this.updatePickups(dt, travelSpeed);
+            this.night = Math.floor(this.score / 700) % 2 === 1;
+            this.nightAlpha += clamp(
+              (this.night ? 1 : 0) - this.nightAlpha,
+              -dt / 12000,
+              dt / 12000,
+            );
+            // Turbo adds at most 3.34 px of player movement per step; keep collision bounds in mind.
+            this.resolveObstacleCollisions();
+            this.resolveBossCollision();
+            if (
+              !this.crashed && !this.rockTraining &&
+              !this.recordCelebrated &&
+              this.recordAtStart > 0 &&
+              this.score > this.recordAtStart
+            ) {
+              this.recordCelebrated = true;
+              this.emit('record', {
+                score: this.score,
+              });
+            }
+            if (!this.rockTraining) this.highScore = Math.max(this.highScore, this.score);
+            this.queueBonus();
+            this.beginBonusIfSafe();
+          }
+          updatePickups(dt, travelSpeed) {
+            if (this.feather.update(
+              dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.shield.pickup, this.boss.reserved || !!this.pendingBonus,
+            )) this.emit('feather');
+            if (this.shield.update(
+              dt, this.trex, travelSpeed, this.horizon.obstacles, this.turbo.pickup, this.feather.pickup, this.boss.reserved || !!this.pendingBonus,
+            )) this.emit('shield');
+            if (this.berry.update(dt, this, travelSpeed)) {
+              this.berries++;
+              this.section.berries = (this.section.berries || 0) + 1;
+              this.berryScore += GLOW_BERRY.points;
+              this.refreshScore();
+              this.awardLives();
+              this.emit('berry');
+            }
+          }
+          resolveObstacleCollisions() {
+            for (let i = this.horizon.obstacles.length - 1; i >= 0; i--) {
+              const obstacle = this.horizon.obstacles[i];
+              if (!obstacle.bonusCleared && obstacle.x + obstacle.width * obstacle.size < this.trex.x) {
+                obstacle.bonusCleared = true;
+                this.section.cleared++;
+              }
+              if (!boxesCollide(this.trex, obstacle)) continue;
+              if (!this.trex.turbo || obstacle.type.name === 'ptero') this.section.clean = false;
+              if (this.trex.turbo && obstacle.type.name !== 'ptero') {
+                this.emit('destroy', {
+                  x: obstacle.x + (obstacle.width * obstacle.size) / 2,
+                  y: obstacle.y + 20,
+                });
+                this.horizon.obstacles.splice(i, 1);
+              } else if (this.recoveryRemaining > 0) {
+                this.horizon.obstacles.splice(i, 1);
+              } else if (this.shield.consume()) {
+                this.horizon.obstacles.splice(i, 1);
+                this.emit('shieldPop', { obstacle: obstacle.type.name });
+              } else {
+                this.takeHit(obstacle);
+                if (this.crashed) break;
+                this.horizon.obstacles.splice(i, 1);
+              }
+            }
+          }
+          resolveBossCollision() {
+            const rock = this.boss.rock;
+            if (!this.crashed && rock) {
+              if (this.rockTraining) {
+                if (boxesCollide(this.trex, rock)) rock.failed = true;
+                if (rock.x + rock.width < this.trex.x) this.clearBoss(!rock.failed);
+              } else if (boxesCollide(this.trex, rock)) {
+                this.section.clean = false;
+                if (this.recoveryRemaining > 0) this.clearBoss(false, 'recovery');
+                else if (this.shield.consume()) {
+                  this.emit('shieldPop', { obstacle: 'rockBoss' });
+                  this.clearBoss(false, 'shield');
+                } else {
+                  this.takeHit(rock);
+                  if (!this.crashed) this.clearBoss(false, 'life');
+                }
+              } else if (rock.x + rock.width < this.trex.x) this.clearBoss(true);
+            }
           }
           clearBoss(clean, protection = null) {
             const rock = this.boss.rock;

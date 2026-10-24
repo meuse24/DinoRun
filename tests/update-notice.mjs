@@ -1,10 +1,10 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Real two-version service-worker fixture under the production directory shape.
 // node tests/update-notice.mjs [game.html]; no live scores, deployment or phone.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const artifact = path.resolve(process.argv[2] || path.join(root, 'dino.html'));
@@ -27,14 +27,14 @@ const server = http.createServer((request, response) => {
   } else if (name === 'service-worker.js') {
     response.writeHead(200, { 'Content-Type': 'text/javascript' });
     response.end(worker.replace(/dino-run-v\d+/, `dino-run-test-${version}`));
-  } else if (['manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-180.png'].includes(name)) {
+  } else if (['manifest.webmanifest', 'assets/images/icon-192.png', 'assets/images/icon-512.png', 'assets/images/icon-180.png'].includes(name)) {
     response.writeHead(200, { 'Content-Type': name.endsWith('.png') ? 'image/png' : 'application/manifest+json' });
     response.end(fs.readFileSync(path.join(root, name)));
   } else response.writeHead(404).end(); // Both songs are deliberately optional/missing.
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const url = `http://127.0.0.1:${server.address().port}${prefix}dino.html`;
-const pw = await import(process.env.DINO_PLAYWRIGHT ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const report = [], errors = [];
 let browser;
 const state = page => page.evaluate(() => JSON.parse(window.render_game_to_text()));

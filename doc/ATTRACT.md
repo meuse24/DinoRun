@@ -4,7 +4,8 @@ Build `2026-10-24.4` skips gameplay lettering prewarming in the demo/backdrop
 renderers, which never display those callouts. The main renderer still prepares
 them before play; preview caches remain lazy if a future feature needs lettering.
 During the landscape demo, the hidden idle backdrop pauses and resumes on the
-next scores/powerups panel. Canvas resolution and menu effects are unchanged.
+next scores/powerups panel. The current context and density policy is documented
+in [PERFORMANCE.md](PERFORMANCE.md).
 
 Build `2026-10-24.3` also shows the Settings FPS counter on all three attract
 panels. When enabled, a small two-line readout replaces the decorative coin mark
@@ -29,7 +30,7 @@ persistent orange START button and three rotating preview panels:
 - **Demo, 10 seconds:** a silent runner using the actual Game, Renderer,
   obstacle hitboxes and jump/duck rules. The authored opening demonstrates cacti
   and two bird heights; a small autopilot controls the dino. It loops on a crash.
-- **Power-ups, 9 seconds:** Chili, feather and shield icons with short player
+- **Power-ups, 9 seconds:** Chili, feather, shield and glow berry icons with short player
   descriptions. The illustrated powers match the current in-game rules.
 
 The same START element remains visible and stationary across all three panels,
@@ -81,7 +82,7 @@ enabled for the whole menu, including the existing WebKit game-over edge case.
 ## Repeatable verification
 
 ```powershell
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
+# Playwright uses the local installation from npm ci.
 $env:DINO_TEST_OUTPUT = "$PWD/output/attract"
 node tests/attract-screen.mjs
 node tests/game-contract.mjs
@@ -110,7 +111,7 @@ include layout metrics.
 
 Source and delivery results are collected under `output/attract`. Screenshots
 are visually inspected. Emulation and physical-device results are recorded
-separately. Nothing has been deployed.
+separately. Publication history is recorded in the [release archive](archive/RELEASE-through-2026-10-24.md).
 
 ## Previous verified result (2026-10-17.1)
 

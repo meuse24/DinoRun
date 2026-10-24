@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Physical Android: trusted touch and normal rAF, no device emulation.
 // Use the safe android-preview.cjs server and USB bridges documented in doc/FEATHER.md.
 import assert from 'node:assert/strict';
@@ -5,7 +6,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const artifact = path.resolve(process.argv[2] || path.join(root, 'dino.html'));
@@ -21,8 +21,7 @@ const rotation = {
   auto: adb('shell', 'settings', 'get', 'system', 'accelerometer_rotation'),
   user: adb('shell', 'settings', 'get', 'system', 'user_rotation'),
 };
-const { chromium } = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const { chromium } = await loadPlaywright();
 const errors = [], layouts = [];
 let browser, page, savedFullscreen, savedRecords;
 try {
@@ -59,22 +58,47 @@ try {
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   };
   const state = () => page.evaluate(() => JSON.parse(window.render_game_to_text()));
-  const reset = () => page.evaluate(() => {
-    const r = window.__dinoRunner;
-    r.highscoreController.roundLeft(); r.game.newSession();
-    r.attract.reset(); r.attract.userPaused = false; r.draw(1);
-  });
+  const reset = async () => {
+    await page.evaluate(() => {
+      const r = window.__dinoRunner;
+      r.highscoreController.roundLeft(); r.game.newSession();
+      r.attract.reset(); r.attract.userPaused = false; r.draw(1);
+    });
+    await page.evaluate(() => window.__dinoTest.transitionDone());
+    // Chrome can retain :active after the pressed button disappears on Start.
+    if (await page.locator('#start-game').evaluate(button => button.matches(':active'))) {
+      await touch(page.locator('#settings-open'));
+      await page.waitForFunction(() => window.__dinoRunner.paused);
+      await touch(page.locator('#settings-close'));
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+    }
+  };
   const checkStart = async before => {
+    await page.evaluate(() => window.__dinoTest.transitionDone());
+    // Hit testing may settle a frame after dialog/rotation transition completion.
+    await page.waitForFunction(() => {
+      const button = document.getElementById('start-game'), r = button.getBoundingClientRect();
+      return button.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+    }, null, { timeout: 5000 });
     const rect = await page.locator('#start-game').boundingBox();
     // Android's transformed CSS pixels can report 59.999992 for a 60 px target.
     assert(rect && rect.height + 0.01 >= 60 && rect.width + 0.01 >= 180, 'Start size: ' + JSON.stringify(rect));
     if (before) for (const key of ['x', 'y', 'width', 'height'])
-      assert(Math.abs(before[key] - rect[key]) <= 1, `Start ${key} stays fixed`);
-    assert.equal(await page.locator('#start-game').evaluate(button => {
+      assert(Math.abs(before[key] - rect[key]) <= 1,
+        `Start ${key} stays fixed: ${JSON.stringify({ before, after: rect })}`);
+    const target = await page.locator('#start-game').evaluate(button => {
       const r = button.getBoundingClientRect();
-      return r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth &&
-        button.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
-    }), true, 'Start receives touches and fits on the actual phone');
+      const view = window.visualViewport;
+      const viewport = { left: view?.offsetLeft || 0, top: view?.offsetTop || 0,
+        width: view?.width || innerWidth, height: view?.height || innerHeight };
+      // Transformed bounds can exceed a viewport edge by a fraction of a CSS pixel.
+      // innerWidth is integer-rounded; the visible Android viewport can be fractional.
+      return { rect: r.toJSON(), viewport,
+        fits: r.top >= viewport.top - 0.01 && r.bottom <= viewport.top + viewport.height + 0.01 &&
+          r.left >= viewport.left - 0.01 && r.right <= viewport.left + viewport.width + 0.01,
+        hit: button.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)) };
+    });
+    assert(target.fits && target.hit, 'Start receives touches and fits on the actual phone: ' + JSON.stringify(target));
     assert.equal(await page.evaluate(() => {
       if (!matchMedia('(orientation: landscape)').matches) return true;
       const stage = document.getElementById('stage').getBoundingClientRect();
@@ -130,7 +154,7 @@ try {
     await touch(page.locator('#settings-close'));
     await page.waitForFunction(() => window.__dinoRunner.attract.index === 2);
     await checkStart(start);
-    assert.equal(await page.locator('.attract-powerup:visible').count(), 3);
+    assert.equal(await page.locator('.attract-powerup:visible').count(), 4);
     await page.screenshot({ path: path.join(output, `${name}-powerups.png`) });
     await touch(page.locator('#settings-open'));
     await page.waitForFunction(() => window.__dinoRunner.paused);
@@ -149,6 +173,8 @@ try {
       assert.equal((await state()).shield.charged, false);
       assert.equal((await state()).feather.charged, false);
       assert.equal((await state()).chili.remainingMs, 0);
+      // Playing begins before the menu's existing exit animation finishes.
+      await page.locator('#start-game').waitFor({ state: 'hidden' });
       assert.equal(await page.locator('#start-game').isVisible(), false);
       await reset();
     }

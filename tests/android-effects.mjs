@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Physical Android: Arcade effects probe and frame times with effects on/off.
 // Requires the safe preview (tests/android-preview.cjs), USB bridges and Chrome
 // as in doc/FEATHER.md. Never contacts the live highscore API. Clears only the
@@ -8,11 +9,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/arcade-fx'), 'device');
 fs.mkdirSync(output, { recursive: true });
 const adb = (...args) => execFileSync('adb', args, { encoding: 'utf8', windowsHide: true }).trim();

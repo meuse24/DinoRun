@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Actual standalone game: rock-boss trajectories, safety/lifecycle and trusted input.
 // Usage: node tests/rock-boss.mjs [game.html]; DINO_BROWSER=chromium|webkit.
 import assert from 'node:assert/strict';
@@ -6,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 const root=path.resolve(import.meta.dirname,'..'), engine=process.env.DINO_BROWSER||'chromium';
-const pw=await import(process.env.DINO_PLAYWRIGHT?pathToFileURL(process.env.DINO_PLAYWRIGHT).href:'playwright');
+const pw=await loadPlaywright();
 const output=path.join(process.env.DINO_TEST_OUTPUT||path.join(root,'output/rock-boss'),engine);
 fs.mkdirSync(output,{recursive:true});
 const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'dino-boss-'));

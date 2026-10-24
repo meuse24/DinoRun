@@ -1,6 +1,7 @@
 # Repository Guidelines
 
-Project documentation lives in `doc/`. Commands and plain project paths below
+Project documentation lives in `doc/`; start with `doc/README.md`.
+Completed plans and historical reports live in `doc/archive/`. Commands and plain project paths below
 are relative to the repository root unless stated otherwise. Keep this file
 in the repository root so its instructions apply to the entire project.
 
@@ -10,7 +11,9 @@ in the repository root so its instructions apply to the entire project.
 - `dino-android/` is the Bubblewrap Trusted Web Activity project. See
   `doc/ANDROID.md` for tools, signing backup, build/install and domain verification.
   Keep its `signing/`, local tool paths and generated APK/AAB files out of Git.
-- `service-worker.js` and `manifest.webmanifest` support installation and offline assets. Images, icons, and optional menu music live in the root.
+- `service-worker.js` and `manifest.webmanifest` support installation and offline assets.
+  Images/icons live in `assets/images/`, optional MP3s in `assets/audio/`.
+  Local WAV originals live in the Git-ignored `asset-sources/audio/`.
 - `highscores.php` exposes the API; `highscores-lib.php` handles validation and file storage; `admin.php` provides CLI moderation.
 - `score-console.php` provides password-protected web moderation, disabled until
   configured. `highscores-admin-lib.php` shares backups/mutations with the CLI.
@@ -26,12 +29,21 @@ The readable game runs without a build step. Optional delivery tooling uses
 `package.json`/`package-lock.json`; there is no configured linter. Use modern
 Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7.4+.
 
+- `npm test` / `npm run test:core`: architecture and lifecycle/offline checks.
+- `npm run test:features [-- game.html]`: sequential browser feature suites.
+- `npm run test:release`: source/release comparison and key delivery regressions;
+  `npm run test:comparison` runs only the comparison. See `doc/TESTING.md`.
+- Playwright is a pinned local development dependency. After `npm ci`, install
+  its browsers with `npx playwright install chromium webkit`. Shared test helpers
+  live in `tests/helpers/`; `DINO_PLAYWRIGHT` remains an optional override.
+
 - `npm ci` then `npm run build`: generate `release/dino.html` and its size/hash
   report using Terser, CSSO and HTMLMinifier-Terser. See `doc/RELEASE.md`. Keep the
   source HTML readable; tools are development dependencies only.
-- `npm run deploy [-- --dry-run] [-- --also <file>]`: upload `release/dino.html`
-  and then `service-worker.js` via FTPS using the git-ignored `ftp.txt`, then verify
-  hashes over HTTPS. Never run it without the user's request; see `doc/RELEASE.md`.
+- `npm run deploy [-- --dry-run] [-- --also <file>]`: upload hosted media and
+  manifest, optional extras, `release/dino.html`, then `service-worker.js` via
+  FTPS using the git-ignored `ftp.txt`. Verify static hashes over HTTPS.
+  Never run it without the user's request; see `doc/RELEASE.md`.
 - `node tests/release.mjs`: compare source/release UI, rendering and state in
   desktop/mobile layouts; accepts `DINO_BROWSER=webkit`.
 
@@ -53,7 +65,7 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   accept an optional HTML path to test a generated delivery artifact.
 - `node tests/sprite-geometry.mjs <baseline.html>`: compare cached sprite paths,
   animated poses, both bird frames and bounded allocations against a saved
-  pre-change HTML. Accepts `DINO_BROWSER`; see `doc/SPRITE-CACHING.md`.
+  pre-change HTML. Accepts `DINO_BROWSER`; see `doc/PERFORMANCE.md`.
 - `node tests/gc-pooling.mjs <baseline.html>`: deterministic particle reuse,
   cap/reset/interpolation, controller release/disconnect behavior and HUD buffers.
   Accepts `DINO_BROWSER`. `node tests/gc-performance.mjs <baseline.html>` runs
@@ -62,7 +74,7 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/android-gc-performance.mjs <baseline.html>`: physical normal-rAF
   before/after play/night/particle stress, work times and own-page GC traces.
   Requires unlocked Android/Chrome; own origin8893, dynamic ADB forward/scoped
-  relay9237, restores rotation/origin storage. See `doc/GC-REVIEW.md`.
+  relay9237, restores rotation/origin storage. See `doc/PERFORMANCE.md`.
 - `node tests/jump-feather.mjs`: check feather pickups, all input methods,
   charge/physics/lifecycle/help and phone portrait/landscape emulation using an
   isolated standalone file. Set `DINO_BROWSER=webkit` for the WebKit run;
@@ -121,7 +133,7 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   attract FPS per panel with context/density variants (`DINO_PERF_VARIANTS`).
   Requires `DINO_ANDROID_SERIAL`; accepts `DINO_CURRENT_HTML`. Own origin8894,
   dynamic ADB forward/scoped relay9238, restores rotation, blocks live scores.
-  Run sequentially; see `doc/ATTRACT-PERFORMANCE.md`.
+  Run sequentially; see `doc/PERFORMANCE.md`.
 - `node tests/android-sustained-performance.mjs`: one long physical fullscreen
   round (default A53, `release/dino.html`, landscape, 12 min) with a simple pilot
   and refilled lives; FPS/draw/thermal per window. `DINO_SUSTAINED_MIN`,

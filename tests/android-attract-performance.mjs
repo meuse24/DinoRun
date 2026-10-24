@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Sequential physical-phone attract diagnostics. Own origin, tab and bridges;
 // normal rAF, no live scores, no changes to the shipped game or phone power mode.
 import assert from 'node:assert/strict';
@@ -5,12 +6,10 @@ import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import {execFileSync, spawn} from 'node:child_process';
-import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 
 const root = path.resolve(import.meta.dirname, '..');
-const pwPath = process.env.DINO_PLAYWRIGHT || 'D:/projects/pacman/node_modules/playwright/index.mjs';
-const pw = await import(pathToFileURL(pwPath).href);
+const pw = await loadPlaywright();
 const adbPath = path.join(process.env.LOCALAPPDATA, 'Android/Sdk/platform-tools/adb.exe');
 const serial = process.env.DINO_ANDROID_SERIAL;
 assert(serial, 'Set DINO_ANDROID_SERIAL explicitly');
@@ -55,7 +54,7 @@ try {
   adb('reverse',`tcp:${port}`,`tcp:${port}`); reverse=true;
   forward=adb('forward','tcp:0','localabstract:chrome_devtools_remote');
   relay=spawn(process.execPath,[path.join(root,'tests/android-cdp-relay.mjs')],{cwd:root,windowsHide:true,
-    stdio:['ignore','pipe','pipe'],env:{...process.env,DINO_PLAYWRIGHT:pwPath,
+    stdio:['ignore','pipe','pipe'],env:{...process.env,
       DINO_CDP_UPSTREAM:`http://127.0.0.1:${forward}`,DINO_CDP_RELAY_PORT:String(relayPort)}});
   await new Promise((resolve,reject)=>{
     relay.stdout.on('data',d=>{if(String(d).includes('ready'))resolve();});

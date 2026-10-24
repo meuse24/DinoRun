@@ -1,10 +1,10 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Compare the actual delivery HTML with the readable source, including DOM UI.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
@@ -21,8 +21,7 @@ execFileSync(process.execPath, ['scripts/build-release.mjs'], { cwd: root });
 assert.equal(fs.readFileSync(path.join(root, 'release/dino.html'), 'utf8'), compact,
   'The delivery must be reproducible');
 
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const results = [];
 for (const [name, viewport] of [
   ['desktop', { width: 1280, height: 720 }],

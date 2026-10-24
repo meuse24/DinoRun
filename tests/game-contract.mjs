@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Standalone contract: no historical HTML, PHP runtime or preview server needed.
 // Usage: node tests/game-contract.mjs [game.html]
 // DINO_PLAYWRIGHT may name an installed Playwright ESM entry.
@@ -61,8 +62,8 @@ const server = http.createServer((request, response) => {
   if (request.url === '/dino.html') {
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(source);
-  } else if (['/service-worker.js', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png',
-    '/icon-180.png'].includes(request.url)) {
+  } else if (['/service-worker.js', '/manifest.webmanifest', '/assets/images/icon-192.png', '/assets/images/icon-512.png',
+    '/assets/images/icon-180.png'].includes(request.url)) {
     const types = { '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json' };
     response.writeHead(200, { 'Content-Type': types[path.extname(request.url)] });
     fs.createReadStream(path.join(root, request.url.slice(1))).pipe(response);
@@ -72,8 +73,7 @@ const server = http.createServer((request, response) => {
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const url = `http://127.0.0.1:${server.address().port}/dino.html`;
-const playwright = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const playwright = await loadPlaywright();
 let browser;
 const report = [];
 const state = page => page.evaluate(() => JSON.parse(window.render_game_to_text()));
@@ -278,7 +278,7 @@ try {
     assert(network.every(request => /(?:manifest\.webmanifest|icon-\d+\.png|dino-(?:jump-jump|boom-in-the-dunes)\.mp3)$/.test(request)),
       `${name}: unexpected runtime dependency: ${network}`);
     if (useFile) assert(requests.every(request => request.split('#')[0] === pathToFileURL(file).href
-      || request.endsWith('/dino-jump-jump.mp3') || request.endsWith('/dino-boom-in-the-dunes.mp3')),
+      || request.endsWith('/assets/audio/dino-jump-jump.mp3') || request.endsWith('/assets/audio/dino-boom-in-the-dunes.mp3')),
     `${name}: standalone copy requested a file other than optional music: ${requests}`);
     report.push({ name, lifecycle: 'passed', offline: !!useFile, blockedStorage: !!blocked, errors });
     await context.close();

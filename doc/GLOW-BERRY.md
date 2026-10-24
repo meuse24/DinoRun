@@ -1,6 +1,7 @@
 # Glow berry
 
-Published build `2026-10-24.11`, worker cache `dino-run-v61` (24 October2026).
+Introduced in the release series through `2026-10-24.11` / cache `dino-run-v61`.
+Local build and recorded publication history: [RELEASE.md](RELEASE.md).
 
 The round fuchsia berry awards exactly 25 points once when an airborne dino
 touches it. It adds neither credits nor a stored power-up. Missing it has no
@@ -15,9 +16,9 @@ the level tally freeze it. Training and attract simulations disable berries.
 Pending bonuses and reserved boss corridors dismiss an existing berry and
 block new spawns.
 
-## Placement correction to the plan
+## Safe placement
 
-The edited plan assumed `last.gap` always bounds the next obstacle. Actual
+The [archived design](archive/GLOW-BERRY-PLAN.md) assumed `last.gap` always bounds the next obstacle. Actual
 `Horizon.update()` also creates one immediately when the last obstacle leaves
 the world. A safe gap therefore uses the smaller of the authored gap and
 `world.width + 10`. It cannot rely on an offscreen obstacle retaining a large gap.

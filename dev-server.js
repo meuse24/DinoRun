@@ -4,6 +4,7 @@
 const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
+const { HOSTED_ASSETS } = require('./scripts/lib/hosted-assets.cjs');
 
 const root = __dirname;
 const port = Number(process.env.DINO_DEV_PORT || 8765);
@@ -82,7 +83,8 @@ const server = http.createServer((request, response) => {
   }
   const name = url.pathname === '/' ? 'dino.html' : url.pathname.slice(1);
   const extension = path.extname(name).toLowerCase();
-  if (!types[extension] || name !== path.basename(name) || name.startsWith('.')) {
+  const allowedPath = name === path.basename(name) || HOSTED_ASSETS.includes(name);
+  if (!types[extension] || !allowedPath || name.startsWith('.')) {
     response.writeHead(404).end();
     return;
   }

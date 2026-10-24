@@ -1,20 +1,19 @@
+import { standaloneFixture } from './helpers/browser.mjs';
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Rotation, real UI input, isolated demo and responsive/offline attract screen.
 // Optional HTML path; DINO_BROWSER=chromium|webkit.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/attract'), engine);
 fs.mkdirSync(output, { recursive: true });
-const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-attract-'));
-const file = path.join(temporary, 'dino.html');
-fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), file);
+const fixture = standaloneFixture('dino-attract-');
+const file = fixture.file;
 const state = page => page.evaluate(() => JSON.parse(window.render_game_to_text()));
 const advance = (page, frames) => page.evaluate(frames => {
   for (let i = 0; i < frames; i++) window.__dinoRunner.update(1000 / 60);
@@ -441,5 +440,5 @@ try {
   console.log(`${engine} ${browser.version()}: attract rotation, isolated demo, CTA/input and ${report.length} layouts passed`);
 } finally {
   await browser?.close();
-  fs.rmSync(temporary, { recursive: true, force: true });
+  fixture.cleanup();
 }

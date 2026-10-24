@@ -2,11 +2,12 @@
 /highscores-data/
 /highscores.config.php
 /node_modules/
+# Generated test screenshots and reports stay local, including older runs.
 /output/
 # Private local files: admin password note, local config copy with a password hash,
-# and the 23 MB source WAV of dino-boom-in-the-dunes.mp3 (see doc/VOLUME.md).
+# and the 23 MB source WAV of assets/audio/dino-boom-in-the-dunes.mp3 (see doc/VOLUME.md).
 /adminphppasswort.txt
 /highscores.config.example - Kopie.php
-/Theme_song2.wav
+/asset-sources/
 # FTP credentials for scripts/deploy.mjs (see doc/RELEASE.md).
 /ftp.txt

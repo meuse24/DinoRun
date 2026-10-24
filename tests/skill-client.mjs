@@ -7,6 +7,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
+import { playwrightUrl } from './helpers/playwright.mjs';
+import hosted from '../scripts/lib/hosted-assets.cjs';
 
 const root = path.resolve(import.meta.dirname, '..');
 const skillRoot = path.join(process.env.CODEX_HOME || path.join(os.homedir(), '.codex'), 'skills/develop-web-game');
@@ -22,13 +24,13 @@ const fixture = fs.readFileSync(process.argv[2] || path.join(root, 'dino.html'),
   audio.play = () => Promise.resolve();
   window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, musicAudio: audio };
 </script><script>`);
-const types = { '.js': 'text/javascript', '.png': 'image/png', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json' };
+const types = { '.js': 'text/javascript', '.png': 'image/png', '.svg': 'image/svg+xml', '.mp3': 'audio/mpeg', '.webmanifest': 'application/manifest+json' };
 const server = http.createServer((request, response) => {
   const name = new URL(request.url, 'http://localhost').pathname.slice(1);
   if (name === 'dino.html') {
     response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     response.end(fixture);
-  } else if (name === path.basename(name) && types[path.extname(name)] && fs.existsSync(path.join(root, name))) {
+  } else if (hosted.HOSTED_ASSETS.includes(name) && types[path.extname(name)] && fs.existsSync(path.join(root, name))) {
     response.writeHead(200, { 'Content-Type': types[path.extname(name)] });
     fs.createReadStream(path.join(root, name)).pipe(response);
   } else response.writeHead(404).end();
@@ -37,12 +39,12 @@ const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-skill-'));
 try {
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const args = [];
-  if (process.env.DINO_PLAYWRIGHT) {
+  {
     const loader = path.join(temporary, 'playwright.mjs');
     fs.writeFileSync(loader, `import { registerHooks } from 'node:module';
       registerHooks({ resolve(specifier, context, next) {
         return specifier === 'playwright'
-          ? { url: ${JSON.stringify(pathToFileURL(process.env.DINO_PLAYWRIGHT).href)}, shortCircuit: true }
+          ? { url: ${JSON.stringify(playwrightUrl())}, shortCircuit: true }
           : next(specifier, context);
       }});`);
     args.push('--import', pathToFileURL(loader).href);

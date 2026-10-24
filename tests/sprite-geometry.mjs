@@ -1,14 +1,13 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Compare retained sprite geometry against a saved pre-change HTML, without a server.
 // Usage: node tests/sprite-geometry.mjs <baseline.html>
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 assert(process.argv[2], 'Pass a saved pre-change HTML');
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const engine = process.env.DINO_BROWSER || 'chromium';
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output'), `sprite-geometry-${engine}`);
 fs.mkdirSync(output, { recursive: true });

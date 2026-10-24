@@ -1,20 +1,19 @@
+import { standaloneFixture } from './helpers/browser.mjs';
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Arcade lettering: stable targets, pause, readable milestones and motion preferences.
 // Uses isolated offline file play; no live score requests. Optional delivery HTML.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/arcade-type'), engine);
 fs.mkdirSync(output, { recursive: true });
-const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-arcade-'));
-const file = path.join(temporary, 'dino.html');
-fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), file);
+const fixture = standaloneFixture('dino-arcade-');
+const file = fixture.file;
 const browser = await pw[engine].launch({ headless: true });
 const reports = [];
 try {
@@ -190,6 +189,6 @@ try {
   console.log(`${engine}: embedded faces, arcade lettering, anchored START, pause, milestone readability, callouts, dark and reduced motion passed in 3 layouts`);
 } finally {
   await browser.close();
-  fs.rmSync(temporary, { recursive: true, force: true });
+  fixture.cleanup();
 }
 

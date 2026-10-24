@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Physical Android, normal rAF and trusted touch; isolated origin and own tab.
 // Requires scoped CDP relay (doc/FEATHER.md). No live highscore requests.
 import assert from 'node:assert/strict';
@@ -6,7 +7,6 @@ import http from 'node:http';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
-import {pathToFileURL} from 'node:url';
 const root=path.resolve(import.meta.dirname,'..');
 const artifact=path.resolve(process.argv[2]||path.join(root,'release/dino.html'));
 const html=fs.readFileSync(artifact),hash=createHash('sha256').update(html).digest('hex');
@@ -18,9 +18,9 @@ const adb=(...args)=>execFileSync('adb',[...(process.env.DINO_ANDROID_SERIAL?['-
 assert.equal(adb('get-state'),'device');
 const rotation={auto:adb('shell','settings','get','system','accelerometer_rotation'),
   user:adb('shell','settings','get','system','user_rotation')};
-const pw=await import(process.env.DINO_PLAYWRIGHT?pathToFileURL(process.env.DINO_PLAYWRIGHT).href:'playwright');
-const assets=new Set(['icon-192.png','icon-512.png','icon-180.png','manifest.webmanifest',
-  'dino-jump-jump.mp3','dino-boom-in-the-dunes.mp3']);
+const pw=await loadPlaywright();
+const assets=new Set(['assets/images/icon-192.png','assets/images/icon-512.png','assets/images/icon-180.png','manifest.webmanifest',
+  'assets/audio/dino-jump-jump.mp3','assets/audio/dino-boom-in-the-dunes.mp3']);
 const server=http.createServer((req,res)=>{
   const name=new URL(req.url,url).pathname.slice(1);res.setHeader('Cache-Control','no-store');
   if(name==='dino.html')res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end(html);

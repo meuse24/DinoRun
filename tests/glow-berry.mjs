@@ -1,18 +1,18 @@
+import { standaloneFixture, capturePageErrors } from './helpers/browser.mjs';
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Standalone, no live API. Optional source/release artifact and browser engine.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/glow-berry'), engine);
 fs.mkdirSync(output, { recursive: true });
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-berry-'));
-const file = path.join(temp, 'dino.html');
-fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), file);
+const fixture = standaloneFixture('dino-berry-');
+const file = fixture.file;
 const browser = await pw[engine].launch({ headless: true });
 const report = [];
 try {
@@ -23,8 +23,8 @@ try {
     const context = await browser.newContext({ viewport: { width, height }, screen: { width, height },
       hasTouch: touch, isMobile: touch, deviceScaleFactor: touch ? 3 : 1, serviceWorkers: 'block' });
     await context.route(/^https?:/, r => r.abort());
-    const page = await context.newPage(), errors = [];
-    page.on('pageerror', e => errors.push(String(e)));
+    const page = await context.newPage();
+    const errors = capturePageErrors(page, { consoleErrors: false });
     await page.addInitScript(() => {
       const audio = new EventTarget(); audio.pause = () => {}; audio.play = () => Promise.resolve();
       window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, transitions: false, musicAudio: audio };
@@ -244,4 +244,4 @@ try {
   }
   fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
   console.log(`Glow berry: ${report.length} layouts, physics, RNG, points and lifecycle passed (${engine})`);
-} finally {await browser.close();fs.rmSync(temp,{recursive:true,force:true});}
+} finally {await browser.close();fixture.cleanup();}

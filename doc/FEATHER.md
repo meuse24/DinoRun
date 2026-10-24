@@ -1,4 +1,4 @@
-# Jump feather plan
+# Jump feather
 
 ## Player contract
 
@@ -13,23 +13,6 @@
   the feather does not change speed, score rules or invulnerability.
 - The game remains one offline/file-capable HTML, with optional external song.
 
-## Implementation sequence
-
-1. Save Git baseline `10b7c4b`; add this plan and focused browser regressions.
-2. Add a small simulation component for feather spawning/charge, swept pickup
-   collision and cooldown. Use deterministic timers without consuming the
-   obstacle/chili RNG. Spawn with space around hazards and the chili pickup.
-3. Implement one explicit airborne impulse through Game.jump, preserving normal
-   jumps and the existing landing buffer. Consume only on a successful air jump.
-4. Render an inline Canvas feather, pickup halo and charge indicator. Add brief
-   feedback, reduced-motion handling, accessible announcements and help text.
-5. Test behavior and rendering in Chromium and WebKit, including smartphone
-   portrait/landscape touch emulation and isolated offline file loading. Exercise
-   collection, no stacking, first/second/third jumps, landing, top bounds, Chili,
-   pause, death/restart/session reset and real inputs. Inspect screenshots.
-6. Run the develop-web-game action client, game contract and old-behavior visual/
-   deterministic regressions with feather spawning disabled only in tests.
-   Document evidence, update BUILD and commit the completed feature.
 
 ## Engineering basis
 
@@ -77,13 +60,11 @@
 
 ## Repeatable checks
 
-Use an installed Playwright package and Chromium/WebKit browsers. In this
-workspace, the reusable ESM entry is
-`D:/projects/pacman/node_modules/playwright/index.mjs`; set `DINO_PLAYWRIGHT` to
-your installed entry if Playwright is not resolved locally.
+Use `npm ci` and `npx playwright install chromium webkit` for the local pinned
+Playwright package and browsers. `DINO_PLAYWRIGHT` can optionally select another
+installed ESM entry. Shared setup and test groups: [TESTING.md](TESTING.md).
 
 ```powershell
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
 $env:DINO_TEST_OUTPUT = "$PWD/output/feather"
 $env:DINO_BROWSER = 'chromium'
 node tests/jump-feather.mjs

@@ -144,7 +144,7 @@ ausschließlich mit `php -S` und Verbindungen von 127.0.0.1/::1.
 
 ```powershell
 $env:DINO_PHP = 'D:/Pfad/zu/php.exe'
-$env:DINO_PLAYWRIGHT = 'D:/projects/pacman/node_modules/playwright/index.mjs'
+# Playwright uses the local installation from npm ci.
 node tests/admin-web.mjs
 $env:DINO_BROWSER = 'webkit'
 $env:PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = '1'

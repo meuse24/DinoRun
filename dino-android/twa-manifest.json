@@ -13,8 +13,8 @@
   "backgroundColor": "#8FD3FF",
   "enableNotifications": false,
   "startUrl": "/apps/dino/dino.html",
-  "iconUrl": "https://meuse24.info/apps/dino/icon-512.png",
-  "maskableIconUrl": "https://meuse24.info/apps/dino/icon-512.png",
+  "iconUrl": "https://meuse24.info/apps/dino/assets/images/icon-512.png",
+  "maskableIconUrl": "https://meuse24.info/apps/dino/assets/images/icon-512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "./signing/dino-upload.keystore",

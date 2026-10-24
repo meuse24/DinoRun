@@ -1,13 +1,12 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Visual and deterministic regression checks for the Canvas vector caches.
 // DINO_PLAYWRIGHT may point to an installed Playwright ESM entry point.
 // Usage: node tests/render-cache.mjs <original dino.html> [preview URL]
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import assert from 'node:assert/strict';
 
-const playwright = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const playwright = await loadPlaywright();
 const baselineFile = process.argv[2];
 assert(baselineFile, 'Pass the original HTML for the before/after comparison');
 const url = process.argv[3] || 'http://127.0.0.1:8765/dino.html';

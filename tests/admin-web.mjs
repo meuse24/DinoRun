@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Real PHP + browser checks, exclusively against temporary data/config/sessions.
 // DINO_PHP selects php.exe; DINO_PLAYWRIGHT and DINO_BROWSER select the browser.
 import assert from 'node:assert/strict';
@@ -8,14 +9,13 @@ import net from 'node:net';
 import { randomBytes, createHash } from 'node:crypto';
 import { spawn, execFileSync, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const php = process.env.DINO_PHP || 'php';
 const engine = process.env.DINO_BROWSER || 'chromium';
 // Fail on missing tools before creating any private temporary fixture files.
 const phpVersion = execFileSync(php, ['-r', 'echo PHP_VERSION;'], { encoding: 'utf8', windowsHide: true });
-const pw = await import(process.env.DINO_PLAYWRIGHT ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/admin-web'), engine);
 fs.mkdirSync(output, { recursive: true });
 const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-admin-'));

@@ -1,6 +1,6 @@
 # Level bonus and automatic attract loop
 
-Build `2026-10-21.10`, worker cache `dino-run-v36`.
+Introduced in build `2026-10-21.10`, worker cache `dino-run-v36`.
 
 ## Rewards
 
@@ -70,7 +70,7 @@ effects volume and master mute. No external assets or dependencies are needed.
 
 `Game` owns section counters, pending snapshots, the tally clock and incremental
 payment. `bonusScore` is independent of distance: normal updates calculate
-`floor(distance * POINTS_PER_PX) + bonusScore`, preserving every payment.
+`floor(distance * POINTS_PER_PX) + bonusScore + berryScore`, preserving every payment.
 `Renderer` draws the summary/coins; `Runner` handles announcements and synthesized
 audio. `render_game_to_text` exposes bonus totals and pending/active tally state.
 Attract demo/backdrop games disable rewards; rock training is excluded.

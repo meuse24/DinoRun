@@ -1,6 +1,6 @@
 # Arcade credits
 
-Build `2026-10-21.6`, worker cache v32.
+Introduced in build `2026-10-21.6`, worker cache v32.
 
 ## Player contract
 

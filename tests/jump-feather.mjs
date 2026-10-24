@@ -1,20 +1,19 @@
+import { standaloneFixture } from './helpers/browser.mjs';
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Real-input powerup and smartphone regressions, using an isolated offline HTML.
 // DINO_BROWSER=chromium|webkit; DINO_PLAYWRIGHT may name an installed ESM entry.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/feather'), engine);
 fs.mkdirSync(output, { recursive: true });
-const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-feather-'));
-const html = path.join(temporary, 'dino.html');
-fs.copyFileSync(process.argv[2] || path.join(root, 'dino.html'), html);
+const fixture = standaloneFixture('dino-feather-');
+const html = fixture.file;
 let browser;
 const report = [];
 const state = page => page.evaluate(() => JSON.parse(window.render_game_to_text()));
@@ -309,5 +308,5 @@ try {
   console.log(`Passed feather controls, physics, pickups, lifecycle and help in ${engine} ${browser.version()} (${report.length} layouts).`);
 } finally {
   await browser?.close();
-  fs.rmSync(temporary, { recursive: true, force: true });
+  fixture.cleanup();
 }

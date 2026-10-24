@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Physical Android Stone Jaw check: normal rAF, trusted CDP touch, safe USB preview.
 // Start android-preview.cjs [artifact] and android-cdp-relay.mjs as in doc/FEATHER.md.
 import assert from 'node:assert/strict';
@@ -5,7 +6,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
-import {pathToFileURL} from 'node:url';
 const root=path.resolve(import.meta.dirname,'..');
 const artifact=path.resolve(process.argv[2]||path.join(root,'release/dino.html'));
 const hash=createHash('sha256').update(fs.readFileSync(artifact)).digest('hex');
@@ -14,7 +14,7 @@ fs.mkdirSync(output,{recursive:true});
 const adb=(...args)=>execFileSync('adb',[...(process.env.DINO_ANDROID_SERIAL?['-s',process.env.DINO_ANDROID_SERIAL]:[]),...args],{encoding:'utf8',windowsHide:true}).trim();
 assert.equal(adb('get-state'),'device');
 const rotation={auto:adb('shell','settings','get','system','accelerometer_rotation'),user:adb('shell','settings','get','system','user_rotation')};
-const {chromium}=await import(process.env.DINO_PLAYWRIGHT?pathToFileURL(process.env.DINO_PLAYWRIGHT).href:'playwright');
+const {chromium}=await loadPlaywright();
 const report={model:adb('shell','getprop','ro.product.model'),android:adb('shell','getprop','ro.build.version.release'),sha256:hash,
  timing:'normal rAF, no manual stepping; only encounter eligibility/pickup fixtures controlled',layouts:[],errors:[]};
 let browser,page,storage,cdp;

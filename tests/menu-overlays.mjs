@@ -1,9 +1,9 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Isolated Settings/Help modal behavior over a paused round; no live score API.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import {pathToFileURL} from 'node:url';
 
 const root=path.resolve(import.meta.dirname,'..');
 const artifact=path.resolve(process.argv[2]||path.join(root,'dino.html'));
@@ -11,7 +11,7 @@ const html=fs.readFileSync(artifact,'utf8');
 const engine=process.env.DINO_BROWSER||'chromium';
 const output=path.join(process.env.DINO_TEST_OUTPUT||path.join(root,'output/menu-overlays'),engine);
 fs.mkdirSync(output,{recursive:true});
-const pw=await import(process.env.DINO_PLAYWRIGHT?pathToFileURL(process.env.DINO_PLAYWRIGHT).href:'playwright');
+const pw=await loadPlaywright();
 const server=http.createServer((req,res)=>{
   if(req.url.startsWith('/dino.html'))res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end(html);
   else res.writeHead(204).end();

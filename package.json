@@ -4,9 +4,14 @@
   "private": true,
   "description": "Optional release tooling for the standalone Dino Run HTML game",
   "scripts": {
+    "start": "node dev-server.js",
     "build": "node scripts/build-release.mjs",
     "deploy": "node scripts/deploy.mjs",
-    "test:release": "node tests/release.mjs"
+    "test": "node scripts/test.mjs core",
+    "test:core": "node scripts/test.mjs core",
+    "test:features": "node scripts/test.mjs features",
+    "test:release": "node scripts/test.mjs release",
+    "test:comparison": "node tests/release.mjs"
   },
   "engines": {
     "node": ">=22"
@@ -15,6 +20,7 @@
     "acorn": "8.19.0",
     "csso": "5.0.5",
     "html-minifier-terser": "7.2.0",
+    "playwright": "1.62.1",
     "terser": "5.51.2"
   }
 }

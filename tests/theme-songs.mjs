@@ -1,22 +1,22 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Actual MP3 decoding, song selection and cached byte ranges. No live API.
 // Usage: node tests/theme-songs.mjs [game.html]
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
-import {pathToFileURL} from 'node:url';
 
 const root=path.resolve(import.meta.dirname,'..');
 const artifact=path.resolve(process.argv[2]||path.join(root,'dino.html'));
 const output=path.join(process.env.DINO_TEST_OUTPUT||path.join(root,'output/theme-songs'),
   artifact.includes(path.sep+'release'+path.sep)?'release':'source');
 fs.mkdirSync(output,{recursive:true});
-const tracks=['dino-boom-in-the-dunes.mp3','dino-jump-jump.mp3'];
+const tracks=['assets/audio/dino-boom-in-the-dunes.mp3','assets/audio/dino-jump-jump.mp3'];
 const assets=new Map([
   ['dino.html',[artifact,'text/html; charset=utf-8']],
   ['service-worker.js',[path.join(root,'service-worker.js'),'text/javascript']],
   ['manifest.webmanifest',[path.join(root,'manifest.webmanifest'),'application/manifest+json']],
-  ...['icon-180.png','icon-192.png','icon-512.png'].map(name=>[name,[path.join(root,name),'image/png']]),
+  ...['assets/images/icon-180.png','assets/images/icon-192.png','assets/images/icon-512.png'].map(name=>[name,[path.join(root,name),'image/png']]),
   ...tracks.map(name=>[name,[path.join(root,name),'audio/mpeg']]),
 ]);
 const requests=[];
@@ -30,7 +30,7 @@ const server=http.createServer((request,response)=>{
 });
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin=`http://127.0.0.1:${server.address().port}`;
-const pw=await import(process.env.DINO_PLAYWRIGHT?pathToFileURL(process.env.DINO_PLAYWRIGHT).href:'playwright');
+const pw=await loadPlaywright();
 let browser;
 try{
   browser=await pw.chromium.launch({headless:true});
@@ -76,7 +76,7 @@ try{
   assert(state.duration>0 && state.duration<120);
   results.push({name:'new-default-real-mp3',...state});
   await page.locator('#music-track').selectOption('dino-jump-jump'); await ready();
-  state=await inspect(); assert(state.src.endsWith('/dino-jump-jump.mp3'));
+  state=await inspect(); assert(state.src.endsWith('/assets/audio/dino-jump-jump.mp3'));
   results.push({name:'original-real-mp3',...state});
   await context.setOffline(true);
   await page.reload(); await page.locator('#settings-open').click(); await ready();

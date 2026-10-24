@@ -1,9 +1,9 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Real media volume, native input, persistence and rendered effects. No live API.
 // Usage: node tests/volume-controls.mjs [game.html]; DINO_BROWSER=webkit supported.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {pathToFileURL} from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const artifact = process.argv[2] || path.join(root, 'dino.html');
@@ -12,7 +12,7 @@ const engine = process.env.DINO_BROWSER || 'chromium';
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/volume'),
   `${engine}-${artifact.replaceAll('\\', '/').includes('release/') ? 'release' : 'source'}`);
 fs.mkdirSync(output, {recursive:true});
-const pw = await import(process.env.DINO_PLAYWRIGHT ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const origin = 'http://dino-volume.test', url = origin + '/dino.html';
 // Ten seconds of quiet PCM audio: tests the actual media element, not a stub.
 const rate = 8000, samples = rate * 10, wave = Buffer.alloc(44 + samples * 2);
@@ -69,7 +69,7 @@ async function fixture(viewport,preset={},denied=false) {
   await context.route('**/*',route=>{
     requests.push(route.request().url());
     if(route.request().url()===url)return route.fulfill({contentType:'text/html',body:html});
-    if(['/dino-jump-jump.mp3','/dino-boom-in-the-dunes.mp3'].some(name=>route.request().url()===origin+name))
+    if(['/assets/audio/dino-jump-jump.mp3','/assets/audio/dino-boom-in-the-dunes.mp3'].some(name=>route.request().url()===origin+name))
       return route.fulfill({contentType:'audio/wav',body:wave});
     return route.fulfill({status:204});
   });
@@ -147,7 +147,7 @@ try {
       await song.focus(); await song.press('End'); await song.press('Enter');
       await playing(page);
       assert.equal(await song.inputValue(),'dino-jump-jump');
-      assert.equal(await page.evaluate(()=>window.__dinoRunner.music.audio.src.endsWith('dino-jump-jump.mp3')),true);
+      assert.equal(await page.evaluate(()=>window.__dinoRunner.music.audio.src.endsWith('assets/audio/dino-jump-jump.mp3')),true);
       assert((await state(page)).position<1,'Switching starts the selected song from the beginning');
       close((await state(page)).mediaVolume,0.27);
       await page.reload(); await page.locator('#settings-open').click(); await playing(page);

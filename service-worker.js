@@ -1,15 +1,15 @@
-const CACHE_NAME = 'dino-run-v61';
+const CACHE_NAME = 'dino-run-v63';
 const CACHE_PREFIX = 'dino-run-';
 const GAME_URL = new URL('./dino.html', self.registration.scope).href;
 const STATIC_URLS = [
   './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './icon-180.png',
-  './dino-jump-jump.mp3',
-  './dino-boom-in-the-dunes.mp3',
+  './assets/images/icon-192.png',
+  './assets/images/icon-512.png',
+  './assets/images/icon-180.png',
+  './assets/audio/dino-jump-jump.mp3',
+  './assets/audio/dino-boom-in-the-dunes.mp3',
 ].map((path) => new URL(path, self.registration.scope).href);
-const MUSIC_URLS = ['./dino-jump-jump.mp3', './dino-boom-in-the-dunes.mp3']
+const MUSIC_URLS = ['./assets/audio/dino-jump-jump.mp3', './assets/audio/dino-boom-in-the-dunes.mp3']
   .map((path) => new URL(path, self.registration.scope).href);
 
 self.addEventListener('install', (event) => {

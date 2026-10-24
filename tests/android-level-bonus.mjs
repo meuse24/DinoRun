@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Physical Android level bonus: own server/tab, trusted touch, real rAF/audio.
 // Requires authorized USB Chrome and the scoped CDP bridge from doc/FEATHER.md.
 // node tests/android-level-bonus.mjs [game.html]; DINO_CDP_URL defaults to :9224.
@@ -7,7 +8,6 @@ import http from 'node:http';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const artifact = path.resolve(process.argv[2] || path.join(root, 'dino.html'));
@@ -17,12 +17,12 @@ const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output
 fs.mkdirSync(output, { recursive: true });
 const adb = (...args) => execFileSync('adb', [...(process.env.DINO_ANDROID_SERIAL ? ['-s', process.env.DINO_ANDROID_SERIAL] : []), ...args],
   { encoding: 'utf8', windowsHide: true }).trim();
-const pw = await import(process.env.DINO_PLAYWRIGHT ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 assert.equal(adb('get-state'), 'device');
 const rotation = { auto: adb('shell', 'settings', 'get', 'system', 'accelerometer_rotation'),
   user: adb('shell', 'settings', 'get', 'system', 'user_rotation') };
-const assets = new Map(['icon-192.png', 'icon-512.png', 'icon-180.png', 'manifest.webmanifest',
-  'dino-jump-jump.mp3', 'dino-boom-in-the-dunes.mp3'].map(name => [name, path.join(root, name)]));
+const assets = new Map(['assets/images/icon-192.png', 'assets/images/icon-512.png', 'assets/images/icon-180.png', 'manifest.webmanifest',
+  'assets/audio/dino-jump-jump.mp3', 'assets/audio/dino-boom-in-the-dunes.mp3'].map(name => [name, path.join(root, name)]));
 const server = http.createServer((request, response) => {
   const name = new URL(request.url, url).pathname.slice(1);
   response.setHeader('Cache-Control', 'no-store');

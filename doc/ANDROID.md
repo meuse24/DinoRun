@@ -88,6 +88,14 @@ to a Custom Tab with a toolbar. Do not disable origin verification to hide error
 
 ## Configuration and updates
 
+Web media now live under `assets/images/` and `assets/audio/`. Both icon URLs
+in `twa-manifest.json` and the embedded web manifest use the new image paths;
+native `app/src/main/res/` images stay in Android's required resource folders.
+Regenerate future Android builds after publishing the new website assets.
+The manifest checksum remains the generator's record of the last regeneration;
+it is not manually advanced for this source edit. The installed TWA continues
+to load the website; no APK rebuild is needed for the web release itself.
+
 Change Android app settings in `twa-manifest.json`, then run:
 
 ```powershell

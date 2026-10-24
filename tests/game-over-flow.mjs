@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Desktop/emulated or physical Android round-end flow; no live score service.
 // node tests/game-over-flow.mjs [game.html] [--android]
 import assert from 'node:assert/strict';
@@ -6,7 +7,6 @@ import http from 'node:http';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
-import {pathToFileURL} from 'node:url';
 
 const root=path.resolve(import.meta.dirname,'..');
 const physical=process.argv.includes('--android');
@@ -17,7 +17,7 @@ const variant=artifact.includes(path.sep+'release'+path.sep)?'release':'source';
 const output=path.join(process.env.DINO_TEST_OUTPUT||path.join(root,'output/game-over'),
   physical?'device':`${engine}-${variant}`);
 fs.mkdirSync(output,{recursive:true});
-const pw=await import(process.env.DINO_PLAYWRIGHT?pathToFileURL(process.env.DINO_PLAYWRIGHT).href:'playwright');
+const pw=await loadPlaywright();
 const adb=(...args)=>execFileSync('adb',args,{encoding:'utf8',windowsHide:true}).trim();
 const server=physical?null:http.createServer((request,response)=>{
   if(new URL(request.url,'http://localhost').pathname==='/dino.html'){

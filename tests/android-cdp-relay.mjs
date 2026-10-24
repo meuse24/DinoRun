@@ -3,9 +3,8 @@
 // Uses Playwright's bundled ws dependency, without adding a runtime dependency.
 import http from 'node:http';
 import { createRequire } from 'node:module';
-import { pathToFileURL } from 'node:url';
-const require = createRequire(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT) : import.meta.url);
+import { playwrightUrl } from './helpers/playwright.mjs';
+const require = createRequire(playwrightUrl());
 const bundle = require('playwright-core/lib/utilsBundle');
 const WebSocketServer = bundle.wsServer, WebSocket = bundle.ws;
 const port = Number(process.env.DINO_CDP_RELAY_PORT || 9224);

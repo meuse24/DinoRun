@@ -12,10 +12,12 @@ them; change the readable root `dino.html` and rebuild. Full details:
 3. `npm run deploy -- --dry-run` checks the delivery and shows the plan. It stops
    when the build is stale or the live worker already has this cache version.
 4. `npm run deploy` uploads, in this order:
+   - all seven media files under `assets/`, then `manifest.webmanifest`,
    - optional extras (`--also <file>`, for example `highscores-lib.php`),
    - `release/dino.html` as `dino.html`,
    - `service-worker.js` last, so no worker caches a mismatched game.
-   It then compares SHA-256 hashes of both files over HTTPS.
+   It compares SHA-256 hashes of every uploaded static file over HTTPS.
+   Existing old asset URLs on the server are not deleted.
 
 Target: `https://meuse24.info/apps/dino/` (FTP directory `apps/dino/`, over FTP with TLS).
 
@@ -36,5 +38,5 @@ stdin, not as a command-line argument.
 ## Never upload
 
 Configuration (`highscores.config.php`), `highscores-data/`, password files,
-tests and docs. `--also` only accepts a fixed list: PHP API/admin scripts,
+tests, docs and raw `asset-sources/`. `--also` only accepts a fixed list: PHP API/admin scripts,
 manifest, icons and songs.

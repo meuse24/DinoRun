@@ -1,3 +1,4 @@
+import { loadPlaywright } from './helpers/playwright.mjs';
 // Screen transitions (doc/TRANSITIONS.md): hit-testing during document View Transitions,
 // the full/basic/fallback call forms, deferred commits, close paths, Help navigation,
 // safety net, external skips and unchanged simulation.
@@ -11,8 +12,7 @@ import { pathToFileURL } from 'node:url';
 
 const root = path.resolve(import.meta.dirname, '..');
 const engine = process.env.DINO_BROWSER || 'chromium';
-const pw = await import(process.env.DINO_PLAYWRIGHT
-  ? pathToFileURL(process.env.DINO_PLAYWRIGHT).href : 'playwright');
+const pw = await loadPlaywright();
 const output = path.join(process.env.DINO_TEST_OUTPUT || path.join(root, 'output/transitions'), engine);
 fs.mkdirSync(output, { recursive: true });
 const temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'dino-transitions-'));
@@ -1213,7 +1213,8 @@ try {
       await page.locator('#quit-game').click();
       const delays = await page.evaluate(() => [...document.querySelectorAll('#goodbye .session-stat')]
         .map(item => item.getAnimations()[0]?.effect.getTiming().delay));
-      assert.deepEqual(delays, [0, 40, 80, 120, 160, 200, 200]);
+      assert(delays.length >= 6, 'Statistics exercise all six stagger steps');
+      assert.deepEqual(delays, delays.map((_, index) => Math.min(index, 5) * 40));
       await done(page);
       // raiseModalDialogs() must not replay the staggered statistics, also once
       // no-motion is released two frames later.
