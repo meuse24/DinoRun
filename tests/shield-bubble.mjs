@@ -219,12 +219,19 @@ try {
       throw error;
     }
     assert.equal((await state(page)).shield.charged, true);
+    // Edge-to-edge touch landscape widens the world to the canvas aspect.
+    const worldFitsLayout = () => page.waitForFunction(() => {
+      const r = document.querySelector('#game').getBoundingClientRect();
+      const edge = matchMedia('(any-pointer: coarse) and (orientation: landscape) and (max-height: 500px)').matches;
+      const portrait = matchMedia('(max-width:600px) and (orientation:portrait)').matches;
+      const expected = edge ? 220 * r.width / r.height : portrait ? 420 : 600;
+      return Math.abs(window.__dinoGame.world.width - expected) < 0.1;
+    });
     await page.setViewportSize({ width: 844, height: 390 });
-    await page.waitForFunction(() => window.__dinoGame.world.width === 600);
+    await worldFitsLayout();
     assert.equal((await state(page)).shield.charged, true);
     await page.setViewportSize(options.viewport);
-    await page.waitForFunction(() => window.__dinoGame.world.width ===
-      (matchMedia('(max-width:600px) and (orientation:portrait)').matches ? 420 : 600));
+    await worldFitsLayout();
 
     // Direct component checks cover timers/sweep without moving the whole world.
     assert.deepEqual(await page.evaluate(() => {

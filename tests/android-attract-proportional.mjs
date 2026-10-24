@@ -117,8 +117,18 @@ try{
     if(c.ws.readyState===WebSocket.OPEN)await c.call('Network.setBlockedURLs',{urls:[]}).catch(()=>{});
     c.ws.close();
   }
-  for(const[key,value]of[['user_rotation',rotation.user],['accelerometer_rotation',rotation.auto]])adb('shell','settings',value==='null'?'delete':'put','system',key,...(value==='null'?[]:[value]));
+  // Leaving fullscreen can reset rotation settings shortly after a write (A53);
+  // settle, then write and read back until they hold.
+  const readRotation=()=>({auto:adb('shell','settings','get','system','accelerometer_rotation'),user:adb('shell','settings','get','system','user_rotation')});
+  for(let attempt=0;attempt<4;attempt++){
+    await new Promise(r=>setTimeout(r,800));
+    for(const[key,value]of[['user_rotation',rotation.user],['accelerometer_rotation',rotation.auto]])adb('shell','settings',value==='null'?'delete':'put','system',key,...(value==='null'?[]:[value]));
+    await new Promise(r=>setTimeout(r,800));
+    report.restoredRotation=readRotation();
+    if(report.restoredRotation.auto===rotation.auto&&report.restoredRotation.user===rotation.user)break;
+  }
   adb('forward','--remove',`tcp:${port}`);
   fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
 }
+assert.deepEqual(report.restoredRotation,{auto:rotation.auto,user:rotation.user},'Rotation settings restored');
 console.log(`Physical ${report.model}: ${report.layouts.length} landscape and ${report.portraits.length} portrait production browser/TWA attract checks passed; hash ${expectedHash}`);

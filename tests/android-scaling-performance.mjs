@@ -98,7 +98,17 @@ try{
   assert.deepEqual(report.errors,[]);
 }finally{
   await page?.close().catch(()=>{});await browser?.close().catch(()=>{});relay?.kill();
-  for(const[k,v]of[['user_rotation',rotation.user],['accelerometer_rotation',rotation.auto]])adb('shell','settings',v==='null'?'delete':'put','system',k,...(v==='null'?[]:[v]));
+  // Leaving fullscreen can reset rotation settings shortly after a write (A53);
+  // settle, then write and read back until they hold.
+  const readRotation=()=>({auto:adb('shell','settings','get','system','accelerometer_rotation'),user:adb('shell','settings','get','system','user_rotation')});
+  for(let attempt=0;attempt<4;attempt++){
+    await new Promise(r=>setTimeout(r,800));
+    for(const[k,v]of[['user_rotation',rotation.user],['accelerometer_rotation',rotation.auto]])adb('shell','settings',v==='null'?'delete':'put','system',k,...(v==='null'?[]:[v]));
+    await new Promise(r=>setTimeout(r,800));
+    report.restoredRotation=readRotation();
+    if(report.restoredRotation.auto===rotation.auto&&report.restoredRotation.user===rotation.user)break;
+  }
   if(forward)adb('forward','--remove',`tcp:${forward}`);if(reverse)adb('reverse','--remove',`tcp:${port}`);
   await new Promise(r=>server.close(r));fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
+  assert.deepEqual(report.restoredRotation,{auto:rotation.auto,user:rotation.user},'Rotation settings restored');
 }
