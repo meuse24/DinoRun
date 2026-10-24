@@ -29,6 +29,8 @@ vergleicht immer Quelle und generierte Auslieferung. `test:release` benötigt
 einen aktuellen Build (`npm run build`) und prüft dessen Reproduzierbarkeit.
 
 Einzelne Skripte bleiben direkt aufrufbar, etwa `node tests/lives.mjs`.
+`node tests/music-logo.mjs [game.html]` prüft das musiksynchrone M24-Logo;
+die Suite gehört ebenfalls zu `test:features` (Details in [VOLUME.md](VOLUME.md)).
 PHP-/Moderationsprüfungen, Baseline-Vergleiche, Skill-Client, Performance- und
 physische Android-Prüfungen werden separat ausgeführt; Befehle stehen in
 [AGENTS.md](../AGENTS.md) und den jeweiligen Fachanleitungen.

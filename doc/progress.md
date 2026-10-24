@@ -7,6 +7,73 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Kräftigerer Logo-Bass (Build .5 / Cache v67)
+
+- Nutzerwunsch: deutlich mehr Bums. Maximale Logo-Skalierung von 1,18 auf 1,65
+  erhöht (2,7-fache Fläche am Peak); quadratische Reaktion betont starke Schläge
+  gegenüber leiseren Passagen. 45-ms-Ease-out für einen schnellen Anschlag und
+  kurze Nachbewegung. Rechte Logokante verankert, damit DINO frei bleibt.
+- Unveränderte Bassdaten und Medienuhr, keine zusätzlichen Timer, Audioknoten,
+  Layoutabfragen oder Effekte. Reduced Motion/Effektschalter behalten ihr Verhalten.
+- Logo-Suite prüft die neue Peak-Stärke und Titelabstand bei maximaler Skalierung
+  in Desktop, 320px-Hochformat und Querformat. Chromium-Quelle bestanden;
+  Screenshots visuell geprüft. Skill-Client gegen Quelle bestanden und Gameplay-
+  Bild/Zustand geprüft. Logo-Suite auch gegen Release in Chromium sowie Quelle
+  in WebKit bestanden (dort nur deterministische Medien-/DOM-Fälle). Attract-Suite
+  mit zwölf Layouts bestanden. Release neu gebaut, Syntax und diff --check sauber.
+  Keine Veröffentlichung oder physische Geräteprüfung.
+
+## 2026-10-25: MP3s zurück neben die HTML (Build .4 / Cache v66)
+
+- Beide MP3s auf Nutzerwunsch aus assets/audio/ in den Repository-Stamm
+  verschoben, direkt neben dino.html. SHA-256 vor/nach dem Verschieben identisch;
+  leeren Audioordner entfernt. Bilder und WAV-Originale behalten ihre Orte.
+- Spielpfade, Worker-Precache/Range-Handling, gemeinsame Hosting-/Deploymentliste,
+  Audio-/Android-Fixtures, Bassdaten-Generator, AGENTS.md und aktuelle Anleitungen
+  angepasst. Historische Berichte behalten ihre damaligen Pfade.
+- Generator am neuen Ort geprüft: beide eingebetteten Basshüllkurven unverändert.
+  Build .4 mit Cache v66 neu erzeugt; keine Veröffentlichung.
+- Chromium: npm test (Assets/Deploymentliste, 12 Architektur-, 7 Lifecycle-Fälle),
+  Theme-Songs gegen Quelle/Release (echte MP3s, Offline/Byte-Ranges), Logo-Puls,
+  elf Volume-Gruppen inklusive DSP und installierter Skill-Client bestanden.
+  Zusätzliche Prüfung für beide MP3s direkt neben einer kopierten file://-HTML
+  in die bestehende Theme-Song-Suite aufgenommen; gegen Quelle und Release
+  bestanden. Skill-Gameplay-Bild/Zustand angesehen, Syntaxchecks aller elf
+  betroffenen JS-Werkzeuge/Worker und git diff --check bestanden.
+
+## 2026-10-25: M24 im Songrhythmus (Build .3 / Cache v65)
+
+- Auftrag: sichtbares M24-Logo passend zum Theme-Song pulsieren lassen, mit
+  Recherche professioneller Browsertechnik und geringem Ressourcenverbrauch.
+  Skill develop-web-game angewandt; keine Subagents, keine Veröffentlichung.
+- MDN (AnalyserNode/currentTime) und web.dev (Animation/Compositing) recherchiert.
+  Für die zwei festen MP3s Basshüllkurven einmalig mit ffmpeg vorgebacken:
+  45–180 Hz, 30 Hz, 16 Stufen, zusammen 7.170 Zeichen. Reproduzierbarer Generator
+  unter scripts/bake-logo-pulse.mjs; keine neue Laufzeitabhängigkeit.
+- MusicLogoPulse nutzt Medienuhr und vorhandenen Draw-Aufruf. Maximal 18 %
+  SVG-Skalierung, kurze Transform-Interpolation, kein FFT/AudioContext/Timer,
+  keine Geometrieabfragen; identische Werte schreiben nicht ins DOM. Musikrouting
+  unverändert. Stopp bei Pause/Buffering/Fehler/Mute, verstecktem Menü, Gameplay,
+  Reduced Motion oder deaktivierten Arcade-Effekten; Medienereignisse setzen
+  sofort zurück. Schweben pausiert während des Pulsierens.
+- Neue Suite tests/music-logo.mjs in test:features: echte Chromium-Wiedergabe
+  beider MP3s erzeugt unterschiedliche Skalen; deterministische Phasen/Seeks,
+  Grenzen, Stopps/Erholung, Reduced Motion/Effekte, unveränderte DOM-Werte und
+  drei Layouts bestanden. Screenshots visuell geprüft. Kein physischer Gerätetest.
+- Chromium: npm test (Assets, 12 Architektur-/7 Lifecycle-Szenarien), alle elf
+  Volume-Gruppen inklusive Offline-DSP, echte Theme-Songs/Offline/Range-Requests,
+  Heading-Motion und installierter Skill-Client bestanden; Gameplay-Bild/Zustand
+  geprüft.
+- Release gebaut: 339.761 Bytes, gzip 116.925 Bytes (+2.634 gegenüber .2),
+  Brotli 104.499 Bytes (+2.135). Chromium: 64 Source-/Release-Szenen pixelidentisch;
+  neue Logo-Suite und echte MP3-/Offline-/Range-Prüfung auch gegen Release bestanden.
+  WebKit: Logo-Suite gegen Quelle und Release, elf Volume-Gruppen und Heading-
+  Motion bestanden. Seine bekannte fehlende MP3-/DSP-Unterstützung wird nicht
+  als Audioprüfung gewertet. Syntaxprüfungen und git diff --check bestanden.
+  Nachweise: output/music-logo/{source,release}, output/theme-songs,
+  output/refactoring/skill-client und Source-/Release-Vergleich. Keine offenen
+  Implementierungsarbeiten; physische Android-Leistungs-/Hörprüfung nicht erfolgt.
+
 ## 2026-10-24: Scope-preserving simulation refactoring
 
 - User requested implementing the review recommendation. Applied develop-web-game; no agents. Split Game.update (157 -> 37 lines) into playing/world/pickup phases and separate obstacle/boss collision methods. Preserve statement/event order, fixed-step semantics, random consumption and milestone-before-contact behavior.

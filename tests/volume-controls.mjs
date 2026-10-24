@@ -69,7 +69,7 @@ async function fixture(viewport,preset={},denied=false) {
   await context.route('**/*',route=>{
     requests.push(route.request().url());
     if(route.request().url()===url)return route.fulfill({contentType:'text/html',body:html});
-    if(['/assets/audio/dino-jump-jump.mp3','/assets/audio/dino-boom-in-the-dunes.mp3'].some(name=>route.request().url()===origin+name))
+    if(['/dino-jump-jump.mp3','/dino-boom-in-the-dunes.mp3'].some(name=>route.request().url()===origin+name))
       return route.fulfill({contentType:'audio/wav',body:wave});
     return route.fulfill({status:204});
   });
@@ -147,7 +147,7 @@ try {
       await song.focus(); await song.press('End'); await song.press('Enter');
       await playing(page);
       assert.equal(await song.inputValue(),'dino-jump-jump');
-      assert.equal(await page.evaluate(()=>window.__dinoRunner.music.audio.src.endsWith('assets/audio/dino-jump-jump.mp3')),true);
+      assert.equal(await page.evaluate(()=>window.__dinoRunner.music.audio.src.endsWith('dino-jump-jump.mp3')),true);
       assert((await state(page)).position<1,'Switching starts the selected song from the beginning');
       close((await state(page)).mediaVolume,0.27);
       await page.reload(); await page.locator('#settings-open').click(); await playing(page);

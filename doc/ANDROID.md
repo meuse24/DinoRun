@@ -88,7 +88,8 @@ to a Custom Tab with a toolbar. Do not disable origin verification to hide error
 
 ## Configuration and updates
 
-Web media now live under `assets/images/` and `assets/audio/`. Both icon URLs
+Web images live under `assets/images/`; both optional MP3s live beside `dino.html`.
+Both icon URLs
 in `twa-manifest.json` and the embedded web manifest use the new image paths;
 native `app/src/main/res/` images stay in Android's required resource folders.
 Regenerate future Android builds after publishing the new website assets.

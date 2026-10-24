@@ -6,13 +6,14 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal und veröffentlicht: Build `2026-10-25.2`, Worker-Cache `dino-run-v64`.
-Der neue Build korrigiert die Flugziele von Bonusmünzen und Beeren im Hochformat.
-Medien liegen jetzt in `assets/images/` und `assets/audio/`.
-Der Größenbericht nennt 602.822 Bytes Quelle und 331.083 Bytes Auslieferung
-(45,08 % kleiner; gzip 114.291, Brotli 102.364 Bytes).
+Lokal: Build `2026-10-25.5`, Worker-Cache `dino-run-v67` (noch nicht veröffentlicht).
+Der neue Build verstärkt das basssynchrone M24-Logo auf bis zu 65 % Vergrößerung;
+siehe [VOLUME.md](VOLUME.md). MP3-Dateien liegen direkt neben `dino.html`.
+Bilder und Icons liegen in `assets/images/`.
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
+Zuletzt veröffentlicht: Build `2026-10-25.2`, Worker-Cache `dino-run-v64`;
+Korrektur der Flugziele von Bonusmünzen und Beeren im Hochformat.
 Nach Commit `5f58747` am 2026-10-25 mit `npm run deploy -- --tls12`
 veröffentlicht; alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt.
 Live-Hochformatprüfung (320x568): Münze und Beere treffen den sichtbaren Score
@@ -69,13 +70,16 @@ und erhaltene Chromium-/Font-Attribution. Die Quelle wird nicht überschrieben;
 ## Verwendung
 
 `release/dino.html` direkt für Offline-`file://`-Spiel öffnen oder kopieren.
-Optional daneben die Ordnerstruktur `assets/audio/` mit einem oder beiden
-MP3-Titeln kopieren; Settings → Theme song wählt den gespeicherten Titel.
-Ohne diesen Ordner bleibt das Spiel eigenständig spielbar.
+Optional einen oder beide MP3-Titel direkt daneben kopieren;
+Settings → Theme song wählt den gespeicherten Titel.
+Ohne diese Dateien bleibt das Spiel eigenständig spielbar. Zum lokalen Testen
+von `release/dino.html` mit Musik die MP3s auch direkt neben diese HTML kopieren;
+der Build erzeugt weiterhin nur HTML und Größenbericht.
 
 Auf dem Server ersetzt die Datei die bisherige `dino.html` im ursprünglichen
 Verzeichnis, nicht unter `/release/`. PHP, Konfiguration, Daten und Manifest
-behalten ihre Orte; Icons und Songs liegen unter `assets/`. Der generierte Release-Ordner
+behalten ihre Orte; Icons liegen unter `assets/images/`, Songs neben `dino.html`.
+Der generierte Release-Ordner
 allein ist keine vollständige PHP-/PWA-Installation. Bauen lädt nichts hoch.
 
 
@@ -90,7 +94,7 @@ Run it only after the build and the verification below pass.
 2. `npm run deploy -- --dry-run` checks the delivery without uploading: it needs
    `BUILD` in `release/dino.html`, a delivery newer than `dino.html`, and refuses
    when the live worker already has the same `CACHE_NAME` (override: `--force`).
-3. `npm run deploy` first uploads all seven media files under `assets/` and
+3. `npm run deploy` first uploads five images under `assets/images/`, both MP3s beside `dino.html` and
    `manifest.webmanifest`, then optional extras, `release/dino.html` as `dino.html`, then
    `service-worker.js` **last**, so a worker never caches a mismatched game. It
    uses the system `curl` (FTP over TLS required; `--plain-ftp` allows
@@ -108,8 +112,8 @@ Extra files are uploaded only on request, before the HTML:
 Only a fixed list is accepted (PHP API/admin scripts, manifest, icons, songs).
 Configuration, `highscores-data/`, secrets and tests can never be uploaded.
 Raw sources under `asset-sources/` are also excluded. The fixed deployment list
-and order live in `scripts/lib/hosted-assets.cjs`. Existing root-level media on
-the server are not deleted during the path migration, so older cached pages
+and order live in `scripts/lib/hosted-assets.cjs`. Existing media on
+the server are not deleted during path migrations, so older cached pages
 can still request their original URLs. No server files are moved by the build.
 Upload `highscores-lib.php` when the score rules changed (see
 [LEVEL-BONUS.md](LEVEL-BONUS.md) and [GLOW-BERRY.md](GLOW-BERRY.md)).

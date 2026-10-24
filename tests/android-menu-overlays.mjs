@@ -20,7 +20,7 @@ const rotation={auto:adb('shell','settings','get','system','accelerometer_rotati
   user:adb('shell','settings','get','system','user_rotation')};
 const pw=await loadPlaywright();
 const assets=new Set(['assets/images/icon-192.png','assets/images/icon-512.png','assets/images/icon-180.png','manifest.webmanifest',
-  'assets/audio/dino-jump-jump.mp3','assets/audio/dino-boom-in-the-dunes.mp3']);
+  'dino-jump-jump.mp3','dino-boom-in-the-dunes.mp3']);
 const server=http.createServer((req,res)=>{
   const name=new URL(req.url,url).pathname.slice(1);res.setHeader('Cache-Control','no-store');
   if(name==='dino.html')res.writeHead(200,{'Content-Type':'text/html; charset=utf-8'}).end(html);

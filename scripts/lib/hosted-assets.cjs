@@ -2,7 +2,7 @@
 const MEDIA_ASSETS = Object.freeze([
   'assets/images/icon-180.png', 'assets/images/icon-192.png', 'assets/images/icon-512.png',
   'assets/images/dino.png', 'assets/images/dino.svg',
-  'assets/audio/dino-jump-jump.mp3', 'assets/audio/dino-boom-in-the-dunes.mp3',
+  'dino-jump-jump.mp3', 'dino-boom-in-the-dunes.mp3',
 ]);
 const HOSTED_ASSETS = Object.freeze([...MEDIA_ASSETS, 'manifest.webmanifest', 'service-worker.js']);
 const RELEASE_ASSETS = Object.freeze([...MEDIA_ASSETS, 'manifest.webmanifest']);

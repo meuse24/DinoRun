@@ -5,7 +5,7 @@
 # Generated test screenshots and reports stay local, including older runs.
 /output/
 # Private local files: admin password note, local config copy with a password hash,
-# and the 23 MB source WAV of assets/audio/dino-boom-in-the-dunes.mp3 (see doc/VOLUME.md).
+# and the 23 MB source WAV of dino-boom-in-the-dunes.mp3 (see doc/VOLUME.md).
 /adminphppasswort.txt
 /highscores.config.example - Kopie.php
 /asset-sources/

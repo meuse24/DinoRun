@@ -17,6 +17,9 @@ Die zentralen `--heading-*`-Variablen steuern Dauer, Hub, Neigung und Versatz.
 Der aktuelle Wellenzyklus dauert 3,2 Sekunden mit 3,5 px Hub, 2 Grad Neigung und
 200 ms Phasenversatz je Glyph; der gesamte Titel kann zusätzlich atmen.
 Das M24-Logo schwebt mit einem eigenen 4,8-Sekunden-Zyklus und 2 px Hub.
+Seit Build `2026-10-25.3` ersetzt bei laufendem Theme-Song ein basssynchrones
+Pulsieren das Schweben. Vorgebackene Songdaten, Medienuhr, Ressourcen und
+Lebenszyklus sind in [VOLUME.md](VOLUME.md#music-reactive-m24-logo) beschrieben.
 Arcade-Eintrittseffekte sind in [ARCADE.md](ARCADE.md) beschrieben.
 
 Die h1/h2 behalten vollständige zugängliche Namen, Einzelbuchstaben sind

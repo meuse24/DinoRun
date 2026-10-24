@@ -278,7 +278,7 @@ try {
     assert(network.every(request => /(?:manifest\.webmanifest|icon-\d+\.png|dino-(?:jump-jump|boom-in-the-dunes)\.mp3)$/.test(request)),
       `${name}: unexpected runtime dependency: ${network}`);
     if (useFile) assert(requests.every(request => request.split('#')[0] === pathToFileURL(file).href
-      || request.endsWith('/assets/audio/dino-jump-jump.mp3') || request.endsWith('/assets/audio/dino-boom-in-the-dunes.mp3')),
+      || request.endsWith('/dino-jump-jump.mp3') || request.endsWith('/dino-boom-in-the-dunes.mp3')),
     `${name}: standalone copy requested a file other than optional music: ${requests}`);
     report.push({ name, lifecycle: 'passed', offline: !!useFile, blockedStorage: !!blocked, errors });
     await context.close();

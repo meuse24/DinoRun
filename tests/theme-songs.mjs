@@ -5,13 +5,15 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { standaloneFixture } from './helpers/browser.mjs';
 
 const root=path.resolve(import.meta.dirname,'..');
 const artifact=path.resolve(process.argv[2]||path.join(root,'dino.html'));
 const output=path.join(process.env.DINO_TEST_OUTPUT||path.join(root,'output/theme-songs'),
   artifact.includes(path.sep+'release'+path.sep)?'release':'source');
 fs.mkdirSync(output,{recursive:true});
-const tracks=['assets/audio/dino-boom-in-the-dunes.mp3','assets/audio/dino-jump-jump.mp3'];
+const tracks=['dino-boom-in-the-dunes.mp3','dino-jump-jump.mp3'];
 const assets=new Map([
   ['dino.html',[artifact,'text/html; charset=utf-8']],
   ['service-worker.js',[path.join(root,'service-worker.js'),'text/javascript']],
@@ -76,7 +78,7 @@ try{
   assert(state.duration>0 && state.duration<120);
   results.push({name:'new-default-real-mp3',...state});
   await page.locator('#music-track').selectOption('dino-jump-jump'); await ready();
-  state=await inspect(); assert(state.src.endsWith('/assets/audio/dino-jump-jump.mp3'));
+  state=await inspect(); assert(state.src.endsWith('/dino-jump-jump.mp3'));
   results.push({name:'original-real-mp3',...state});
   await context.setOffline(true);
   await page.reload(); await page.locator('#settings-open').click(); await ready();
@@ -110,9 +112,37 @@ try{
   assert(!requests.some(name=>name.includes('highscores.php')));
   assert.deepEqual(errors,[]);
   await page.screenshot({path:path.join(output,'offline-settings.png')});
+  // A copied HTML must find both optional songs in its own directory, including file://.
+  const standalone = standaloneFixture('dino-theme-songs-', artifact);
+  try {
+    for (const name of tracks)
+      fs.copyFileSync(path.join(root, name), path.join(path.dirname(standalone.file), name));
+    const localContext = await browser.newContext();
+    await localContext.addInitScript(() => {
+      window.__dinoTest = { credits: 99, manualFrames: true, highscoreApiUrl: null, transitions: false };
+      localStorage.setItem('dino-fullscreen-disabled', 'true');
+    });
+    const localPage = await localContext.newPage();
+    localPage.on('pageerror', error => errors.push(String(error)));
+    await localPage.route(/^https?:/, route => route.abort());
+    await localPage.goto(pathToFileURL(standalone.file).href);
+    await localPage.locator('#settings-open').click();
+    for (const track of ['boom-in-the-dunes', 'dino-jump-jump']) {
+      await localPage.locator('#music-track').selectOption(track);
+      await localPage.waitForFunction(() => {
+        const a = window.__dinoRunner.music.audio;
+        return a.readyState >= 2 && !a.paused && !a.error;
+      });
+      const src = await localPage.evaluate(() => window.__dinoRunner.music.audio.src);
+      assert.equal(new URL('.', src).href, new URL('.', pathToFileURL(standalone.file)).href);
+      results.push({ name: 'standalone-sibling-mp3', track, protocol: new URL(src).protocol });
+    }
+    await localContext.close();
+  } finally { standalone.cleanup(); }
+  assert.deepEqual(errors, []);
   fs.writeFileSync(path.join(output,'report.json'),JSON.stringify({artifact,browser:browser.version(),
     results,ranges,errors,expectedRangeErrors,liveRequests:false,physicalDevice:false},null,2));
-  console.log('Actual MP3 playback, saved selection, offline switching and six byte-range responses passed');
+  console.log('Actual MP3 playback, standalone sibling songs, saved selection, offline switching and six byte-range responses passed');
   await context.close();
 }finally{
   if(browser)await browser.close();

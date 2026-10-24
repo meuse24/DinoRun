@@ -22,7 +22,7 @@ assert.equal(adb('get-state'), 'device');
 const rotation = { auto: adb('shell', 'settings', 'get', 'system', 'accelerometer_rotation'),
   user: adb('shell', 'settings', 'get', 'system', 'user_rotation') };
 const assets = new Map(['assets/images/icon-192.png', 'assets/images/icon-512.png', 'assets/images/icon-180.png', 'manifest.webmanifest',
-  'assets/audio/dino-jump-jump.mp3', 'assets/audio/dino-boom-in-the-dunes.mp3'].map(name => [name, path.join(root, name)]));
+  'dino-jump-jump.mp3', 'dino-boom-in-the-dunes.mp3'].map(name => [name, path.join(root, name)]));
 const server = http.createServer((request, response) => {
   const name = new URL(request.url, url).pathname.slice(1);
   response.setHeader('Cache-Control', 'no-store');

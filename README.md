@@ -22,7 +22,8 @@ Die automatischen Browserprüfungen verwenden isolierte Fixtures; siehe
 
 - `dino.html`: Oberfläche, Darstellung und Spielsimulation.
 - `service-worker.js`, `manifest.webmanifest`, Icons: gehostete Installation.
-- `assets/images/`, `assets/audio/`: Bilder, Icons und optionale MP3s.
+- `assets/images/`: Bilder und Icons.
+- `dino-*.mp3`: optionale Musiktitel, direkt neben `dino.html`.
 - `asset-sources/audio/`: lokale WAV-Quelldatei, von Git ausgeschlossen.
 - `highscores*.php`, `admin.php`, `score-console.php`: PHP-Backend (PHP 7.4+).
 - `dino-android/`: Android Trusted Web Activity.

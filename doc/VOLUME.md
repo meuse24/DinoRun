@@ -1,5 +1,59 @@
 # Music and effects volume
 
+## Music-reactive M24 logo
+
+The visible attract-menu M24 logo pulses with each song's bass attacks.
+Build `2026-10-25.5` increases the peak expansion from 18% to 65% (2.7 times
+the resting area). A squared response emphasizes strong bass hits while keeping
+quiet passages restrained. A fast attack and short release give it more punch.
+The existing floating animation yields while the music pulse is active. The
+logo grows away from the title, keeping its right edge, layout size and accessible
+name fixed.
+
+For these two fixed tracks, `scripts/bake-logo-pulse.mjs` analyzes the shipped
+MP3s once during development with ffmpeg: 45–180 Hz bass, RMS windows at 30 Hz,
+slow background subtraction, fast attack and exponential release. Each song is
+normalized independently and quantized to 16 levels. Both envelopes together
+occupy 7,170 embedded ASCII characters, with no runtime requests or dependencies.
+Regenerate them with `node scripts/bake-logo-pulse.mjs` whenever either MP3 changes;
+ffmpeg is a development tool and is not needed for ordinary builds or play.
+
+`MusicLogoPulse` reads `HTMLMediaElement.currentTime` in the existing draw loop
+and changes only the SVG's `transform`, with a 45 ms ease-out between samples.
+It uses the song timeline, including seeks, loops and playback-rate changes;
+it does not guess BPM or start an independent animation clock. Browser media
+clock precision still applies; this is a visual accompaniment, not sample-accurate
+audio scheduling. Identical values do not write to the DOM. There is no additional
+AudioContext, FFT, decoder, animation loop, layout read or analysis buffer.
+
+Paused/buffering/missing/blocked audio, mute, music volume zero, gameplay,
+hidden menus, lifecycle/menu-overlay pauses, Reduced Motion and disabled Arcade
+effects leave the logo unscaled. Media stop/wait/error events reset it immediately;
+the normal playing event and draw loop resume synchronization. The existing
+audio routing and optional standalone/offline songs are retained.
+
+Research: [MDN AnalyserNode](https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode)
+describes the live FFT alternative. For the fixed soundtracks we chose baked data
+to avoid continuous analysis and audio-routing changes.
+[MDN currentTime](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/currentTime)
+documents the media timeline; [web.dev animation guidance](https://web.dev/articles/animations-guide)
+recommends transform/opacity to avoid layout work, and using layer hints sparingly.
+
+`node tests/music-logo.mjs [game.html]` checks actual Chromium MP3 playback
+driving varying scales for both songs, deterministic seek/phase and amplitude
+bounds, media/lifecycle stops and recovery, dynamic Reduced Motion, the effects
+switch, zero DOM mutations for 1,000 unchanged samples and three responsive
+layouts, including peak-size title clearance. `DINO_BROWSER=webkit` runs the deterministic DOM/CSS cases; the installed
+Windows WebKit cannot decode these MP3s. Reports/screenshots are in
+`output/music-logo/{source,release}`. These checks are browser emulation, not
+physical Android performance or listening verification.
+
+## Tracks and volume controls
+
+Both optional MP3s live directly beside `dino.html`: `dino-boom-in-the-dunes.mp3`
+and `dino-jump-jump.mp3`. Keep them beside any copied HTML, including a copied
+release artifact. Hosted deployment uploads them to that same directory.
+
 Settings → **Theme song** switches between **Boom in the Dunes** (the new
 default) and **Dino Jump Jump**. The choice is saved as `dino-music-track`.
 Switching starts the selected song from the beginning and keeps the volume and
@@ -9,13 +63,13 @@ standalone play and are independently cached for hosted offline installation,
 including byte-range responses. A missing song does not block game installation
 or prevent switching to the other song.
 
-`assets/audio/dino-boom-in-the-dunes.mp3` is converted from the supplied `asset-sources/audio/Theme_song2.wav`
+`dino-boom-in-the-dunes.mp3` is converted from the supplied `asset-sources/audio/Theme_song2.wav`
 using the first song's mono, 22,050 Hz, constant 64 kbit/s MP3 settings.
 The WAV is 121.2 seconds; a pitch-preserving 1.5% tempo increase keeps the MP3
 below two minutes (119.420 seconds, 956,179 bytes). The original WAV is untouched.
 
 ```powershell
-ffmpeg -hide_banner -nostdin -i asset-sources/audio/Theme_song2.wav -map 0:a:0 -vn -af atempo=1.015 -ac 1 -ar 22050 -c:a libmp3lame -b:a 64k -map_metadata -1 -metadata title="Dino Run - Boom in the Dunes" -metadata artist="m24" assets/audio/dino-boom-in-the-dunes.mp3
+ffmpeg -hide_banner -nostdin -i asset-sources/audio/Theme_song2.wav -map 0:a:0 -vn -af atempo=1.015 -ac 1 -ar 22050 -c:a libmp3lame -b:a 64k -map_metadata -1 -metadata title="Dino Run - Boom in the Dunes" -metadata artist="m24" dino-boom-in-the-dunes.mp3
 ```
 
 Settings has separate **Music volume** and **Effects volume** sliders from
@@ -81,6 +135,8 @@ in Chromium. Production code is unchanged by these test accommodations.
 `tests/theme-songs.mjs` uses both actual MP3 files and an isolated local HTTP
 server. Chromium verifies media decoding, default/saved selection, offline reload
 and switching, plus prefix/suffix/unsatisfiable byte ranges for both cached songs.
+It also copies the HTML and both MP3s into one isolated directory and verifies
+actual `file://` playback of both sibling songs.
 It accepts `release/dino.html`; no real highscore service is contacted.
 
 Reports/screenshots: `output/volume/{chromium,webkit}-{source,release}`. Browser

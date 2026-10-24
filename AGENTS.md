@@ -12,7 +12,7 @@ in the repository root so its instructions apply to the entire project.
   `doc/ANDROID.md` for tools, signing backup, build/install and domain verification.
   Keep its `signing/`, local tool paths and generated APK/AAB files out of Git.
 - `service-worker.js` and `manifest.webmanifest` support installation and offline assets.
-  Images/icons live in `assets/images/`, optional MP3s in `assets/audio/`.
+  Images/icons live in `assets/images/`; optional MP3s live beside `dino.html` in the repository root.
   Local WAV originals live in the Git-ignored `asset-sources/audio/`.
 - `highscores.php` exposes the API; `highscores-lib.php` handles validation and file storage; `admin.php` provides CLI moderation.
 - `score-console.php` provides password-protected web moderation, disabled until
