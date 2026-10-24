@@ -141,3 +141,12 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   layouts, effects2 layouts and reproducible64-scene source/release comparison
   pass. Installed skill client passes final release; screenshot/state inspected.
   No browser errors, live score writes or physical-device run.
+- User explicitly requested commit/deploy. Commit 5f58747 contains the fix and
+  its regression/docs. Dry run confirmed published v63; encrypted TLS1.2 upload
+  publishes .2/v64 with worker last. All ten static HTTPS hashes match, including
+  HTML42e5ba479aa4... and worker7b0d50e49f1d....
+- Fresh production Chromium portrait320x568/DPR3 with isolated storage and live
+  scores disabled verifies both actual draw endpoints at256/144.875, matching
+  the visible HUD within0.00001 CSS-px. Cache v64, no page errors. Live screenshot
+  inspected. Evidence: output/bonus-flight-fix/live-report.json and
+  live-portrait.png. Browser touch emulation, no new physical-device run.

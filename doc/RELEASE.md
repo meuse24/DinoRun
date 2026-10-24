@@ -6,15 +6,20 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal: Build `2026-10-25.2`, Worker-Cache `dino-run-v64` (noch nicht veröffentlicht).
-Veröffentlicht: `2026-10-25.1` / `dino-run-v63`.
+Lokal und veröffentlicht: Build `2026-10-25.2`, Worker-Cache `dino-run-v64`.
 Der neue Build korrigiert die Flugziele von Bonusmünzen und Beeren im Hochformat.
 Medien liegen jetzt in `assets/images/` und `assets/audio/`.
 Der Größenbericht nennt 602.822 Bytes Quelle und 331.083 Bytes Auslieferung
 (45,08 % kleiner; gzip 114.291, Brotli 102.364 Bytes).
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
-Am 2026-10-25 nach Commit `a6bbc7d` mit `npm run deploy -- --tls12`
+Nach Commit `5f58747` am 2026-10-25 mit `npm run deploy -- --tls12`
+veröffentlicht; alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt.
+Live-Hochformatprüfung (320x568): Münze und Beere treffen den sichtbaren Score
+bei x256/y144,875; Cache v64 und keine Browserfehler. Nachweis:
+`output/bonus-flight-fix/live-report.json` und `live-portrait.png` daneben.
+
+Vorheriger Release `.1` / Cache v63: am 2026-10-25 nach Commit `a6bbc7d` mit `npm run deploy -- --tls12`
 veröffentlicht: sieben Medien, Manifest, HTML, zuletzt Worker. Alle zehn Dateien
 über HTTPS per SHA-256 bestätigt. Frischer Chromium-Kontext besteht START,
 Offline-Neuladen sowie gecachte Icons und beide MP3s, ohne Highscore-Schreibzugriff.
