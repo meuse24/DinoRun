@@ -132,11 +132,14 @@ try {
       finally { r.ctx.drawImage = draw; }
       for (let score = 0; score < 100; score++)
         r.drawPixelText('SC ' + score, 0, 0, 16, '#ffd257', '#081330');
+      const preference = r.ctx.getContextAttributes?.().willReadFrequently;
+      const matching = [...r.hudGlyphs.values(), ...r.hudRuns.values()].every(sprite =>
+        sprite.canvas.getContext('2d').getContextAttributes?.().willReadFrequently === preference);
       return { warmed: warmed.length, retained: retained.length,
         same: warmed.every((glyph, i) => glyph === retained[i]), copies,
-        bounded: r.hudRuns.size <= 48 };
+        bounded: r.hudRuns.size <= 48, matching };
     });
-    assert.deepEqual(glyphCache, { warmed: 10, retained: 10, same: true, copies: 1, bounded: true },
+    assert.deepEqual(glyphCache, { warmed: 10, retained: 10, same: true, copies: 1, bounded: true, matching: true },
       'Animated night score reuses shadowed glyphs instead of rasterising per frame');
     // Event lettering: cached sprites, overshoot pop, rise and fade; level banners sweep.
     const lettering = await page.evaluate(() => {

@@ -1,5 +1,16 @@
 # Arcade typography and feedback
 
+## Phone render path (build 2026-10-24.5)
+
+Attract allows the browser's default acceleration choice and landscape touch
+attract uses the existing gameplay DPR2 budget. Touch rounds retain the CPU
+context and matching HUD glyph/run caches described below: an extra physical
+rotation/pickup test caught an all-GPU gameplay regression on A53. Two retained
+backings share one visible Canvas slot. Portrait retains its density; DOM
+text/buttons retain their sharpness.
+Physical S10e/A53 day, night and stressed-night comparisons and the fidelity
+tradeoff are recorded in [ATTRACT-PERFORMANCE.md](ATTRACT-PERFORMANCE.md).
+
 ## Level bonus (build 2026-10-21.10)
 
 Level crossings now lead to a safe1.8-second performance tally with clean-pass

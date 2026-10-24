@@ -4023,7 +4023,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-24.4';
+        const BUILD = '2026-10-24.5';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4158,7 +4158,7 @@
         };
         const gameEl = document.getElementById('game');
         const pageEl = document.getElementById('page');
-        const canvas = document.getElementById('canvas');
+        let canvas = document.getElementById('canvas');
         const live = document.getElementById('status');
         let pixelRatio = 1;
 
@@ -5561,21 +5561,21 @@
           const rect = gameEl.getBoundingClientRect();
           // Hidden views have no layout size; preserve the backing store until visible.
           if (rect.width <= 0 || rect.height <= 0) return;
-          // Edge-to-edge phone play otherwise uploads nearly two million CPU-
-          // rasterised pixels per frame at DPR3. Keep CSS size and world aspect,
-          // but cap raster density during landscape touch play, not attract/portrait.
+          // Budget landscape touch pixels in attract and play alike without
+          // changing CSS size, world aspect or portrait density.
           const density = window.devicePixelRatio || 1;
-          const rasterDensity = matchMedia('(pointer: coarse) and (orientation: landscape)').matches &&
-            !gameEl.parentElement.classList.contains('idle') ? Math.min(density, 2) : density;
+          const rasterDensity = matchMedia('(pointer: coarse) and (orientation: landscape)').matches
+            ? Math.min(density, 2) : density;
           pixelRatio = Math.min(
             rasterDensity * Math.max(rect.width / logicalWidth, 0.5),
             4,
           );
           const width = Math.round(logicalWidth * pixelRatio),
             height = Math.round(HEIGHT * pixelRatio);
-          if (canvas.width !== width || canvas.height !== height) {
-            canvas.width = width;
-            canvas.height = height;
+          const target = ctx.canvas;
+          if (target.width !== width || target.height !== height) {
+            target.width = width;
+            target.height = height;
           }
           ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
           ctx.imageSmoothingEnabled = true;
@@ -6965,6 +6965,7 @@
         class Renderer {
           constructor(ctx, game, { prewarm = true } = {}) {
             this.ctx = ctx;
+            this.softwareRaster = false;
             this.game = game;
             this.world = game.world;
             this.darkQuery = matchMedia('(prefers-color-scheme: dark)');
@@ -8585,7 +8586,7 @@
             const font = size + 'px ' + FONT_PIXEL,
               ready = !document.fonts || document.fonts.check(font),
               canvas = document.createElement('canvas'),
-              c = canvas.getContext('2d', { willReadFrequently: matchMedia('(pointer: coarse)').matches });
+              c = canvas.getContext('2d', { willReadFrequently: this.softwareRaster });
             canvas.width = Math.ceil((size + (shadow ? 1 : 0)) * scale);
             canvas.height = Math.ceil((size * 1.25 + (shadow ? 1 : 0)) * scale);
             c.scale(scale, scale);
@@ -8625,7 +8626,7 @@
               let run = this.hudRuns.get(key);
               if (!run) {
                 const canvas = document.createElement('canvas'),
-                  c = canvas.getContext('2d', { willReadFrequently: matchMedia('(pointer: coarse)').matches }),
+                  c = canvas.getContext('2d', { willReadFrequently: this.softwareRaster }),
                   width = text.length * size + 1, height = size * 1.25 + 1;
                 canvas.width = Math.ceil(width * scale);
                 canvas.height = Math.ceil(height * scale);
@@ -10878,15 +10879,17 @@
               this.motionQuery.addEventListener('change', motionChanged);
             else this.motionQuery.addListener(motionChanged);
           }
-          bindCanvasEvents() {
+          bindCanvasEvents(target = canvas) {
             const runner = this.runner;
             // A lost 2D context pauses like focus loss; the round continues after restoration.
-            canvas.addEventListener('contextlost', () => {
+            target.addEventListener('contextlost', () => {
+              if (target !== canvas) return;
               this.contextLost = true;
               runner.report.record('canvas', 'lost');
               runner.updatePause();
             });
-            canvas.addEventListener('contextrestored', () => {
+            target.addEventListener('contextrestored', () => {
+              if (target !== canvas) return;
               this.contextLost = false;
               runner.report.record('canvas', 'restored');
               // Restored contexts start with default state: reapply scale and smoothing.
@@ -10992,7 +10995,7 @@
             }
             if (index === 1) this.resetDemo();
             if (this.runner.attract === this && this.runner.game.state === 'attract')
-              setCanvasSize(this.runner.renderer.ctx, this.resize());
+              setCanvasSize(this.demoRenderer.ctx, this.resize());
           }
           loadScores() {
             const controller = this.runner.highscoreController;
@@ -11570,6 +11573,14 @@
                 ? PORTRAIT_W : BASE_W,
             });
             this.renderer = new Renderer(context, this.game);
+            this.previewContext = context;
+            // Touch attract benefits from GPU-eligible drawing, while real
+            // rounds (including pickup/rotation scenes) are faster on CPU.
+            // Keep two bounded backings and attach only the active Canvas.
+            // Input stays on pageEl/gameEl; the Canvas carries no focus or input.
+            this.playContext = matchMedia('(pointer: coarse)').matches
+              ? canvas.cloneNode(false).getContext('2d', { alpha: false, willReadFrequently: true }) || context
+              : context;
             this.effectsSetting = new EffectsSetting();
             this.effectsSetting.on((enabled) => {
               this.renderer.effects.lettering = enabled;
@@ -11582,6 +11593,7 @@
             this.input = new InputController(this);
             this.gamepad = new GamepadController(this);
             this.report = new TestReport(this);
+            if (this.playContext !== context) this.browser.bindCanvasEvents(this.playContext.canvas);
             this.headingMotion = new HeadingMotion(motionEnabled);
             this.headingMotion.initialize(document);
             this.motion = new ElementMotion();
@@ -11717,7 +11729,19 @@
             }
             this.updateMusic();
           }
+          syncCanvas() {
+            const next = this.game.state === 'attract' ? this.previewContext : this.playContext;
+            if (this.renderer.ctx === next) return;
+            canvas.replaceWith(next.canvas);
+            canvas = next.canvas;
+            this.renderer.ctx = next;
+            this.renderer.softwareRaster = next !== this.previewContext;
+            // Night HUD bitmaps must match the destination's raster preference.
+            this.renderer.hudGlyphs.clear();
+            this.renderer.hudRuns.clear();
+          }
           resize() {
+            this.syncCanvas();
             this.renderer.compactHud = matchMedia('(max-width:600px) and (orientation:portrait)').matches;
             this.resizeWorld();
             setCanvasSize(this.renderer.ctx, this.game.state === 'attract'
@@ -12100,6 +12124,7 @@
             this.sessionView.updateCredits(this.credits.balance);
             this.sessionView.update(this.game, this.input, this.paused, night);
             const idle = this.game.state === 'attract';
+            this.syncCanvas();
             this.attract.sync();
             if (wasIdle !== idle) {
               this.resizeWorld();
@@ -12156,9 +12181,9 @@
         // Bootstrap: wire the embedded components once; no required runtime files.
         const context = canvas.getContext('2d', {
           alpha: false,
-          // Prefer CPU raster on touch: full-resolution A53 tests reach 60 instead of 34 FPS.
-          // Raster density is budgeted separately for edge-to-edge phone play.
-          willReadFrequently: matchMedia('(pointer: coarse)').matches,
+          // Allow accelerated attract drawing. Runner retains a CPU context for
+          // touch gameplay; matching HUD caches follow the active context.
+          willReadFrequently: false,
         });
         if (!context) {
           const message = document.createElement('p');

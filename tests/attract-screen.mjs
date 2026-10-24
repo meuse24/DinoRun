@@ -98,6 +98,19 @@ try {
     });
     assert.equal(await page.locator('#attract-fps-value').innerText(), '60', 'Shares the actual runner FPS sampler');
     const checkStart = async () => {
+      const raster = await page.locator('#game canvas').evaluate(canvas => {
+        const rect = canvas.getBoundingClientRect();
+        const landscapeTouch = matchMedia('(pointer: coarse) and (orientation: landscape)').matches;
+        const r = window.__dinoRunner;
+        return { density: canvas.width / rect.width,
+          check: landscapeTouch || (innerHeight > innerWidth && r.attract.index !== 1),
+          expected: landscapeTouch ? Math.min(devicePixelRatio, 2) : devicePixelRatio,
+          softwareHint: canvas.getContext('2d').getContextAttributes?.().willReadFrequently };
+      });
+      if (raster.check) assert(Math.abs(raster.density - raster.expected) < 0.02,
+        `${name}: attract density follows orientation budget: ${JSON.stringify(raster)}`);
+      if (raster.softwareHint !== undefined) assert.equal(raster.softwareHint, false,
+        'Game Canvas permits browser acceleration');
       assert.equal(await page.locator('#attract-fps').isVisible(), true, 'FPS appears on every attract panel');
       assert.equal(await page.locator('#attract-coin-mark').isVisible(), false);
       assert.equal(await page.locator('#attract-fps').evaluate(element => {
@@ -277,6 +290,7 @@ try {
       return { jumped, ducked };
     });
     assert.deepEqual(demoActions, { jumped: true, ducked: true }, 'Demo demonstrates both controls');
+    await page.evaluate(() => { window.__previewCanvas = document.querySelector('#canvas'); window.__roundCanvas = null; });
     // Every slide can start a real, empty round via the same touch/mouse target.
     for (const index of [0, 1, 2]) {
       await page.evaluate(index => { const r = window.__dinoRunner; r.attract.select(index, 'next'); r.draw(1); }, index);
@@ -289,6 +303,25 @@ try {
       assert.equal(started.shield.charged, false);
       assert.equal(started.feather.charged, false);
       assert.equal(started.chili.remainingMs, 0);
+      const canvasMode = await page.evaluate(() => {
+        const c = document.querySelector('#canvas'), r = window.__dinoRunner;
+        const reused = !window.__roundCanvas || window.__roundCanvas === c;
+        window.__roundCanvas = c;
+        // Events from the retained, inactive preview must not pause the round.
+        if (c !== window.__previewCanvas) {
+          window.__previewCanvas.dispatchEvent(new Event('contextlost'));
+          window.__previewCanvas.dispatchEvent(new Event('contextrestored'));
+        }
+        return { reused, count: document.querySelectorAll('#game canvas').length,
+          connected: r.renderer.ctx.canvas === c && c.isConnected, paused: r.paused,
+          software: c.getContext('2d').getContextAttributes?.().willReadFrequently,
+          touch: matchMedia('(pointer: coarse)').matches };
+      });
+      assert(canvasMode.reused && canvasMode.connected, 'Rounds reuse their backing and draw into the visible Canvas');
+      assert.equal(canvasMode.count, 1, 'Only one Canvas is attached');
+      assert.equal(canvasMode.paused, false, 'Inactive Canvas events cannot pause gameplay');
+      if (canvasMode.software !== undefined) assert.equal(canvasMode.software, canvasMode.touch,
+        'Touch gameplay retains its tested CPU path');
       // With transitions, START fades out inert for 140 ms (T4) before it is hidden.
       if (process.env.DINO_TRANSITIONS === '1') await page.evaluate(() => window.__dinoTest.transitionDone());
       assert.equal(await page.locator('#start-game').isVisible(), false);
@@ -304,6 +337,8 @@ try {
         const r = window.__dinoRunner;
         r.highscoreController.roundLeft(); r.game.newSession(); r.draw(1);
       });
+      assert.equal(await page.evaluate(() => document.querySelector('#canvas') === window.__previewCanvas), true,
+        'Returning to attract reuses the original GPU-eligible backing');
     }
     await page.locator('#start-game').focus();
     await page.keyboard.press('Enter');

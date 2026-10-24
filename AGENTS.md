@@ -117,6 +117,11 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   delivery hash, aspect, centering and trusted Help/Settings input. Requires the
   app open at its start menu; own dynamic ADB forward, restores rotation and
   fullscreen preference, blocks live scores. See `doc/ANDROID.md`.
+- `node tests/android-attract-performance.mjs`: physical fullscreen landscape
+  attract FPS per panel with context/density variants (`DINO_PERF_VARIANTS`).
+  Requires `DINO_ANDROID_SERIAL`; accepts `DINO_CURRENT_HTML`. Own origin8894,
+  dynamic ADB forward/scoped relay9238, restores rotation, blocks live scores.
+  Run sequentially; see `doc/ATTRACT-PERFORMANCE.md`.
 - `node tests/android-attract.mjs`: verify attract rotation, persistent START,
   touch starts and shield collisions on physical Android. Both Android runners
   accept `DINO_ANDROID_URL` for an existing local server and verify its artifact

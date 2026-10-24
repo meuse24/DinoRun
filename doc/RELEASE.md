@@ -5,6 +5,20 @@ readable root `dino.html`; the game itself still needs no build step to run.
 
 ## Rebuild
 
+Current prepared build: `2026-10-24.5`, worker cache `dino-run-v55`.
+GPU-eligible attract and landscape touch DPR2 in attract as well as play;
+touch gameplay retains its CPU context and matching HUD caches. Portrait
+density and DOM UI are unchanged; fine landscape Canvas
+edges can be softer. Physical comparisons: [ATTRACT-PERFORMANCE.md](ATTRACT-PERFORMANCE.md).
+Delivery321988 bytes, SHA-256
+`02314104de941b682d8f3b43d71f2006889e6df18e63d5fd189c1132361617fb`.
+Prepared locally; this build has not been uploaded.
+Verified:64 pixel-identical Chromium source/release scenes,12 attract layouts
+per engine, architecture12/arcade3/transitions86/lifecycle-offline7 each in
+Chromium and WebKit, and the installed release skill client. Physical Android
+details and the rejected all-GPU gameplay candidate are documented in the linked
+performance report.
+
 Current published build: `2026-10-24.4`, worker cache `dino-run-v54`.
 Attract demo/backdrop renderers skip unused gameplay lettering prewarming;
 the invisible landscape backdrop pauses while the demo is shown. Canvas density
