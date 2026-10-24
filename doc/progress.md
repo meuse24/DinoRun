@@ -29,6 +29,16 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   Screen-Transitions und Skill-Client gegen .6 bestanden. Gameplay-Bild/Zustand
   angesehen. Chromium-Logo und echte MP3s/Offline/Range/file:// auch gegen .6-
   Release bestanden; der 64-Szenen-Vergleich ist pixelidentisch.
+- .6 als cbb0e6e committed. Beide vollständigen Releasegruppen anschließend
+  sequenziell bestanden: Assets, je 64 pixelidentische Szenen, Lifecycle/Offline,
+  Feder, Schild, Beeren, Levelbonus, zwölf Attract-Layouts und Rundenende.
+- Mit npm run deploy -- --tls12 veröffentlicht (Build .6 / Cache v68). Alle zehn
+  hochgeladenen Dateien per HTTPS/SHA-256 bestätigt. Live im frischen isolierten
+  Chromium-Kontext: hörbar gestartete echte MP3 treibt das Logo im Startmenü und
+  Settings/Help/Highscores; Peak 1,65, Spielzeit in Menüs unverändert. START stoppt
+  Musik/Puls; beide Root-MP3s gecacht, Offline-Neuladen/Songwechsel bestanden.
+  Keine Score-Anfragen/Schreibvorgänge. Live-Screenshots visuell geprüft.
+  Nachweis: output/publish-logo/live-report.json. Keine physische Geräteprüfung.
 
 ## 2026-10-25: Kräftigerer Logo-Bass (Build .5 / Cache v67)
 

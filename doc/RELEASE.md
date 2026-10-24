@@ -6,14 +6,24 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal: Build `2026-10-25.6`, Worker-Cache `dino-run-v68` (noch nicht veröffentlicht).
+Lokal und veröffentlicht: Build `2026-10-25.6`, Worker-Cache `dino-run-v68`.
 Der neue Build zeigt das basssynchrone M24-Logo auch neben Settings, Help und
 Highscores, weiterhin mit bis zu 65 % Vergrößerung;
 siehe [VOLUME.md](VOLUME.md). MP3-Dateien liegen direkt neben `dino.html`.
 Bilder und Icons liegen in `assets/images/`.
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
-Zuletzt veröffentlicht: Build `2026-10-25.2`, Worker-Cache `dino-run-v64`;
+Nach Commit `cbb0e6e` am 2026-10-25 mit `npm run deploy -- --tls12`
+veröffentlicht; alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt.
+Beide vollständigen Releasegruppen (Chromium/WebKit) bestanden, einschließlich
+je 64 pixelidentischer Source-/Release-Szenen. Live-Hochformatprüfung bestätigt
+Pulsieren bis 1,65 im Startmenü und in Settings, Help sowie Highscores, dabei
+eingefrorene Spielzeit in Menüs. START stoppt die Musik; beide MP3s liegen neben
+der HTML im Offline-Cache, Offline-Neuladen und Songwechsel funktionieren.
+Keine Highscore-Anfragen. Nachweis: `output/publish-logo/live-report.json`
+und Screenshots daneben. Veröffentlichung per FTPS, keine alten Medien gelöscht.
+
+Vorher veröffentlicht: Build `2026-10-25.2`, Worker-Cache `dino-run-v64`;
 Korrektur der Flugziele von Bonusmünzen und Beeren im Hochformat.
 Nach Commit `5f58747` am 2026-10-25 mit `npm run deploy -- --tls12`
 veröffentlicht; alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt.
