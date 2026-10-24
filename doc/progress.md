@@ -1,5 +1,197 @@
 Original prompt: verschaffe dir einen überblick über das game. verwende die besten skills für 2d vektor game developer und prüfe ob die implementierung der nachfolgenden findings sinn machen. insgesamt oder evtl optional über einen schalter in den settings. ohne einfluß auf das aussehen des games. gib mir deine findings.
 
+## 2026-10-24: Publish and commit accumulated performance work
+
+- User explicitly requested upload and commit. Final release .4/cachev54 passes
+  inline syntax, synchronized client/server constants and7 browser lifecycle/
+  offline scenarios. Earlier attract12 each Chromium/WebKit, installed skill
+  client and64 source/release comparisons pass. No additional phone profiling.
+- Deploy dry run confirmed livev53. npm run deploy uploaded only release/dino.html
+  as dino.html, then service-worker.js over FTPS. HTTPS verification matches
+  HTML076f4a5e4d86b87f7cb6541a421be6d8f51b69922b54210afaacaa398c1b2019
+  and worker98f23140ffa7... . Credentials/runtime scores/output remain ignored.
+- Commit groups the completed retained-vector rendering, bounded particle/HUD/
+  gamepad allocation changes, attract FPS and unnecessary preview work removal,
+  together with supporting tests/docs and the published artifact. No Git push
+  requested. Existing user phone preview left undisturbed.
+
+## 2026-10-24: Remove unnecessary attract work
+
+- User requested implementing the remaining targeted recommendations quickly.
+  Build2026-10-24.4/cachev54. Demo/backdrop Renderer constructors opt out of
+  gameplay lettering prewarming; main renderer keeps its existing warmup.
+  Landscape backdrop advances only on scores/powerups, pausing during demo.
+  Kept native menu density and CSS effects: no measured benefit justifies a
+  fidelity tradeoff yet. No simulation/input/collision changes to active play.
+- Deterministically drained identical idle work in pre/post Chromium1280x720
+  fixtures: main/demo/backdrop lettering entries20/20/20 ->20/0/0. Avoids40
+  initial text rasterizations and5261736 theoretical RGBA backing bytes (~5.02MiB)
+  in this viewport, not a browser-process memory or FPS measurement. Evidence:
+  output/attract-optimization/{measure.mjs,resources.json,baseline.html}.
+- Chromium attract12 layouts and installed skill action client pass. Inspected
+  mobile landscape demo/FPS and gameplay screenshots; no browser errors. Added
+  assertions for empty preview lettering caches and visible-only backdrop ticks.
+  Release rebuilt321505 bytes, SHA256076f4a5e4d86b87f7cb6541a421be6d8f51b69922b54210afaacaa398c1b2019.
+  WebKit26.5 also passes all12 layouts (documented Windows dependency-validator
+  workaround); Chromium source/release64 scenes are pixel-identical. Worker/test
+  syntax and git diff checks pass. Not deployed or phone-profiled.
+
+## 2026-10-24: Publish current release at user's request
+
+- Explicit user authorization: create release and upload to web server. Rebuilt
+  .3 deterministically:321442 bytes, SHA256
+  cd55d3035c7117e040d53db2af352127a1e8ef0760005c95bec8896a5c187088.
+  Final delivery contract/lifecycle/offline7 and worker syntax/diff checks pass;
+  prior64 pixel-identical source/release scenes and12-layout attract checks per
+  Chromium/WebKit remain applicable to this byte-identical artifact.
+- Deploy dry run found livev50, localv53. npm run deploy uploaded only generated
+  dino.html then service-worker.js over required TLS using existing ignored
+  credentials; no secrets printed, no API/config/runtime-data uploads. HTTPS
+  hashes verified: HTMLcd55d3035c71..., workerbdf7e1ccf66f....
+- Live https://meuse24.info/apps/dino/dino.html browser smoke confirms exact
+  delivery hash/build2026-10-24.3, scores/demo/powerups panels, FPS enabled via
+  actual Settings and measured60, visible START/no page errors. Live demo
+  screenshot inspected. Highscore API disabled in this isolated browser context.
+  Evidence output/publish-2026-10-24/. User phone's local preview remains available.
+  No further deployment action needed; no Git commit requested.
+
+## 2026-10-24: Attract FPS indicator and start latest phone preview
+
+- User requested Settings FPS on attract screens and confirmation that demo play
+  uses optimizations; then requested launching the new game on the connected
+  phone. Continued develop-web-game workflow without agents. Build .3/cachev53.
+- FpsDisplay shares its existing500ms rAF measurement with a two-line FPS/value
+  output in the coin mark's22px credit-plate slot. Enabled replaces only the
+  decoration; Off restores it, with no START or preview movement and no new
+  per-frame work. Initial/reset dash and existing session-only setting retained.
+  Same display spans scores/demo/powerups. Clarification: demo/backdrop share
+  optimized Renderer/Game/Effects classes, but demo does not currently dispatch
+  particle effect events, so particle pooling has no active allocation saving
+  there. Compact demo omits gameplay score HUD; global gamepad polling still runs.
+- Chromium151 and WebKit26.5 attract tests pass all12 layouts each, now including
+  actual FPS switch On/Off, real sampler value60, plate bounds, all panels and
+  unchanged START geometry. Deterministic fixture waits for Settings resume before
+  seeding samples to avoid the legitimate resume reset. Installed release skill
+  client passes; physical attract FPS screenshot and gameplay launch text verified.
+- Physical Galaxy S10e: old localhost8877 preview worker initially served older
+  cached HTML. Bypassed/unregistered worker and cleared only dino-run caches on
+  that isolated test origin; no production origin touched. New .3 loaded with
+  visible real FPS, Settings/close/START via trusted CDP touch; confirmed state
+  playing/build2026-10-24.3. User's own preview tab deliberately left open to play.
+  Safe preview server (tests/android-preview.cjs release/dino.html) and USB reverse
+  8877 deliberately remain active; scoped CDP relay stopped. No live scores.
+- Release321442 bytes, SHA256
+  cd55d3035c7117e040d53db2af352127a1e8ef0760005c95bec8896a5c187088.
+  Final release reproducible and all64 source/release UI/gameplay scenes
+  pixel-identical; syntax/diff checks pass. Final skill gameplay screenshot/state
+  inspected. No deployment or remaining implementation TODO.
+
+## 2026-10-24: Implement GC recommendations and measure the actual phone
+
+- User authorized implementation and concrete performance evidence, then connected/
+  unlocked phone. Used develop-web-game skill; no sub-agents. Preserved prior
+  uncommitted sprite work, baseline saved output/gc-optimization/baseline.html.
+  Build2026-10-24.2/cachev52; no deployment or commit.
+- Effects free list retains at most100 active+available particles per renderer,
+  returns expired/reset objects, resets every spawn field and prev coordinates.
+  Direct scalar particle interpolation removes prototype render views. Shared
+  rock palette; no event/obstacle/cloud pool. HUD reuses digit offsets/callback/
+  diagnostics and bounded glyph keys; DOM labels format on value changes. Gamepad
+  scans supplied list and alternates two boolean state records without temporary
+  collection construction. Input semantics unchanged.
+- New gc-pooling tests pass Chromium/WebKit:2000 steps,286 identical particle
+  snapshots/eight kinds, cap/reset/recycle/reduced motion,21 identical controller
+  events incl. unsupported mapping, provider failure, release/disconnect/restart.
+  Observed particle identities6117→100, input state identities12→2, reset preserves
+  active array, HUD diagnostics/offset buffers reused.
+- Isolated desktop ABBA (1200 fixed steps, separate allocation sampling) shows
+  estimated allocated bytes34–40% lower, mean submission work3.1–7.2% lower and
+  total traced GC10–48% lower across day/night/bursts; stress GC count increases,
+  so no universal pause guarantee. A synchronous4x run magnified queued graphics
+  stalls and was stopped; native-rAF-paced4x probe240 steps/same ABBA sequence
+  shows mean work22.213→17.631ms(-20.6%), GC119.71→95.52ms(-20.2%), substantial
+  sample variance. This is desktop throttling, not phone emulation.
+- Physical SM-G970F/Android12/Chrome155.0.8059.84: initial portrait/landscape runs
+  verified final delivery but revealed a bonus-tally timing confound. Final fair
+  comparison uses identically minified .1/.2 releases, verified response hashes,
+  normal rAF/trusted Settings/fullscreen/START, own origin8893 and scoped relay.
+  Controlled landscape ABBA, three5s phases/run, no auto bonus/powerup transition;
+  hazards stay visible with collisions disabled and audio/live scores off.
+- Final phone mean update/HUD/draw work: day1.955→1.785ms(-8.7%), night2.340→2.205
+  (-5.8%), extra effects3.455→2.995(-13.3%). Actual FPS59.87–59.88 throughout,
+  p95 frame interval16.8ms and no controlled >20ms frame. GC18.36→14.28ms day,
+  31.52→26.52 night,34.38→35.82 stress: stress GC worsens4.2% despite lower work.
+  Battery30.3–30.6C; short controlled evidence, no sustained-device guarantee.
+  Own tab/storage and rotation(auto1/user1) restored; own relay/forward/reverse
+  removed. Actual phone night/effects and portrait screenshots inspected.
+- Chromium render-cache70 scenes pixel-identical, five identical12000-step
+  gameplay/effect traces per version. Arcade3, feather3, effects2, architecture12,
+  source/release contract/offline7 each and actual installed source/release skill
+  client pass. Final skill text playing/jumping/3 lives/credits98 and screenshots
+  inspected. Reproducible release and all64 source/release UI/game scenes identical.
+  Syntax/diff checks pass. Evidence/method/commands in doc/GC-REVIEW.md; artifacts
+  output/gc-optimization/, definitive phone results android-controlled/.
+- Final release320752 bytes, SHA256
+  0312faf05eb385ab791156025e23273eee591ea5731f637ad5b2b99de08ffbcd.
+  No outstanding implementation or validation TODO.
+
+## 2026-10-24: Assess GC pressure and targeted pooling
+
+- User asked to inspect remaining GC-avoidance potential, especially object
+  pooling. Reviewed hot simulation/render/HUD/gamepad paths and ran isolated
+  Chromium heap-allocation sampling (including collected objects) plus an
+  output-only particle-pool prototype. No further game-source/release changes.
+- 1200 fixed steps/20s after180 warm-up:592 spawned particles in running fixture,
+  1617 with extra bursts; prototype needs36/100 total reusable particle objects
+  including warm-up. Existing active cap100 and in-place array compaction retained.
+  Audio disabled, long recovery prevents death, own routed HTML/no live scores.
+  These are controlled fixtures, not physical-phone FPS/GC-pause measurements.
+- Recommended small bounded particle pool including render-view reuse; direct
+  elimination of temporary HUD/gamepad arrays/records; assess pickup scratch
+  rectangles separately. Avoid obstacle/cloud/event pooling without evidence or
+  lifetime design. HUD glyph-key generation and particle updates/views remain
+  prominent allocation samples, so a particle pool alone is insufficient.
+- Full findings/method/limits: doc/GC-REVIEW.md. Raw profiles and prototype stay
+  under ignored output/sprite-review/. Prototype is not shipped or fully regression
+  tested; no source change means no new game build, worker version or deployment.
+
+## 2026-10-24: Review and implement bounded sprite geometry caching
+
+- User requested critical review, correction and implementation of an OffscreenCanvas/
+  sprite-caching prompt, followed by game tests. Applied develop-web-game skill;
+  worked without sub-agents. Clean starting tree, baseline saved under ignored
+  output/sprite-review/baseline.html. Reviewed task and revised actionable prompt:
+  doc/SPRITE-CACHING.md. Build2026-10-24.1/cachev51.
+- Existing cactus/cloud/mountain vectors and HUD/text/ghost raster caches made a
+  wholesale replacement unnecessary. Continuous tail, arms, expressions and fire
+  cannot be keyed by discrete animation frames without changing animation. Kept
+  interpolated positions and existing effects. An output-only cactus raster
+  experiment improved isolated submission time0.0308→0.01695ms but changed5776
+  pixels/max85 channels; rejected on fidelity rather than weakening tolerances.
+- Retain six ptero paths (including both wings) and five invariant trex details.
+  Exactly11 additional paths per renderer, independent of world position/DPR/time.
+  JS path-building calls: ptero24→0, trex body44→15; scales array no longer created
+  per frame. Dynamic silhouette, collisions, all gameplay and inputs untouched.
+- New tests/sprite-geometry.mjs passes Chromium and WebKit:24 pose/transform
+  combinations, both wings, alpha, mouth cutout,2000 position/scale/tail changes,
+  no new warm-cache Path2D allocations.15/16 pixels differ of864000, max3 channels,
+  within unchanged max8/<0.02% tolerance. Screenshots visually inspected.
+- Chromium render-cache:70 scenes/five layouts pass max3 channels; five12000-step
+  gameplay/effects traces per version identical, existing cache/particle caps pass.
+  CPU series mixed (desktop6.27→9.60ms while four other layouts improved); independent
+  quiet alternating desktop comparison: mean3.817→3.652ms (~4.3%), overlapping
+  samples. Neither is GPU completion or proof of phone FPS/GC-pause reduction.
+- Chromium architecture12, feather/controls/physics/help3 layouts, source and
+  release contract/offline7 each, installed skill client for source and delivery
+  pass. Final release reproducible, all64 source/delivery UI/gameplay scenes
+  pixel-identical. Final skill gameplay screenshot and text state inspected:
+  playing/jumping,3 lives, credits98, no new browser errors. WebKit needs documented
+  PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1 on this Windows host.
+- Release319101 bytes, SHA256
+  4b556c0b4a73110a4b04f1c1bb12659f00169604b20e05745689f9637a9f6470.
+  Final syntax/diff checks pass. No physical-device run, live score submissions,
+  deployment or commit. No outstanding implementation TODO.
+
 ## 2026-10-21: Recover night gameplay frame rate
 
 - User confirms day60FPS but reports slower night. Continued develop-web-game

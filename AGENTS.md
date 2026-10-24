@@ -51,6 +51,18 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   client against a deterministic fixture with online scores disabled.
   This client, game-contract.mjs, jump-feather.mjs and the Android preview/runner
   accept an optional HTML path to test a generated delivery artifact.
+- `node tests/sprite-geometry.mjs <baseline.html>`: compare cached sprite paths,
+  animated poses, both bird frames and bounded allocations against a saved
+  pre-change HTML. Accepts `DINO_BROWSER`; see `doc/SPRITE-CACHING.md`.
+- `node tests/gc-pooling.mjs <baseline.html>`: deterministic particle reuse,
+  cap/reset/interpolation, controller release/disconnect behavior and HUD buffers.
+  Accepts `DINO_BROWSER`. `node tests/gc-performance.mjs <baseline.html>` runs
+  isolated Chromium work/GC/allocation comparisons; `DINO_CPU_RATE=4` adds CPU
+  throttling. Run performance comparisons without concurrent browser suites.
+- `node tests/android-gc-performance.mjs <baseline.html>`: physical normal-rAF
+  before/after play/night/particle stress, work times and own-page GC traces.
+  Requires unlocked Android/Chrome; own origin8893, dynamic ADB forward/scoped
+  relay9237, restores rotation/origin storage. See `doc/GC-REVIEW.md`.
 - `node tests/jump-feather.mjs`: check feather pickups, all input methods,
   charge/physics/lifecycle/help and phone portrait/landscape emulation using an
   isolated standalone file. Set `DINO_BROWSER=webkit` for the WebKit run;

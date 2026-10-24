@@ -86,7 +86,25 @@ try {
       highScore: window.__dinoGame.highScore,
     }));
     const startRect = await page.locator('#start-game').boundingBox();
+    assert.equal(await page.locator('#attract-fps').isVisible(), false, 'Attract FPS starts off');
+    await page.locator('#settings-open').click();
+    await page.locator('#fps-toggle').click();
+    await page.locator('#settings-close').click();
+    await page.waitForFunction(() => !window.__dinoRunner.paused);
+    await page.evaluate(() => {
+      const fps = window.__dinoRunner.fps;
+      fps.reset();
+      for (let i = 0; i <= 30; i++) fps.sample(1000 + i * (1000 / 60));
+    });
+    assert.equal(await page.locator('#attract-fps-value').innerText(), '60', 'Shares the actual runner FPS sampler');
     const checkStart = async () => {
+      assert.equal(await page.locator('#attract-fps').isVisible(), true, 'FPS appears on every attract panel');
+      assert.equal(await page.locator('#attract-coin-mark').isVisible(), false);
+      assert.equal(await page.locator('#attract-fps').evaluate(element => {
+        const r = element.getBoundingClientRect(), meter = element.closest('.credit-meter').getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && r.left >= meter.left && r.right <= meter.right &&
+          r.top >= meter.top && r.bottom <= meter.bottom && r.top >= 0 && r.bottom <= innerHeight;
+      }), true, 'FPS stays inside the existing credit plate');
       if (options.viewport.width <= options.viewport.height) {
         const hint = await page.locator('#landscape-hint').boundingBox();
         const slide = await page.locator('.attract-slide:not([hidden])').boundingBox();
@@ -365,6 +383,27 @@ try {
       await page.waitForFunction(() => !window.__dinoRunner.paused);
       await checkStart();
     }
+    await page.locator('#settings-open').click();
+    await page.locator('#fps-toggle').click();
+    await page.locator('#settings-close').click();
+    assert.equal(await page.locator('#attract-fps').isVisible(), false, 'FPS hides immediately when switched off');
+    assert.equal(await page.locator('#attract-coin-mark').isVisible(), true);
+    const previewWork = await page.evaluate(() => {
+      const r = window.__dinoRunner, a = r.attract;
+      a.userPaused = false;
+      const ticks = [0, 1, 2].map(index => {
+        a.select(index);
+        const before = a.backdrop.simulationTime;
+        a.advance(1000 / 60);
+        return a.backdrop.simulationTime > before;
+      });
+      return { ticks, wide: a.wide, demoTexts: a.demoRenderer.textSprites.size,
+        backdropTexts: a.backdropRenderer.textSprites.size };
+    });
+    assert.deepEqual(previewWork.ticks, [previewWork.wide, false, previewWork.wide],
+      'Only visible landscape backdrops advance; demo has its own simulation');
+    assert.equal(previewWork.demoTexts, 0, 'Demo does not prewarm unused gameplay lettering');
+    assert.equal(previewWork.backdropTexts, 0, 'Backdrop does not prewarm unused gameplay lettering');
     assert.deepEqual(errors, [], name + ': browser errors');
     assert(requests.every(url => url === pathToFileURL(file).href), 'Standalone requests no required asset');
     const geometry = await page.locator('#stage').boundingBox();

@@ -5,7 +5,57 @@ readable root `dino.html`; the game itself still needs no build step to run.
 
 ## Rebuild
 
-Current night-performance fix: `2026-10-21.24`, worker cache `dino-run-v50`.
+Current published build: `2026-10-24.4`, worker cache `dino-run-v54`.
+Attract demo/backdrop renderers skip unused gameplay lettering prewarming;
+the invisible landscape backdrop pauses while the demo is shown. Canvas density
+and visual effects are unchanged. Delivery321505 bytes, SHA-256
+`076f4a5e4d86b87f7cb6541a421be6d8f51b69922b54210afaacaa398c1b2019`.
+Published on2026-10-24 at the user's request over FTPS, HTML first and worker
+last. HTTPS SHA-256 checks match both local files. Final delivery lifecycle/
+offline7 checks pass; Chromium/WebKit attract12 layouts each and Chromium64
+pixel-identical source/release scenes pass.
+
+Current attract FPS display: `2026-10-24.3`, worker cache `dino-run-v53`.
+Settings FPS is now also visible in the existing credit plate on every attract
+panel. Shared sampler, no new per-frame formatting or layout shifts; Off restores
+the decorative coin icon. Demo rendering uses the same optimized classes; the
+demo currently spawns no gameplay particles. See [ATTRACT.md](ATTRACT.md).
+Delivery321442 bytes, SHA-256
+`cd55d3035c7117e040d53db2af352127a1e8ef0760005c95bec8896a5c187088`.
+Published on2026-10-24 at the user's request using FTPS, HTML first and worker
+last. HTTPS hashes match both local files. Live Chromium smoke test confirms
+build .3, all three attract panels and Settings FPS (60 in the captured run),
+with no page errors or live highscore calls. Earlier physical test used the safe
+local USB preview on the user's phone. Publication artifacts:
+`output/publish-2026-10-24/`.
+
+Previous GC optimization: `2026-10-24.2`, worker cache `dino-run-v52`.
+Bounded particle reuse, direct particle interpolation, reused HUD buffers/keys
+and allocation-free application-side gamepad polling. Visuals remain unchanged;
+all70 pre/post rendering scenes are pixel-identical. See
+[GC-REVIEW.md](GC-REVIEW.md) for measured work/allocation/GC results and limits.
+Delivery320752 bytes, SHA-256
+`0312faf05eb385ab791156025e23273eee591ea5731f637ad5b2b99de08ffbcd`.
+This build has not been deployed.
+Physical Galaxy S10e controlled release/release ABBA comparison: mean work per
+frame improves8.7% day,5.8% night and13.3% with extra effects; FPS stays59.9.
+GC duration improves day/night but slightly increases under stress. Portrait
+and landscape screenshots inspected, original rotation/origin settings restored.
+Chromium70 pre/post Canvas scenes and64 source/release UI/game scenes are
+pixel-identical. Pool/controller tests pass Chromium/WebKit; arcade, feather,
+effects, architecture, offline lifecycle and installed source/release skill
+client pass. Detailed methods and limitations: [GC-REVIEW.md](GC-REVIEW.md).
+
+Previous sprite-geometry optimization: `2026-10-24.1`, worker cache `dino-run-v51`.
+Eleven bounded retained vector paths cover both bird frames and invariant dino
+details. Continuous animations, physics and interpolated positions are preserved.
+The raster prototype was rejected on visual fidelity; see
+[SPRITE-CACHING.md](SPRITE-CACHING.md) for the reviewed task and measurements.
+Delivery319101 bytes, SHA-256
+`4b556c0b4a73110a4b04f1c1bb12659f00169604b20e05745689f9637a9f6470`.
+This build has not been deployed or measured on a physical phone.
+
+Previous night-performance fix: `2026-10-21.24`, worker cache `dino-run-v50`.
 Night HUD glyphs include shadows; stable lines share bounded cached runs, and
 phone text-cache contexts match the CPU-rasterised destination. Animated punches
 reuse a stable source scale. Same Canvas density as .23; slight edge-antialiasing

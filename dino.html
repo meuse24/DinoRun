@@ -2921,6 +2921,8 @@
          Only ink, light and the counter move; the payment/start targets stay fixed. */
       .credit-meter { position: relative; flex: none; width: 86px; min-width: 86px; min-height: 44px; padding: 4px 5px; grid-template-columns: 22px auto; gap: 2px 5px; border: 1px solid #ffd25790; border-radius: 11px; background: linear-gradient(#163d64, #0c2443); color: #ffd257; box-shadow: inset 0 1px 0 #ffffff25, 0 3px 0 #0b1f38, 0 0 15px #ffd25725; }
       #round-panel.night .credit-meter { color: #ffd257; }
+      #attract-fps { grid-column: 1; grid-row: 1 / 3; display: grid; place-items: center; align-content: center; gap: 2px; width: 22px; height: 22px; color: #fff4d2; font: 700 7px/1 monospace; text-align: center; }
+      #attract-fps-value { font-size: 10px; font-variant-numeric: tabular-nums; }
       .credit-meter .coin-mark { width: 22px; height: 22px; font-size: 18px; box-shadow: inset 0 1px 0 #fff4d2, 0 2px 0 #a54b2b, 0 0 10px #ffd25770; }
       .credit-label { color: #fff4d2; font-size: 7px; letter-spacing: 0.08em; }
       #coin-count { display: inline-block; transform-origin: left center; color: #ffd257; font-synthesis: none; text-shadow: 0 2px 0 #a54b2b, 0 0 10px #ffd25780; }
@@ -3150,7 +3152,7 @@
             <div id="attract-footer">
               <p id="landscape-hint">Best gameplay in landscape mode!</p>
               <div id="coin-controls">
-                <div class="credit-meter"><span class="coin-mark" aria-hidden="true">¢</span><span class="credit-label">CREDITS</span><output id="coin-count" aria-live="off" aria-label="0 credits">00</output></div>
+                <div class="credit-meter"><span id="attract-coin-mark" class="coin-mark" aria-hidden="true">¢</span><output id="attract-fps" aria-label="Frame rate" aria-live="off" hidden><span>FPS</span><span id="attract-fps-value">—</span></output><span class="credit-label">CREDITS</span><output id="coin-count" aria-live="off" aria-label="0 credits">00</output></div>
                 <button id="insert-coin" type="button" aria-label="Insert coin. Add one credit">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#ffd257" stroke="#a54b2b" stroke-width="2"/><circle cx="12" cy="12" r="7" fill="none" stroke="#e67842"/><path d="M12 7v10m-3-7 3-3" fill="none" stroke="#173f69" stroke-width="2" stroke-linecap="round"/></svg>
                   <span>INSERT COIN</span>
@@ -4021,7 +4023,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-21.24';
+        const BUILD = '2026-10-24.4';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4050,6 +4052,7 @@
           ceilingY: 8,
         });
         const FEATHER_COLORS = ['#60dcdf', '#baf7ef', '#ecffff'];
+        const ROCK_COLORS = ['#657889', '#afbbc0', '#ffd257'];
         const SPARK_COLORS = ['#ffb83e', '#ed6431', '#fff0a5'];
         const CONFETTI_COLORS = ['#e67842', '#ffd257', '#45b86f', '#7278bd', '#fff'];
         // Embedded faces (see the arcade-fonts style); fallbacks keep text readable meanwhile.
@@ -6030,7 +6033,12 @@
             this.reset();
           }
           reset() {
-            this.particles = [];
+            this.freeParticles ??= [];
+            // Active + available particles never exceed the existing burst cap of 100.
+            // Keep identities across rounds; no per-particle render view is needed.
+            if (this.particles) for (const particle of this.particles) this.freeParticles.push(particle);
+            if (this.particles) this.particles.length = 0;
+            else this.particles = [];
             this.dustTimer = 0;
             this.recordTime = 0;
             this.callouts = [];
@@ -6077,49 +6085,52 @@
                   : landing
                     ? this.rng.range(350, 600)
                     : this.rng.range(250, 550);
-              this.particles.push({
-                x: x + (landing ? this.rng.range(-12, 12) : 0),
-                y,
-                vx: confetti
-                  ? this.rng.range(-150, 150)
-                  : trail
-                    ? this.rng.range(-55, -25)
-                    : this.rng.range(
-                        impact ? -130 : landing ? -100 : -65,
-                        impact ? 130 : landing ? 100 : 30,
-                      ),
-                vy: confetti
-                  ? this.rng.range(-150, -40)
-                  : trail
-                    ? this.rng.range(-22, -8)
-                    : this.rng.range(impact ? -150 : landing ? -95 : -60, -15),
-                life,
-                maxLife: life,
-                size: confetti
-                  ? this.rng.range(3, 6)
-                  : trail
-                    ? this.rng.range(1.4, 2.3)
-                    : landing
-                      ? this.rng.range(2.5, 5)
-                      : this.rng.range(1.5, 3.5),
-                opacity: spark ? 0.9 : trail ? 0.48 : landing ? 0.8 : 1,
-                color: spark
-                  ? SPARK_COLORS[this.rng.int(0, 2)]
-                  : feather
-                    ? FEATHER_COLORS[this.rng.int(0, 2)]
-                    : shield
-                      ? SHIELD_COLORS[this.rng.int(0, 2)]
-                      : rock
-                        ? ['#657889', '#afbbc0', '#ffd257'][this.rng.int(0, 2)]
-                        : confetti
-                          ? CONFETTI_COLORS[this.rng.int(0, 4)]
-                          : impact
-                            ? '#e99558'
-                            : '#d9b080',
-                confetti,
-                angle: this.rng.range(0, 6.28),
-                spin: this.rng.range(-7, 7),
-              });
+              const particle = this.freeParticles.pop() || {};
+              particle.x = x + (landing ? this.rng.range(-12, 12) : 0);
+              particle.y = y;
+              particle.vx = confetti
+                ? this.rng.range(-150, 150)
+                : trail
+                  ? this.rng.range(-55, -25)
+                  : this.rng.range(
+                      impact ? -130 : landing ? -100 : -65,
+                      impact ? 130 : landing ? 100 : 30,
+                    );
+              particle.vy = confetti
+                ? this.rng.range(-150, -40)
+                : trail
+                  ? this.rng.range(-22, -8)
+                  : this.rng.range(impact ? -150 : landing ? -95 : -60, -15);
+              particle.life = life;
+              particle.maxLife = life;
+              particle.size = confetti
+                ? this.rng.range(3, 6)
+                : trail
+                  ? this.rng.range(1.4, 2.3)
+                  : landing
+                    ? this.rng.range(2.5, 5)
+                    : this.rng.range(1.5, 3.5);
+              particle.opacity = spark ? 0.9 : trail ? 0.48 : landing ? 0.8 : 1;
+              particle.color = spark
+                ? SPARK_COLORS[this.rng.int(0, 2)]
+                : feather
+                  ? FEATHER_COLORS[this.rng.int(0, 2)]
+                  : shield
+                    ? SHIELD_COLORS[this.rng.int(0, 2)]
+                    : rock
+                      ? ROCK_COLORS[this.rng.int(0, 2)]
+                      : confetti
+                        ? CONFETTI_COLORS[this.rng.int(0, 4)]
+                        : impact
+                          ? '#e99558'
+                          : '#d9b080';
+              particle.confetti = confetti;
+              particle.angle = this.rng.range(0, 6.28);
+              particle.spin = this.rng.range(-7, 7);
+              // A recycled particle's first draw belongs at its new spawn position.
+              particle.prevX = undefined;
+              particle.prevY = undefined;
+              this.particles.push(particle);
             }
           }
           update(dt, trex, running, speed, landed) {
@@ -6143,6 +6154,7 @@
               p.vy += (p.confetti ? 160 : 220) * seconds;
               p.angle += p.spin * seconds;
               if (p.life > 0) this.particles[remaining++] = p;
+              else this.freeParticles.push(p);
             }
             this.particles.length = remaining;
             if (landed) this.burst(trex.x + 23, GROUND_Y - 2, 20, 'landing');
@@ -6951,7 +6963,7 @@
 
         // Renderer: only reads simulation state; interpolated views never modify models.
         class Renderer {
-          constructor(ctx, game) {
+          constructor(ctx, game, { prewarm = true } = {}) {
             this.ctx = ctx;
             this.game = game;
             this.world = game.world;
@@ -6966,6 +6978,8 @@
             // These retain vectors, never resolution-dependent raster images.
             this.mountainLayers = [null, null];
             this.cactusPaths = [null, null];
+            this.pteroPaths = null;
+            this.trexDetailPaths = null;
             this.cloudPaths = new WeakMap();
             this.alpha = 1;
             this.horizonView = Object.create(game.horizon);
@@ -6975,10 +6989,18 @@
             this.textSprites = new Map();
             this.hud = null;
             this.hudGlyphs = new Map();
+            this.glyphStyles = [];
+            this.glyphOffsets = [];
+            this.scoreHop = (i) => {
+              const t = this.scoreHopElapsed - 60 - i * 35,
+                y = t > 0 && t < 220 ? -Math.sin((t / 220) * Math.PI) * 4 : 0;
+              this.scoreHopLift = Math.min(this.scoreHopLift, y);
+              return y;
+            };
             this.hudRuns = new Map();
             // Canvas text never triggers a face load early enough; request both up front,
             // then rasterise the known lettering while the browser is idle.
-            Promise.all([
+            if (prewarm) Promise.all([
               document.fonts?.load('16px ' + FONT_PIXEL),
               document.fonts?.load('16px ' + FONT_DISPLAY),
             ]).then(() => this.prewarmLettering(), () => {});
@@ -7678,31 +7700,47 @@
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
-            // Pale belly and jaw.
+            // Only invariant details are retained; the tail/body outline stays continuous.
+            const paths = this.trexDetails();
+            ctx.save();
+            ctx.translate(x, y);
             ctx.fillStyle = '#f0bd82';
-            ctx.beginPath();
-            ctx.moveTo(x + 17, y + 25);
-            ctx.quadraticCurveTo(x + 21, y + 35, x + 29, y + 34);
-            ctx.lineTo(x + 27, y + 38);
-            ctx.quadraticCurveTo(x + 16, y + 40, x + 11, y + 33);
-            ctx.closePath();
-            ctx.fill();
+            ctx.fill(paths.belly);
             ctx.fillStyle = '#e99558';
-            roundedRect(ctx, x + 29, y + 13, 14, 5, 2);
-            ctx.fill();
-            // Back scales.
+            ctx.fill(paths.jaw);
             ctx.fillStyle = '#7b3423';
-            for (const p of [
-              [18, 12],
-              [17, 17],
-              [14, 22],
-            ]) {
-              ctx.beginPath();
-              ctx.moveTo(x + p[0], y + p[1]);
-              ctx.lineTo(x + p[0] - 3, y + p[1] + 3);
-              ctx.lineTo(x + p[0] + 1, y + p[1] + 4);
-              ctx.fill();
-            }
+            for (const path of paths.scales) ctx.fill(path);
+            ctx.restore();
+          }
+
+          trexDetails() {
+            if (this.trexDetailPaths) return this.trexDetailPaths;
+            const belly = new Path2D();
+            belly.moveTo(17, 25);
+            belly.quadraticCurveTo(21, 35, 29, 34);
+            belly.lineTo(27, 38);
+            belly.quadraticCurveTo(16, 40, 11, 33);
+            belly.closePath();
+            const jaw = new Path2D();
+            jaw.moveTo(31, 13);
+            jaw.lineTo(41, 13);
+            jaw.quadraticCurveTo(43, 13, 43, 15);
+            jaw.lineTo(43, 16);
+            jaw.quadraticCurveTo(43, 18, 41, 18);
+            jaw.lineTo(31, 18);
+            jaw.quadraticCurveTo(29, 18, 29, 16);
+            jaw.lineTo(29, 15);
+            jaw.quadraticCurveTo(29, 13, 31, 13);
+            jaw.closePath();
+            // Separate fills preserve the original compositing order at every scale.
+            const scales = [[18, 12], [17, 17], [14, 22]].map(([x, y]) => {
+              const path = new Path2D();
+              path.moveTo(x, y);
+              path.lineTo(x - 3, y + 3);
+              path.lineTo(x + 1, y + 4);
+              return path;
+            });
+            return (this.trexDetailPaths = { belly, jaw, scales });
           }
 
           drawTrexArms(trex, jumpPose, idleEnvelope) {
@@ -8121,59 +8159,62 @@
           }
 
           drawPtero(obstacle) {
-            const ctx = this.ctx;
-            const x = obstacle.x,
-              y = obstacle.y;
+            const ctx = this.ctx, paths = this.pteroGeometry();
             ctx.save();
-            // Mirror so the head leads: birds fly left, toward the dino.
-            ctx.translate(2 * x + obstacle.width, 0);
+            // Mirror so the head leads, keeping the original collision-width pivot.
+            ctx.translate(obstacle.x + obstacle.width, obstacle.y);
             ctx.scale(-1, 1);
             ctx.lineJoin = 'round';
             ctx.fillStyle = '#7278bd';
             ctx.strokeStyle = '#454b86';
             ctx.lineWidth = 1.1;
-            ctx.beginPath();
-            ctx.moveTo(x + 2, y + 22);
-            ctx.quadraticCurveTo(x + 10, y + 16, x + 19, y + 17);
-            ctx.lineTo(x + 35, y + 13);
-            ctx.quadraticCurveTo(x + 42, y + 12, x + 44, y + 17);
-            ctx.lineTo(x + 46, y + 20);
-            ctx.lineTo(x + 38, y + 21);
-            ctx.quadraticCurveTo(x + 27, y + 27, x + 14, y + 24);
-            ctx.lineTo(x + 5, y + 27);
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
+            ctx.fill(paths.body);
+            ctx.stroke(paths.body);
             ctx.fillStyle = '#8e98d5';
             ctx.strokeStyle = '#515996';
-            ctx.beginPath();
-            ctx.moveTo(x + 15, y + 19);
-            if (obstacle.frame === 0) {
-              ctx.quadraticCurveTo(x + 16, y + 5, x + 29, y + 2);
-              ctx.quadraticCurveTo(x + 30, y + 13, x + 25, y + 20);
-            } else {
-              ctx.quadraticCurveTo(x + 21, y + 30, x + 31, y + 35);
-              ctx.quadraticCurveTo(x + 31, y + 23, x + 25, y + 19);
-            }
-            ctx.closePath();
-            ctx.fill();
-            ctx.stroke();
+            const wing = paths.wings[obstacle.frame === 0 ? 0 : 1];
+            ctx.fill(wing);
+            ctx.stroke(wing);
             ctx.fillStyle = '#ef9e42';
-            ctx.beginPath();
-            ctx.moveTo(x + 42, y + 16);
-            ctx.lineTo(x + 49, y + 19);
-            ctx.lineTo(x + 42, y + 21);
-            ctx.closePath();
-            ctx.fill();
+            ctx.fill(paths.beak);
             ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.arc(x + 38, y + 16, 1.8, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fill(paths.eye);
             ctx.fillStyle = '#24284f';
-            ctx.beginPath();
-            ctx.arc(x + 38.4, y + 16.2, 0.8, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fill(paths.pupil);
             ctx.restore();
+          }
+
+          pteroGeometry() {
+            if (this.pteroPaths) return this.pteroPaths;
+            const body = new Path2D();
+            body.moveTo(2, 22);
+            body.quadraticCurveTo(10, 16, 19, 17);
+            body.lineTo(35, 13);
+            body.quadraticCurveTo(42, 12, 44, 17);
+            body.lineTo(46, 20);
+            body.lineTo(38, 21);
+            body.quadraticCurveTo(27, 27, 14, 24);
+            body.lineTo(5, 27);
+            body.closePath();
+            const wings = [new Path2D(), new Path2D()];
+            wings[0].moveTo(15, 19);
+            wings[0].quadraticCurveTo(16, 5, 29, 2);
+            wings[0].quadraticCurveTo(30, 13, 25, 20);
+            wings[0].closePath();
+            wings[1].moveTo(15, 19);
+            wings[1].quadraticCurveTo(21, 30, 31, 35);
+            wings[1].quadraticCurveTo(31, 23, 25, 19);
+            wings[1].closePath();
+            const beak = new Path2D();
+            beak.moveTo(42, 16);
+            beak.lineTo(49, 19);
+            beak.lineTo(42, 21);
+            beak.closePath();
+            const eye = new Path2D(), pupil = new Path2D();
+            eye.arc(38, 16, 1.8, 0, Math.PI * 2);
+            pupil.arc(38.4, 16.2, 0.8, 0, Math.PI * 2);
+            // Six paths total, independent of world position, DPR and elapsed time.
+            return (this.pteroPaths = { body, wings, beak, eye, pupil });
           }
 
           drawHorizon(horizon, fg, night, nightAlpha, distance) {
@@ -8516,8 +8557,29 @@
           pixelGlyph(char, size, color, shadow = null) {
             // Milestone punches scale the destination, not the cached source.
             // Keying glyphs by that changing transform rerasterised the font each frame.
-            const scale = pixelRatio || 1,
-              key = char + size + color + '|' + scale + '|' + shadow;
+            const scale = pixelRatio || 1;
+            let style = this.lastGlyphStyle;
+            if (!style || style.size !== size || style.color !== color || style.scale !== scale || style.shadow !== shadow) {
+              style = null;
+              for (const candidate of this.glyphStyles) {
+                if (candidate.size === size && candidate.color === color && candidate.scale === scale && candidate.shadow === shadow) {
+                  style = candidate;
+                  break;
+                }
+              }
+              if (!style) {
+                style = { size, color, scale, shadow, suffix: size + color + '|' + scale + '|' + shadow, keys: new Map() };
+                if (this.glyphStyles.length >= 16) this.glyphStyles.length = 0;
+                this.glyphStyles.push(style);
+              }
+              this.lastGlyphStyle = style;
+            }
+            let key = style.keys.get(char);
+            if (key === undefined) {
+              key = char + style.suffix;
+              if (style.keys.size >= 64) style.keys.clear();
+              style.keys.set(char, key);
+            }
             let glyph = this.hudGlyphs.get(key);
             if (glyph) return glyph;
             const font = size + 'px ' + FONT_PIXEL,
@@ -8546,10 +8608,18 @@
           drawPixelText(text, x, y, size, color, shadow, align = 'left', lift = null) {
             const left = align === 'right' ? x - text.length * size
               : align === 'center' ? x - (text.length * size) / 2 : x;
-            const offsets = lift ? Array.from(text, (_, i) => lift(i)) : null;
+            let offsets = null, lifted = false;
+            if (lift) {
+              offsets = this.glyphOffsets;
+              offsets.length = text.length;
+              for (let i = 0; i < text.length; i++) {
+                const y = offsets[i] = lift(i);
+                if (y !== 0) lifted = true;
+              }
+            }
             // Stable night labels need one copy, including their shadow. Keep the
             // per-character path while milestone digits hop independently.
-            if (shadow && (!offsets || offsets.every(value => value === 0))) {
+            if (shadow && !lifted) {
               const scale = pixelRatio || 1,
                 key = text + '|' + size + '|' + color + '|' + shadow + '|' + scale;
               let run = this.hudRuns.get(key);
@@ -8588,7 +8658,7 @@
               // Pixel-face HUD; at night a hard 1px drop shadow, as on arcade cabinets.
               shadow = night ? '#081330' : null;
             ctx.save();
-            this.drawPixelText(formatText('L {level}', { level }), 10, 12, 10, fg, shadow);
+            this.drawPixelText('L ' + level, 10, 12, 10, fg, shadow);
             if (fps !== null) this.drawPixelText('FPS ' + fps, 110, 12, 10, fg, shadow);
             this.drawPixelText('HI ' + hudNumber(high), this.world.width / 2, 12, 10, fg, shadow, 'center');
             // One punch per milestone: the score swells once and its digits hop in a wave.
@@ -8618,16 +8688,16 @@
               ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
               ctx.restore();
             }
-            let lift = 0;
-            const hop = (i) => {
-              const t = moving && active ? elapsed - 60 - i * 35 : -1,
-                y = t > 0 && t < 220 ? -Math.sin((t / 220) * Math.PI) * 4 : 0;
-              lift = Math.min(lift, y);
-              return y;
-            };
-            this.drawPixelText(text, 0, 0, size, color, shadow, 'right', hop);
-            // Read by tests: the composed score label and its milestone transform.
-            this.hud = { text, scale, lift, font: size + 'px ' + FONT_PIXEL, color };
+            this.scoreHopElapsed = elapsed;
+            this.scoreHopLift = 0;
+            this.drawPixelText(text, 0, 0, size, color, shadow, 'right', moving && active ? this.scoreHop : null);
+            // Reuse the diagnostic record; consumers can snapshot it when needed.
+            const hud = this.hud || (this.hud = {});
+            hud.text = text;
+            hud.scale = scale;
+            hud.lift = this.scoreHopLift;
+            hud.font = '16px ' + FONT_PIXEL;
+            hud.color = color;
             ctx.restore();
             this.drawPixelText('CREDIT ' + String(this.credits || 0).padStart(2, '0'), 10, 48, 7, fg, null);
             this.drawLives(fg);
@@ -8662,19 +8732,21 @@
             const ctx = this.ctx;
             ctx.save();
             for (const particle of effects.particles) {
-              const p = this.view(particle);
-              if (!p.confetti && p.x > this.game.trex.x + 64) continue;
+              const p = particle,
+                x = this.lerp(p.prevX, p.x),
+                y = this.lerp(p.prevY, p.y);
+              if (!p.confetti && x > this.game.trex.x + 64) continue;
               ctx.globalAlpha = p.opacity * Math.min(1, (p.life / p.maxLife) * 2);
               ctx.fillStyle = p.color;
               if (p.confetti) {
                 ctx.save();
-                ctx.translate(p.x, p.y);
+                ctx.translate(x, y);
                 ctx.rotate(p.angle);
                 ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
                 ctx.restore();
               } else {
                 ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.arc(x, y, p.size, 0, Math.PI * 2);
                 ctx.fill();
               }
             }
@@ -9487,6 +9559,7 @@
             );
             this.seen = new Set();
             this.hintUntil = 0;
+            this.hudState = {};
             this.dialog.addEventListener('cancel', (event) => event.preventDefault());
           }
           text(element, value) {
@@ -9514,43 +9587,51 @@
             document.getElementById('coin-controls').classList.toggle('credited', balance > 0);
             this.text(document.getElementById('hud-credits'), 'CREDITS ' + value);
           }
+          hudLabel(element, short, full) {
+            this.text(element, short);
+            element.title = full;
+            element.setAttribute('aria-label', full);
+          }
           updateHud(game, fps, highScore = game.highScore, mode = game.mode) {
             // Attribute changes only at milestone boundaries, never every score tick.
             this.mobileHud.toggleAttribute('data-milestone', game.meter.flash > 0);
-            const fields = [
-              [this.hud.mode, 'L ' + game.level, 'Level ' + game.level],
-              [
-                this.hud.record,
-                'HI ' + hudNumber(highScore),
-                MODE_NAMES[mode] + ' personal best ' + highScore,
-              ],
-              [this.hud.score, 'SC ' + hudNumber(game.score), 'Score ' + game.score],
-            ];
-            for (const [element, short, full] of fields) {
-              if (element.textContent !== short) {
-                this.text(element, short);
-                element.title = full;
-                element.setAttribute('aria-label', full);
-              }
+            const state = this.hudState;
+            if (state.level !== game.level) {
+              state.level = game.level;
+              this.hudLabel(this.hud.mode, 'L ' + game.level, 'Level ' + game.level);
             }
-            this.text(this.hud.lives, game.rockTraining ? '∞' : '♥'.repeat(game.lives) + '♡'.repeat(LIVES.max - game.lives));
-            const lifeLabel = game.rockTraining ? 'Unlimited practice lives'
-              : game.lives + ' of ' + LIVES.max + ' lives. Next extra life at ' + game.nextLifeScore + ' points.';
-            if (this.hud.lives.getAttribute('aria-label') !== lifeLabel)
+            if (state.highScore !== highScore || state.mode !== mode) {
+              state.highScore = highScore;
+              state.mode = mode;
+              this.hudLabel(this.hud.record, 'HI ' + hudNumber(highScore), MODE_NAMES[mode] + ' personal best ' + highScore);
+            }
+            if (state.score !== game.score) {
+              state.score = game.score;
+              this.hudLabel(this.hud.score, 'SC ' + hudNumber(game.score), 'Score ' + game.score);
+            }
+            if (state.lives !== game.lives || state.nextLifeScore !== game.nextLifeScore || state.rockTraining !== game.rockTraining) {
+              state.lives = game.lives;
+              state.nextLifeScore = game.nextLifeScore;
+              state.rockTraining = game.rockTraining;
+              this.text(this.hud.lives, game.rockTraining ? '∞' : '♥'.repeat(game.lives) + '♡'.repeat(LIVES.max - game.lives));
+              const lifeLabel = game.rockTraining ? 'Unlimited practice lives'
+                : game.lives + ' of ' + LIVES.max + ' lives. Next extra life at ' + game.nextLifeScore + ' points.';
               this.hud.lives.setAttribute('aria-label', lifeLabel);
-            this.text(this.hud['next-life'], game.rockTraining ? 'PRACTICE' : '1UP ' + game.nextLifeScore);
+              this.text(this.hud['next-life'], game.rockTraining ? 'PRACTICE' : '1UP ' + game.nextLifeScore);
+            }
             this.hud.fps.hidden = fps === null;
-            if (fps !== null) this.text(this.hud.fps, 'FPS ' + fps);
+            if (fps !== null && state.fps !== fps) this.text(this.hud.fps, 'FPS ' + fps);
+            state.fps = fps;
             this.hud.turbo.hidden = !game.playing || !game.turbo.remaining;
             if (game.turbo.remaining) {
               const remaining = Math.ceil(game.turbo.remaining / 100) / 10;
-              this.text(
-                this.hud['turbo-label'],
-                (game.turbo.remaining <= 1000 ? 'Boost ending' : 'CHILI BOOST') +
-                  ' · ' +
-                  remaining.toLocaleString('en') +
-                  ' s',
-              );
+              const ending = game.turbo.remaining <= 1000;
+              if (state.boostRemaining !== remaining || state.boostEnding !== ending) {
+                state.boostRemaining = remaining;
+                state.boostEnding = ending;
+                this.text(this.hud['turbo-label'], (ending ? 'Boost ending' : 'CHILI BOOST') +
+                  ' · ' + remaining.toLocaleString('en') + ' s');
+              }
               this.hud['turbo-bar'].value = game.turbo.remaining;
             }
           }
@@ -9715,6 +9796,9 @@
         class FpsDisplay {
           constructor() {
             this.button = document.getElementById('fps-toggle');
+            this.attract = document.getElementById('attract-fps');
+            this.attractValue = document.getElementById('attract-fps-value');
+            this.coinMark = document.getElementById('attract-coin-mark');
             this.enabled = false;
             this.sampleStart = null;
             this.frames = 0;
@@ -9751,6 +9835,9 @@
           render() {
             this.button.textContent = 'Frame rate (FPS)';
             this.button.setAttribute('aria-checked', String(this.enabled));
+            this.attract.hidden = !this.enabled;
+            this.coinMark.hidden = this.enabled;
+            this.attractValue.textContent = this.value ?? '—';
           }
         }
 
@@ -9828,6 +9915,7 @@
           }
         }
 
+        const EMPTY_GAMEPADS = Object.freeze([]);
         const GAMEPAD_BUTTONS = Object.freeze({
           jump: 0,
           duck: 1,
@@ -9835,7 +9923,7 @@
         });
 
         class GamepadController {
-          constructor(runner, getGamepads = () => navigator.getGamepads?.() || []) {
+          constructor(runner, getGamepads = () => navigator.getGamepads?.() || EMPTY_GAMEPADS) {
             this.runner = runner;
             this.getGamepads = getGamepads;
             this.activeIndex = null;
@@ -9844,6 +9932,7 @@
               duck: false,
               restart: false,
             };
+            this.current = { jump: false, duck: false, restart: false };
             this.requireRelease = false;
             window.addEventListener('gamepaddisconnected', (event) => {
               if (event.gamepad.index === this.activeIndex) this.suspend();
@@ -9854,25 +9943,26 @@
               );
             });
           }
-          readButtons(pad) {
-            const state = {};
-            for (const [action, index] of Object.entries(GAMEPAD_BUTTONS)) {
-              state[action] = !!pad.buttons[index]?.pressed;
-            }
+          readButtons(pad, state = this.current) {
+            state.jump = !!pad.buttons[GAMEPAD_BUTTONS.jump]?.pressed;
+            state.duck = !!pad.buttons[GAMEPAD_BUTTONS.duck]?.pressed;
+            state.restart = !!pad.buttons[GAMEPAD_BUTTONS.restart]?.pressed;
             return state;
           }
           anyPressed(state) {
-            return Object.values(state).some(Boolean);
+            return state.jump || state.duck || state.restart;
           }
+          padPressed(pad) {
+            return !!(pad.buttons[GAMEPAD_BUTTONS.jump]?.pressed ||
+              pad.buttons[GAMEPAD_BUTTONS.duck]?.pressed || pad.buttons[GAMEPAD_BUTTONS.restart]?.pressed);
+          }
+
           suspend() {
             this.runner.duck(false, 'gamepad');
             if (this.previous.jump) this.runner.endJump();
             this.activeIndex = null;
-            this.previous = {
-              jump: false,
-              duck: false,
-              restart: false,
-            };
+            this.previous.jump = this.previous.duck = this.previous.restart = false;
+            this.current.jump = this.current.duck = this.current.restart = false;
             // Held buttons must be released before input resumes after a pause/disconnect.
             this.requireRelease = true;
           }
@@ -9881,27 +9971,29 @@
               this.suspend();
               return;
             }
-            let pads;
+            let pad = null, pressed = null;
             try {
-              pads = Array.from(this.getGamepads()).filter(
-                (pad) =>
-                  pad && pad.connected !== false && (!pad.mapping || pad.mapping === 'standard'),
-              );
+              const pads = this.getGamepads();
+              for (let i = 0; i < pads.length; i++) {
+                const candidate = pads[i];
+                if (!candidate || candidate.connected === false || (candidate.mapping && candidate.mapping !== 'standard')) continue;
+                if (!pad && candidate.index === this.activeIndex) pad = candidate;
+                if (!pressed && this.padPressed(candidate)) pressed = candidate;
+              }
             } catch (e) {
               this.suspend();
               return;
             }
             if (this.requireRelease) {
-              if (pads.some((pad) => this.anyPressed(this.readButtons(pad)))) return;
+              if (pressed) return;
               this.requireRelease = false;
             }
-            let pad = pads.find((pad) => pad.index === this.activeIndex);
             if (this.activeIndex !== null && !pad) {
               this.suspend();
               return;
             }
             if (!pad) {
-              pad = pads.find((pad) => this.anyPressed(this.readButtons(pad)));
+              pad = pressed;
               if (!pad) return;
               this.activeIndex = pad.index;
             }
@@ -9919,6 +10011,7 @@
             }
             // Copy booleans: browsers may mutate and reuse the same Gamepad object.
             this.previous = state;
+            this.current = previous;
           }
         }
 
@@ -10851,7 +10944,8 @@
             const random = () => ((this.demoSeed = (Math.imul(this.demoSeed, 1664525) + 1013904223) >>> 0) / 4294967296);
             this.demo = new Game({ random, cosmeticRandom: random, bonusEnabled: false,
               width: runner.game.world.width, featherEnabled: false, shieldEnabled: false, bossEnabled: false });
-            this.demoRenderer = new Renderer(context, this.demo);
+            // These previews never show gameplay callouts; keep their text caches lazy.
+            this.demoRenderer = new Renderer(context, this.demo, { prewarm: false });
             this.demoRenderer.effects.rng = new RandomSource(random);
             this.demoRenderer.compactHud = true;
             // A separate idle backdrop lets wide previews fit the available
@@ -10859,7 +10953,7 @@
             this.backdrop = new Game({ width: runner.game.world.width, bonusEnabled: false,
               random: () => 0.5, cosmeticRandom: () => 0.5,
               featherEnabled: false, shieldEnabled: false, bossEnabled: false });
-            this.backdropRenderer = new Renderer(context, this.backdrop);
+            this.backdropRenderer = new Renderer(context, this.backdrop, { prewarm: false });
             this.reset();
           }
           get paused() {
@@ -10985,7 +11079,8 @@
           }
           advance(dt) {
             if (!this.active || this.paused) return;
-            if (this.wide) this.backdrop.advance(dt);
+            // Only advance the backdrop on panels that actually draw it.
+            if (this.wide && this.index !== 1) this.backdrop.advance(dt);
             this.elapsed += dt;
             if (this.elapsed >= this.durations[this.index]) this.select((this.index + 1) % 3, 'next');
             if (this.index === 0) {

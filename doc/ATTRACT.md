@@ -1,5 +1,25 @@
 # Rotating attract screen
 
+Build `2026-10-24.4` skips gameplay lettering prewarming in the demo/backdrop
+renderers, which never display those callouts. The main renderer still prepares
+them before play; preview caches remain lazy if a future feature needs lettering.
+During the landscape demo, the hidden idle backdrop pauses and resumes on the
+next scores/powerups panel. Canvas resolution and menu effects are unchanged.
+
+Build `2026-10-24.3` also shows the Settings FPS counter on all three attract
+panels. When enabled, a small two-line readout replaces the decorative coin mark
+inside the existing credit plate, preserving START and preview geometry. It uses
+the main rAF sampler (500ms updates), including the initial/reset dash; it measures
+the complete attract loop, not only the demo simulation. Turning FPS off restores
+the coin mark. The existing session-only FPS setting behavior is unchanged.
+
+Demo and backdrop use the same `Game`, `Renderer` and `Effects` classes as play,
+so the retained vector sprite paths apply there too. The demo has independent
+world/RNG/state; its effect events are not wired to the real runner and it
+currently spawns no gameplay particles. The particle pool is available in its
+Effects instance but therefore does not provide an active particle-allocation
+saving in today's demo. Its compact HUD also omits the gameplay score HUD.
+
 Introduced in build `2026-10-17.1`, the attract screen replaces the small Start game / Highscores menu with a
 persistent orange START button and three rotating preview panels:
 
