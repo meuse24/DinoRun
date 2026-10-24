@@ -44,7 +44,9 @@ const settings={auto:adb('shell','settings','get','system','accelerometer_rotati
 const report={serial,model:adb('shell','getprop','ro.product.model'),android:adb('shell','getprop','ro.build.version.release'),
   artifact:htmlPath,sourceHash:createHash('sha256').update(source).digest('hex'),layout,minutes,windowMs,settings,
   start:device(),windows:[],errors:[]};
-const save=()=>fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
+const slow=[];
+const save=()=>{fs.writeFileSync(path.join(output,'report.json'),JSON.stringify(report,null,2));
+  fs.writeFileSync(path.join(output,'slow-frames.json'),JSON.stringify(slow));};
 let browser,page,relay,forward,reverse=false;
 try{
   await new Promise(r=>server.listen(port,'127.0.0.1',r));
@@ -93,23 +95,45 @@ try{
       g.duck(!!high&&!t.jumping);
       if(near&&!high&&!t.jumping)g.jump();
       if(!near&&!t.jumping&&t.ducking)g.duck(false);});
-    const draw=r.draw.bind(r);window.__work=[];
-    r.draw=(...args)=>{const s=performance.now(),result=draw(...args);window.__work.push(performance.now()-s);return result;};
+    // Active content per drawn frame. Slow frames are logged individually; every
+    // frame also counts into per-tag totals so slow shares can be compared.
+    const e=r.renderer.effects;
+    const tags=()=>{const t=[],o=g.horizon.obstacles;
+      if(g.bonus)t.push('bonus');if(g.pendingBonus)t.push('pendingBonus');
+      if(g.boss.rock)t.push('rock');else if(g.boss.phase!=='idle')t.push('boss:'+g.boss.phase);
+      if(g.turbo.remaining>0)t.push('turbo');if(g.turbo.pickup)t.push('chiliPickup');
+      if(g.feather.charged)t.push('feather');if(g.feather.pickup)t.push('featherPickup');
+      if(g.shield.charged)t.push('shield');if(g.shield.pickup)t.push('shieldPickup');if(g.shield.popRemaining>0)t.push('shieldPop');
+      if(g.recoveryRemaining>0)t.push('recovery');if(g.trex.jumping)t.push('jumping');if(g.trex.ducking)t.push('ducking');
+      if(e.particles.length>=40)t.push('particles40+');else if(e.particles.length>=15)t.push('particles15+');
+      if(e.callouts.length)t.push('callouts');if(e.banner)t.push('banner');if(e.shakeTime>0)t.push('shake');
+      if(g.meter.flash>0)t.push('meterFlash');
+      const night=g.nightAlpha||0;t.push(night>=.99?'night':night>0?'dusk':'day');
+      if(o.length>=3)t.push('obstacles3+');if(o.some(x=>x.type.name==='ptero'))t.push('ptero');
+      return t;};
+    const draw=r.draw.bind(r);window.__work=[];window.__slow=[];window.__counts={};let prev=performance.now();
+    r.draw=(...args)=>{const s=performance.now(),result=draw(...args),end=performance.now(),work=end-s,delta=s-prev;prev=s;
+      window.__work.push(work);const t=tags(),slow=work>8||delta>20;
+      for(const k of t){const c=window.__counts[k]??={all:0,slow:0};c.all++;if(slow)c.slow++;}
+      const c=window.__counts.total??={all:0,slow:0};c.all++;if(slow)c.slow++;
+      if(slow&&window.__slow.length<2000)window.__slow.push({at:+(s/1000).toFixed(2),work:+work.toFixed(2),delta:+delta.toFixed(1),score:g.score,tags:t});
+      return result;};
     window.__deltas=[];let last=performance.now();
     const frame=t=>{window.__deltas.push(t-last);last=t;requestAnimationFrame(frame);};requestAnimationFrame(frame);
-    window.__take=()=>{const out={deltas:window.__deltas.slice(1),work:window.__work,
+    window.__take=()=>{const out={deltas:window.__deltas.slice(1),work:window.__work,slow:window.__slow,counts:window.__counts,
       state:{playing:g.playing,paused:r.paused,hidden:document.hidden,fullscreen:!!document.fullscreenElement,
         score:g.score,speed:+g.speed.toFixed(2),night:+(g.nightAlpha||0).toFixed(2),boss:!!g.boss?.rock,lives:g.lives,hits:window.__hits,
         backing:[r.renderer.ctx.canvas.width,r.renderer.ctx.canvas.height]}};
-      window.__deltas=[];window.__work=[];return out;};
+      window.__deltas=[];window.__work=[];window.__slow=[];window.__counts={};return out;};
   });
   const started=Date.now(),end=started+minutes*60000;
   console.log(`Sustained ${layout} run on ${report.model} for ${minutes} min, ${windowMs/1000}s windows`);
   while(Date.now()<end){
     await page.waitForTimeout(Math.min(windowMs,end-Date.now()));
     const sample=await page.evaluate(()=>window.__take());
-    const entry={t:Math.round((Date.now()-started)/1000),...stats(sample.deltas),draw:stats(sample.work),...sample.state,device:device()};
-    report.windows.push(entry);save();
+    const entry={t:Math.round((Date.now()-started)/1000),...stats(sample.deltas),draw:stats(sample.work),...sample.state,device:device(),
+      slowFrames:sample.slow.length,counts:sample.counts};
+    report.windows.push(entry);slow.push(...sample.slow.map(x=>({window:entry.t,...x})));save();
     console.log(`${String(entry.t).padStart(4)}s ${entry.fps} FPS p95 ${entry.p95} >20ms ${entry.over20}% draw ${entry.draw?.meanMs}ms `+
       `thermal ${entry.device.thermal} ${entry.device.battery}°C score ${entry.score} night ${entry.night} hits ${entry.hits}`);
     assert(entry.playing&&!entry.paused&&!entry.hidden,`Round stopped, paused or hidden: ${JSON.stringify(sample.state)}`);
@@ -118,7 +142,14 @@ try{
   const w=report.windows,avg=list=>+(list.reduce((a,x)=>a+x.fps,0)/list.length).toFixed(2);
   report.summary={firstTwoFps:avg(w.slice(0,2)),lastTwoFps:avg(w.slice(-2)),minWindowFps:Math.min(...w.map(x=>x.fps)),
     maxThermal:Math.max(...w.map(x=>x.device.thermal)),maxBattery:Math.max(...w.map(x=>x.device.battery)),hits:w.at(-1).hits};
-  console.log(JSON.stringify(report.summary));
+  // Lift >1: the tag is over-represented among slow frames relative to all frames.
+  const totals={};for(const x of w)for(const[k,c]of Object.entries(x.counts)){const t=totals[k]??={all:0,slow:0};t.all+=c.all;t.slow+=c.slow;}
+  const base=totals.total.slow/totals.total.all;
+  report.summary.slowShare=+(100*base).toFixed(2);
+  report.summary.tags=Object.entries(totals).filter(([k])=>k!=='total').map(([tag,c])=>({tag,frames:c.all,slow:c.slow,
+    slowRate:+(100*c.slow/c.all).toFixed(2),lift:+((c.slow/c.all)/(base||1)).toFixed(2)})).sort((a,b)=>b.lift-a.lift);
+  console.log(JSON.stringify({...report.summary,tags:undefined}));
+  console.table(report.summary.tags.filter(x=>x.frames>=300));
   assert.deepEqual(report.errors,[]);
   if(minFps!==null)assert(report.summary.minWindowFps>=minFps,`Window below ${minFps} FPS: ${report.summary.minWindowFps}`);
 }finally{
