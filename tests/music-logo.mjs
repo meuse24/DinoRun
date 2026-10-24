@@ -128,7 +128,7 @@ try {
       r.music.audio.currentTime = time; r.resize(); r.draw(1);
     }, checks.find(item => item.track === 'dino-jump-jump').peakTime);
     await page.waitForTimeout(90);
-    const logo = await page.locator('.brand-logo').boundingBox();
+    const logo = await page.locator('#round-panel .brand-logo').boundingBox();
     const title = await page.locator('.title-word').first().boundingBox();
     const viewport = page.viewportSize();
     assert(logo && title && logo.x >= 0 && logo.y >= 0 && logo.x + logo.width <= title.x,
@@ -143,10 +143,74 @@ try {
   for (const [width, height] of [[320, 568], [844, 390]]) {
     await page.setViewportSize({ width, height });
     await peak();
-    const bounds = await page.locator('.brand-logo').boundingBox();
+    const bounds = await page.locator('#round-panel .brand-logo').boundingBox();
     assert(bounds && bounds.x >= 0 && bounds.x + bounds.width <= width && bounds.y >= 0);
     await page.screenshot({ path: path.join(output, `pulse-${width}x${height}.png`) });
   }
+  // All foreground menus share the same clock, including Help's separate document.
+  for (const [width, height] of [[1280, 800], [320, 568], [663, 234]]) {
+    await page.setViewportSize({ width, height });
+    for (const view of ['settings', 'help', 'scores', 'entry']) {
+      if (view === 'settings') await page.locator('#settings-open').click();
+      else if (view === 'help') await page.locator('#info-link').click();
+      else await page.evaluate(entry => {
+        const r = window.__dinoRunner;
+        r.highscores.open();
+        if (entry) { r.highscores.view = 'entry'; r.highscores.apply(); }
+      }, view === 'entry');
+      await page.evaluate(() => {
+        const r = window.__dinoRunner;
+        r.music.wanted = true; r.musicLogoPulse.waiting = false;
+        r.music.audio.paused = false; r.musicLogoPulse.sync();
+      });
+      await page.waitForTimeout(90);
+      const selector = view === 'help' ? '#help-dialog' : view === 'settings' ? '#settings' : '#scores';
+      const scope = view === 'help' ? page.frameLocator('#info-view') : page.locator(selector);
+      const logo = await scope.locator('.music-heading-logo .brand-logo').boundingBox();
+      const title = await scope.locator('.menu-title > .heading-ink').boundingBox();
+      const close = await scope.locator('.menu-back').boundingBox();
+      assert(logo && title && close && logo.x >= 0 && logo.y >= 0 &&
+        logo.x + logo.width <= title.x && title.x + title.width <= close.x,
+      `${view}/${width}: peak fits beside the title and Back`);
+      const state = await page.evaluate(() => {
+        const r = window.__dinoRunner, pulse = r.musicLogoPulse;
+        const before = r.game.simulationTime;
+        window.advanceTime(500);
+        return { paused: r.paused, active: pulse.active, scale: pulse.scale,
+          menuScaled: !!pulse.menu.logo.style.transform,
+          frozen: before === r.game.simulationTime,
+          owner: pulse.logo.ownerDocument === document ? pulse.wrapper.closest('dialog').id : 'help' };
+      });
+      assert(state.paused && state.active && state.frozen && !state.menuScaled);
+      assert.equal(state.owner, view === 'entry' ? 'scores' : view);
+      assert.equal(state.scale, 1.65);
+      results.push({ view, width, height, ...state });
+      await page.screenshot({ path: path.join(output, `${view}-${width}x${height}.png`) });
+      if (view === 'help') await page.frameLocator('#info-view').locator('[data-help-back]').first().click();
+      else await page.locator(view === 'settings' ? '#settings-close' : '#scores-close').click();
+      await page.waitForFunction(() => !window.__dinoRunner.paused);
+    }
+  }
+  // Actual foreground timer: runs without advancing/drawing the paused game, then stops.
+  await page.locator('#settings-open').click();
+  const timed = await page.evaluate(async () => {
+    const r = window.__dinoRunner, pulse = r.musicLogoPulse;
+    window.__dinoTest.manualFrames = false;
+    const time = r.game.simulationTime;
+    r.music.wanted = true; pulse.waiting = false; r.music.audio.paused = false;
+    r.music.audio.currentTime = 0; pulse.sync();
+    const before = pulse.scale;
+    r.music.audio.currentTime = 11.633333333333333;
+    await new Promise(resolve => setTimeout(resolve, 100));
+    const changed = pulse.scale !== before, frozen = r.game.simulationTime === time;
+    r.music.audio.muted = true; pulse.sync();
+    const stopped = pulse.timer === null && !pulse.active;
+    window.__dinoTest.manualFrames = true;
+    r.music.audio.muted = false;
+    return { changed, frozen, stopped };
+  });
+  assert(timed.changed && timed.frozen && timed.stopped);
+  results.push({ overlayTimer: timed });
   assert.deepEqual(errors, []);
   assert(!requests.some(name => /highscores/.test(name)));
   fs.writeFileSync(path.join(output, `${engine}-report.json`), JSON.stringify({ engine, results, errors,

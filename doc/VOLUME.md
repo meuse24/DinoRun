@@ -10,6 +10,12 @@ The existing floating animation yields while the music pulse is active. The
 logo grows away from the title, keeping its right edge, layout size and accessible
 name fixed.
 
+Build `2026-10-25.6` also places a decorative M24 logo beside the Settings,
+Highscores / New highscore and Help titles (including Help's iframe). Only the
+foreground heading pulses; covered logos reset. Header logos reserve room for
+the full 65% pulse so title text and Back remain clear. Decorative copies have
+no duplicate title IDs and do not change the headings' accessible names.
+
 For these two fixed tracks, `scripts/bake-logo-pulse.mjs` analyzes the shipped
 MP3s once during development with ffmpeg: 45–180 Hz bass, RMS windows at 30 Hz,
 slow background subtraction, fast attack and exponential release. Each song is
@@ -24,10 +30,14 @@ It uses the song timeline, including seeks, loops and playback-rate changes;
 it does not guess BPM or start an independent animation clock. Browser media
 clock precision still applies; this is a visual accompaniment, not sample-accurate
 audio scheduling. Identical values do not write to the DOM. There is no additional
-AudioContext, FFT, decoder, animation loop, layout read or analysis buffer.
+AudioContext, FFT, decoder, layout read or analysis buffer. The attract screen
+uses its existing draw loop. While a foreground menu pauses that loop, one
+30 Hz timer updates only its logo; it does not advance or redraw the game. The
+timer stops on closing the menu, hidden/paused/muted audio, Reduced Motion or
+effects off, and is disabled in manual-frame tests.
 
 Paused/buffering/missing/blocked audio, mute, music volume zero, gameplay,
-hidden menus, lifecycle/menu-overlay pauses, Reduced Motion and disabled Arcade
+hidden menus, background lifecycle pauses, Reduced Motion and disabled Arcade
 effects leave the logo unscaled. Media stop/wait/error events reset it immediately;
 the normal playing event and draw loop resume synchronization. The existing
 audio routing and optional standalone/offline songs are retained.
@@ -43,7 +53,10 @@ recommends transform/opacity to avoid layout work, and using layer hints sparing
 driving varying scales for both songs, deterministic seek/phase and amplitude
 bounds, media/lifecycle stops and recovery, dynamic Reduced Motion, the effects
 switch, zero DOM mutations for 1,000 unchanged samples and three responsive
-layouts, including peak-size title clearance. `DINO_BROWSER=webkit` runs the deterministic DOM/CSS cases; the installed
+layouts, including peak-size title clearance. It also checks Settings, Help,
+Highscores and entry headers in three layouts, foreground selection, frozen
+gameplay, the independent menu timer and its mute shutdown.
+`DINO_BROWSER=webkit` runs the deterministic DOM/CSS cases; the installed
 Windows WebKit cannot decode these MP3s. Reports/screenshots are in
 `output/music-logo/{source,release}`. These checks are browser emulation, not
 physical Android performance or listening verification.

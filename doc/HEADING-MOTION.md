@@ -20,6 +20,9 @@ Das M24-Logo schwebt mit einem eigenen 4,8-Sekunden-Zyklus und 2 px Hub.
 Seit Build `2026-10-25.3` ersetzt bei laufendem Theme-Song ein basssynchrones
 Pulsieren das Schweben. Vorgebackene Songdaten, Medienuhr, Ressourcen und
 Lebenszyklus sind in [VOLUME.md](VOLUME.md#music-reactive-m24-logo) beschrieben.
+Build `2026-10-25.6` ergänzt dekorative, ebenfalls pulsierende Logos neben den
+Hauptüberschriften von Settings, Help und Highscores (Liste und Namenseingabe).
+Nur das vorderste Menü pulsiert; das angehaltene Spiel wird dafür nicht gezeichnet.
 Arcade-Eintrittseffekte sind in [ARCADE.md](ARCADE.md) beschrieben.
 
 Die h1/h2 behalten vollständige zugängliche Namen, Einzelbuchstaben sind

@@ -7,6 +7,29 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Pulsierende Menülogos (Build .6 / Cache v68)
+
+- Während Commit/Deploy zusätzlich gewünscht: Logo neben Help, Settings und
+  Highscores. Bisherige Umsetzung als 101fd6d committed, Veröffentlichung bis
+  zur Menü-Erweiterung zurückgestellt. Die vollständige Chromium-Releasegruppe
+  und beide 64-Szenen-Pixelvergleiche für .5 bestanden; WebKit hatte unter
+  paralleler Browserlast erst wechselnde Kleinstabweichungen, bei alleiniger
+  Ausführung pixelidentisch. Keine Vergleichstoleranz verändert.
+- Bestehendes SVG dekorativ und ohne doppelte Titel-IDs neben drei Haupttiteln
+  wiederverwendet, einschließlich Help-iframe und Highscore-Namenseingabe.
+  Pro Kopf reservierter Platz für 65-%-Peak; zugängliche Titel bleiben erhalten.
+- Derselbe Medienzeit-/Bassdatenpfad steuert nur das vorderste Logo. Die pausierte
+  Spielschleife bleibt aus; ausschließlich bei hörbarer Menü-Musik aktualisiert
+  ein 30-Hz-Timer das Logo. Bei Hauptschleife, verborgenem Menü, Mute/Buffering,
+  Reduced Motion und Effekte aus gibt es keinen solchen Timer.
+- Logo-Suite um alle vier Menüansichten in drei Layouts, Titel-/Back-Abstand,
+  Vordergrundauswahl, eingefrorene Simulation und Timer-Stopp ergänzt. Chromium
+  und WebKit bestanden; Einstellungen/Help/Entry-Screenshots visuell geprüft.
+- Menü-Overlays und Heading-Motion in beiden Engines, alle 86 Chromium-
+  Screen-Transitions und Skill-Client gegen .6 bestanden. Gameplay-Bild/Zustand
+  angesehen. Chromium-Logo und echte MP3s/Offline/Range/file:// auch gegen .6-
+  Release bestanden; der 64-Szenen-Vergleich ist pixelidentisch.
+
 ## 2026-10-25: Kräftigerer Logo-Bass (Build .5 / Cache v67)
 
 - Nutzerwunsch: deutlich mehr Bums. Maximale Logo-Skalierung von 1,18 auf 1,65
