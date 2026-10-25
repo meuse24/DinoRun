@@ -160,6 +160,78 @@
           else fullscreen.addListener(updateButton);
           window.addEventListener('pageshow', updateButton);
           updateButton();
+
+          // Contextual install suggestion: after the second finished round, back in
+          // the start menu, never modal or during play. Not now waits two weeks; a
+          // second Not now ends it. Browser tests opt in through __dinoTest.installNudge.
+          const nudge = document.getElementById('install-nudge');
+          const nudgeKey = 'dino-install-nudge';
+          const nudgeDays = 14;
+          const testHooks = window.__dinoTest;
+          let nudgeShownThisPage = false;
+          const nudgeState = () => {
+            try {
+              const saved = JSON.parse(localStorage.getItem(nudgeKey));
+              return saved && typeof saved === 'object' ? saved : {};
+            } catch (e) {
+              return {};
+            }
+          };
+          const saveNudge = (state) => {
+            try {
+              localStorage.setItem(nudgeKey, JSON.stringify(state));
+            } catch (e) {}
+          };
+          // Bottom of the preview area: never over START, coins or touch controls.
+          const placeNudge = () => {
+            const area = document.getElementById('attract-content').getBoundingClientRect();
+            if (area.width < 200 || area.height < 80) return false;
+            const width = Math.min(area.width - 16, 440);
+            nudge.style.width = width + 'px';
+            nudge.style.left = area.left + (area.width - width) / 2 + 'px';
+            let bottom = area.bottom;
+            // Short landscape places Install app inside the preview: sit just above it.
+            const install = button.getBoundingClientRect();
+            if (!button.hidden && install.top > area.top && install.top < bottom && install.left < area.right)
+              bottom = install.top;
+            nudge.style.bottom = Math.max(8, innerHeight - bottom + 8) + 'px';
+            return true;
+          };
+          const hideNudge = () => {
+            if (nudge.hidden) return;
+            nudge.hidden = true;
+            window.removeEventListener('resize', placeNudge);
+          };
+          const snoozeNudge = () => {
+            const state = nudgeState();
+            state.dismissed = (state.dismissed || 0) + 1;
+            state.until = Date.now() + nudgeDays * 864e5;
+            saveNudge(state);
+            hideNudge();
+          };
+          document.getElementById('install-nudge-no').addEventListener('click', snoozeNudge);
+          document.getElementById('install-nudge-yes').addEventListener('click', () => {
+            // The native prompt or the instructions decide; a declined prompt counts as Not now.
+            snoozeNudge();
+            button.click();
+          });
+          window.__dinoInstallNudge = {
+            hide: hideNudge,
+            async roundFinished(inStartMenu) {
+              if (testHooks && !testHooks.installNudge) return;
+              const state = nudgeState();
+              state.rounds = (state.rounds || 0) + 1;
+              saveNudge(state);
+              if (nudgeShownThisPage || state.rounds < 2 || state.dismissed >= 2 || Date.now() < (state.until || 0))
+                return;
+              // Only where installing is one tap away (Chromium) or explained (iOS Safari).
+              if (button.hidden || !(installPrompt || appleMobile) || (await isInstalled())) return;
+              if (!inStartMenu() || !placeNudge()) return;
+              nudgeShownThisPage = true;
+              nudge.hidden = false;
+              window.addEventListener('resize', placeNudge);
+            },
+          };
         });
       })();
     </script>
@@ -751,6 +823,79 @@
       #goodbye::backdrop,
       #install-help::backdrop {
         background: #101b4299;
+      }
+
+      /* Non-modal install suggestion over the bottom of the attract preview. */
+      #install-nudge {
+        position: fixed;
+        z-index: 20;
+        box-sizing: border-box;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 10px;
+        padding: 10px 12px;
+        border: 1px solid #173f6940;
+        border-radius: 16px;
+        background: var(--bg);
+        color: var(--fg);
+        box-shadow: 0 10px 28px #101b4240;
+        font: 14px/1.25 system-ui, sans-serif;
+      }
+      #install-nudge[hidden] {
+        display: none;
+      }
+      :root.motion #install-nudge {
+        animation: install-nudge-in 260ms cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes install-nudge-in {
+        from { opacity: 0; transform: translateY(12px); }
+      }
+      .install-nudge-icon {
+        flex: none;
+        width: 26px;
+        height: 26px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #install-nudge p {
+        flex: 1 1 150px;
+        margin: 0;
+      }
+      #install-nudge strong,
+      #install-nudge p span {
+        display: block;
+      }
+      #install-nudge p span {
+        opacity: 0.8;
+        font-size: 13px;
+      }
+      /* The actions wrap together, right-aligned below the text on narrow phones. */
+      .install-nudge-actions {
+        display: flex;
+        gap: 8px;
+        margin-left: auto;
+      }
+      #install-nudge button {
+        min-height: 40px;
+        padding: 8px 14px;
+        border: 0;
+        border-radius: 12px;
+        font: 800 14px/1 system-ui, sans-serif;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+      #install-nudge-yes {
+        background: #294f70;
+        color: white;
+      }
+      #install-nudge-no {
+        background: transparent;
+        color: inherit;
+        box-shadow: inset 0 0 0 2px color-mix(in srgb, currentColor 45%, transparent);
       }
 
       #goodbye h2,
@@ -3485,6 +3630,14 @@
       </div>
       <p id="exit-hint" role="status" hidden></p>
     </dialog>
+    <aside id="install-nudge" aria-labelledby="install-nudge-title" aria-live="polite" hidden>
+      <svg class="install-nudge-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 16V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v11M3 20h18M12 6v9m-3-3 3 3 3-3" /></svg>
+      <p><strong id="install-nudge-title">Play Dino Run as an app</strong><span>Full screen, starts faster, works offline.</span></p>
+      <span class="install-nudge-actions">
+        <button id="install-nudge-yes" type="button">Install</button>
+        <button id="install-nudge-no" type="button">Not now</button>
+      </span>
+    </aside>
     <dialog id="install-help" aria-labelledby="install-title">
       <h2 id="install-title"><span class="heading-ink"><span class="heading-breath">Install Dino Run</span></span></h2>
       <p id="install-instructions"></p>
@@ -4119,7 +4272,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-25.10';
+        const BUILD = '2026-10-25.11';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -12408,6 +12561,7 @@
                 this.renderer.prewarmLettering();
                 this.lastTime = null;
                 pageEl.classList.add('running');
+                window.__dinoInstallNudge?.hide();
                 this.updateTouchControls();
                 this.announce(event.type === 'start' ? 'Game started' : 'New game');
                 break;
@@ -12572,6 +12726,7 @@
             preferences.set('dino-fullscreen-disabled', false);
             this.updatePause();
             this.saveHighScore();
+            window.__dinoInstallNudge?.hide();
             landscapeFullscreen.stop();
             this.sessionView.showGoodbye(this.stats);
           }
@@ -12637,6 +12792,7 @@
             // START becomes usable again: a running document transition would capture taps.
             this.transition.skip('attract');
             this.highscoreController.roundLeft();
+            const finishedRound = !this.game.rockTraining;
             this.game.returnToAttract();
             this.input.reset();
             this.duckSources.clear();
@@ -12649,6 +12805,10 @@
             this.updateMusic(true);
             this.draw(1);
             this.creditTarget().focus({ preventScroll: true });
+            if (finishedRound)
+              window.__dinoInstallNudge?.roundFinished(
+                () => this.game.state === 'attract' && !this.ended && !document.querySelector('dialog[open]'),
+              );
           }
           update(dt) {
             if (this.paused) return;

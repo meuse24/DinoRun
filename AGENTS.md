@@ -172,6 +172,9 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
 - `node tests/exit-game.mjs [game.html]`: goodbye Exit closes fresh tabs/app windows
   via a directly launched Chromium, refusal hint, history-free Help in app mode and
   three layouts. Chromium only; see `doc/EXIT.md`.
+- `node tests/install-nudge.mjs [game.html]`: non-modal install suggestion after the
+  second round, placement in five layouts, snooze/never, native prompt and opt-in
+  test hook. Accepts `DINO_BROWSER=webkit`; see `doc/INSTALL.md`.
 - `node tests/menu-overlays.mjs [game.html]`: Settings/Help modal sizing,
   paused visible gameplay, scrolling/settings controls, focus isolation, Escape,
   browser Back and direct Help links in desktop/touch layouts. Accepts `DINO_BROWSER`.

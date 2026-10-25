@@ -1,7 +1,7 @@
 # Dokumentation
 
 Stand der Bereinigung: 2026-10-25; abgeglichen mit lokalem Build
-`2026-10-25.10` und Worker-Cache `dino-run-v72`.
+`2026-10-25.11` und Worker-Cache `dino-run-v73`.
 Der Index beschreibt Repository-Code, Skripte und Verweise. Datierte Browser-
 und Geräteergebnisse stehen im Arbeitsprotokoll; sie bestätigen keinen aktuell
 abgefragten Produktionsstand.
@@ -32,6 +32,7 @@ abgefragten Produktionsstand.
 | Glühbeere | [GLOW-BERRY.md](GLOW-BERRY.md) |
 | Rundenende und Namenseingabe | [GAMEOVER.md](GAMEOVER.md) |
 | Exit aus dem Goodbye-Dialog | [EXIT.md](EXIT.md) |
+| Installationshinweis (PWA) | [INSTALL.md](INSTALL.md) |
 | Arcade-Darstellung und Effekte | [ARCADE.md](ARCADE.md) |
 | Überschriften | [HEADING-MOTION.md](HEADING-MOTION.md) |
 | Screen-Übergänge und Menü-Overlays | [TRANSITIONS.md](TRANSITIONS.md) |

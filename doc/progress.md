@@ -7,6 +7,16 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Installationshinweis nach der zweiten Runde (Build .11 / Cache v73)
+
+- Nutzerwunsch Punkt 2: kein automatisches Overlay, sondern nicht modale Karte
+  nach der zweiten beendeten Runde im Startmenü; Not now 14 Tage, zweimal = nie.
+- Neue Suite install-nudge (10 Checks, Chromium und WebKit) in test:features.
+  attract-screen, game-over-flow, lives, coins, screen-transitions, menu-overlays,
+  exit-game, npm test und test:release bestanden. Details: [INSTALL.md](INSTALL.md).
+- Per npm run deploy -- --tls12 veröffentlicht; HTTPS/SHA-256 bestätigt
+  (HTML 21924fec7c20, Worker 24ffc73d09ca).
+
 ## 2026-10-25: Schallwellen-Ringe am M24-Logo (Build .10 / Cache v72)
 
 - Nutzerwunsch: Logo-Puls um Schallwellen erweitern. Ringe in Logo-Silhouette nur
