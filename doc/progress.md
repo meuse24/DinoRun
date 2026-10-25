@@ -7,6 +7,19 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: GitHub, bereinigte Historie, BSD-3-Lizenz (Build .13 / Cache v75)
+
+- Öffentliches Repository https://github.com/meuse24/DinoRun eingerichtet
+  (Beschreibung, Website, Topics). Vor dem Push `highscores-data/` (seit dem
+  ersten Commit versehentlich versioniert, inkl. altem Rate-Limit-Schlüssel) per
+  filter-branch aus allen 107 Commits entfernt; lokale Dateien wiederhergestellt.
+- Alle 50 Commit-Verweise in Doku und Testbasis auf die neuen Hashes umgestellt
+  (Zuordnung über Reihenfolge und identische Commit-Nachrichten).
+- Lizenz: LICENSE (BSD 3-Clause, Günther Meusburger) und THIRD-PARTY-NOTICES.md
+  (Chromium-BSD-Text, OFL 1.1 der Schriften, Songs alle Rechte vorbehalten);
+  package.json/lock, README, Dateikopf und Help → About ergänzt.
+- menu-overlays, update-notice, npm test und test:release bestanden.
+
 ## 2026-10-25: Suno-Herkunft der Songs, Umbenennung (Build .12 / Cache v74)
 
 - Nutzerwunsch: Suno-Nutzung nachvollziehbar dokumentieren. Song-IDs aus der
@@ -65,7 +78,7 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   Erwartete Obergrenze in der vorhandenen Logo-Suite auf 1,8 aktualisiert.
 - Weiterhin auf Nutzerwunsch keine Browsersuiten oder vollständiges Testregime;
   nur Kennlinie/Grenzen, Syntax, Build und diff. Visuelle Bewertung durch Nutzer.
-- Kurzprüfungen bestanden; als e1e9dbb committed und per FTPS/TLS1.2 veröffentlicht.
+- Kurzprüfungen bestanden; als 3b87777 committed und per FTPS/TLS1.2 veröffentlicht.
   Alle zehn Dateien per HTTPS/SHA-256 bestätigt; Build .8 / Cache v70 live.
 
 ## 2026-10-25: Empfindlicherer Logo-Puls (Build .7 / Cache v69)
@@ -77,14 +90,14 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   Timer, Daten oder Audioanalysen.
 - Kennlinien-/Grenzprüfung aller 16 Stufen, Syntax/Build und diff --check bestanden;
   keine Browser-, Gameplay- oder vollständigen Release-Suiten.
-- Als 060a12a committed und mit npm run deploy -- --tls12 veröffentlicht.
+- Als f799c67 committed und mit npm run deploy -- --tls12 veröffentlicht.
   Alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt; .7 / Cache v69 live.
   Keine visuelle Abnahme vorweggenommen; diese übernimmt der Nutzer.
 
 ## 2026-10-25: Pulsierende Menülogos (Build .6 / Cache v68)
 
 - Während Commit/Deploy zusätzlich gewünscht: Logo neben Help, Settings und
-  Highscores. Bisherige Umsetzung als 101fd6d committed, Veröffentlichung bis
+  Highscores. Bisherige Umsetzung als 5e9fce8 committed, Veröffentlichung bis
   zur Menü-Erweiterung zurückgestellt. Die vollständige Chromium-Releasegruppe
   und beide 64-Szenen-Pixelvergleiche für .5 bestanden; WebKit hatte unter
   paralleler Browserlast erst wechselnde Kleinstabweichungen, bei alleiniger
@@ -103,7 +116,7 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   Screen-Transitions und Skill-Client gegen .6 bestanden. Gameplay-Bild/Zustand
   angesehen. Chromium-Logo und echte MP3s/Offline/Range/file:// auch gegen .6-
   Release bestanden; der 64-Szenen-Vergleich ist pixelidentisch.
-- .6 als cbb0e6e committed. Beide vollständigen Releasegruppen anschließend
+- .6 als 94bfabd committed. Beide vollständigen Releasegruppen anschließend
   sequenziell bestanden: Assets, je 64 pixelidentische Szenen, Lifecycle/Offline,
   Feder, Schild, Beeren, Levelbonus, zwölf Attract-Layouts und Rundenende.
 - Mit npm run deploy -- --tls12 veröffentlicht (Build .6 / Cache v68). Alle zehn
@@ -275,7 +288,7 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
 - User explicitly requested committing all changes and deploying. Staged and
   checked the complete project state; private configuration, credentials, raw
-  WAV/signing material and local reports remain excluded. Commit a6bbc7d:
+  WAV/signing material and local reports remain excluded. Commit 8c470b2:
   Consolidate documentation, tests and media assets (265 files, including the
   earlier simulation refactoring, documentation cleanup and asset moves).
 - Verified source/release and media hashes still match the tested artifacts.
@@ -315,7 +328,7 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   layouts, effects2 layouts and reproducible64-scene source/release comparison
   pass. Installed skill client passes final release; screenshot/state inspected.
   No browser errors, live score writes or physical-device run.
-- User explicitly requested commit/deploy. Commit 5f58747 contains the fix and
+- User explicitly requested commit/deploy. Commit 6d25fe3 contains the fix and
   its regression/docs. Dry run confirmed published v63; encrypted TLS1.2 upload
   publishes .2/v64 with worker last. All ten static HTTPS hashes match, including
   HTML42e5ba479aa4... and worker7b0d50e49f1d....

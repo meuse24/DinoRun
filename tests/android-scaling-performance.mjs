@@ -14,7 +14,7 @@ const adbPath=path.join(process.env.LOCALAPPDATA,'Android/Sdk/platform-tools/adb
 const adb=(...args)=>execFileSync(adbPath,['-s',process.env.DINO_ANDROID_SERIAL||'RF8MB125SXA',...args],{encoding:'utf8'}).trim();
 const output=path.join(root,process.env.DINO_TEST_OUTPUT||'output/scaling-performance');fs.mkdirSync(output,{recursive:true});
 const baseline=process.env.DINO_BASELINE_HTML ? fs.readFileSync(path.resolve(root,process.env.DINO_BASELINE_HTML),'utf8') :
-  execFileSync('git',['show',`${process.env.DINO_BASELINE||'3217c9e'}:dino.html`],{cwd:root,encoding:'utf8'});
+  execFileSync('git',['show',`${process.env.DINO_BASELINE||'8ceac4e'}:dino.html`],{cwd:root,encoding:'utf8'});
 const current=fs.readFileSync(path.resolve(root,process.env.DINO_CURRENT_HTML||'dino.html'),'utf8');
 const capped=current.replace('(window.devicePixelRatio || 1) * Math.max(rect.width / logicalWidth, 0.5)',
   'Math.min(window.devicePixelRatio || 1, 2) * Math.max(rect.width / logicalWidth, 0.5)');
@@ -27,7 +27,7 @@ const server=http.createServer((req,res)=>{const key=new URL(req.url,origin).pat
   else res.writeHead(204).end();});
 const rotation={auto:adb('shell','settings','get','system','accelerometer_rotation'),user:adb('shell','settings','get','system','user_rotation')};
 const report={device:adb('shell','getprop','ro.product.model'),android:adb('shell','getprop','ro.build.version.release'),
-  baseline:process.env.DINO_BASELINE_HTML||process.env.DINO_BASELINE||'3217c9e',hashes:Object.fromEntries(Object.entries(sources).map(([k,v])=>[k,createHash('sha256').update(v).digest('hex')])),runs:[],errors:[]};
+  baseline:process.env.DINO_BASELINE_HTML||process.env.DINO_BASELINE||'8ceac4e',hashes:Object.fromEntries(Object.entries(sources).map(([k,v])=>[k,createHash('sha256').update(v).digest('hex')])),runs:[],errors:[]};
 const stats=a=>{a=a.slice(1);const s=[...a].sort((a,b)=>a-b),mean=a.reduce((a,b)=>a+b,0)/a.length;
   return{fps:+(1000/mean).toFixed(2),meanMs:+mean.toFixed(2),p50:+s[Math.floor(s.length*.5)].toFixed(2),p95:+s[Math.floor(s.length*.95)].toFixed(2),over20:+(100*a.filter(x=>x>20).length/a.length).toFixed(2)};};
 let browser,page,relay,forward,reverse=false;

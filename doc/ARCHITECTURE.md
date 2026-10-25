@@ -45,7 +45,7 @@ node tests/render-cache.mjs output/architecture/baseline.html
 ```
 
 Before editing, save a matching baseline HTML from Git. The original
-2026-10-15 comparison used `f74c0b8:dino.html`; do not assume that old build
+2026-10-15 comparison used `c0eacdd:dino.html`; do not assume that old build
 remains compatible with later gameplay changes. The comparison script requires that saved file; the other
 tests do not. On this Windows installation, WebKit needs
 `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS=1` to bypass its broken host validator;
@@ -70,7 +70,7 @@ tolerances and deterministic trace comparisons are unchanged.
 Build `2026-10-15.6` passed final verification on 2026-10-16 in Chromium
 151.0.7922.34 and WebKit 26.5: 11 architecture scenarios and seven lifecycle
 scenarios per engine, feather tests in three layouts per engine, and the skill
-action client. All 140 comparison scenes are pixel-identical to `f74c0b8`;
+action client. All 140 comparison scenes are pixel-identical to `c0eacdd`;
 five 12,000-frame simulation/effect traces per engine match the baseline.
 Screenshots were inspected. No physical-device rerun was performed for this
 refactoring; the Android preview remains stopped.

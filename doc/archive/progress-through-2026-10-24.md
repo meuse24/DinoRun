@@ -568,7 +568,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - User requested a plan and implementation using Git, with a single playable
   HTML file, offline/file support and only optional external menu music.
 - Read develop-web-game skill. Plan: REFACTORING.md. Work branch:
-  `refactor/single-html`; original implementation revision: `10f6b21`.
+  `refactor/single-html`; original implementation revision: `947de84`.
 - Added baseline-independent tests/game-contract.mjs. It starts its own isolated
   HTTP fixture and tests a temporary directory containing only dino.html with
   networking disabled, including blocked localStorage. Highscore calls are
@@ -604,7 +604,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   192px icon and no longer requests sibling installation assets. The playable
   artifact remains one HTML; optional music and online services are independent.
 - First reset/preferences comparison passed all 70 pixel-exact scenes and all
-  five 12,000-frame deterministic traces against 10f6b21. Final full comparison
+  five 12,000-frame deterministic traces against 947de84. Final full comparison
   follows the browser/page extraction.
 - Current contract checks pass all six scenarios, including real rAF pause/resume,
   a live service worker offline reload, touch duck, corrupt saved preferences,
@@ -623,7 +623,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - Extended game-contract.mjs to six scenarios, real rAF pause/resume, touch duck,
   direct file Help links, corrupt stored preferences, blocked-storage per-mode
   records and explicit standalone request checks. All passed on the final build.
-- Final comparison against 10f6b21 passed: 70/70 Canvas scenes pixel-identical
+- Final comparison against 947de84 passed: 70/70 Canvas scenes pixel-identical
   (max channel difference 0; changed pixels 0); all five simulation/effect traces
   match across 12,000 frame advances per configuration, preserving cache bounds,
   RNG behavior, landings, turbo destruction, collisions and restarts.
@@ -648,7 +648,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - User requested the proposed single-charge feather powerup, a plan, updated
   embedded help, documentation/tests/Git, plus smartphone emulation and WebKit.
 - Applied develop-web-game skill; reviewed MDN's game-loop guidance. Plan:
-  FEATHER.md. Branch: feature/jump-feather; baseline implementation: 10b7c4b.
+  FEATHER.md. Branch: feature/jump-feather; baseline implementation: b13c647.
 - Added JumpFeather with deterministic eligibility/cooldown, swept-AABB pickup,
   no stacking/expiry and one stored air jump. Ground jumps/landing preserve it;
   death, restart and new session clear it. No new gameplay RNG consumption.
@@ -677,7 +677,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   engines passed the six core lifecycle scenarios with these documented harness
   differences. Physical Android/iPhone hardware remains untested.
 - General regressions in progress: 70 scenes and five 12,000-frame traces per
-  engine against 10b7c4b, with new spawning disabled via a test-only hook.
+  engine against b13c647, with new spawning disabled via a test-only hook.
 
 ## 2026-10-15: Feather compatibility and regression verification
 
@@ -698,11 +698,11 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
   keep it enabled. On mismatch, the test now writes a compact first differing
   state, with unchanged equality/visual tolerances.
 - Chromium legacy regression passed: all 70 scenes pixel-identical, all five
-  12,000-frame simulation/effect traces equal to Git baseline 10b7c4b.
+  12,000-frame simulation/effect traces equal to Git baseline b13c647.
 - Final WebKit legacy comparison passed as well: all 70 scenes pixel-identical
   and all five 12,000-frame traces match. Across both engines: 140 identical
   scenes and 120,000 simulation advances per version; cache/particle checks pass.
-- Verified the saved baseline is byte-identical to git show 10b7c4b:dino.html.
+- Verified the saved baseline is byte-identical to git show b13c647:dino.html.
   Aggregated final results: output/feather/verification.json. Reports, screenshots
   and engine/harness details are documented in FEATHER.md and test commands in
   AGENTS.md. No live highscore requests, mutable data changes or deployment.
@@ -742,7 +742,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 ## 2026-10-15: Scoped architecture refactoring
 
 - User authorized extracting the highscore workflow and making world width explicit, followed by a Git commit. Plan and boundaries: ARCHITECTURE.md.
-- Baseline: f74c0b8, saved under output/architecture/baseline.html. Keep the single HTML, appearance, gameplay rules and automatic name-dialog timing.
+- Baseline: c0eacdd, saved under output/architecture/baseline.html. Keep the single HTML, appearance, gameplay rules and automatic name-dialog timing.
 - Build 2026-10-15.6: HighscoreController owns immutable rounds, top-10
   qualification, save/retry locks, online loading and store/API coordination.
   HighscoreView now handles DOM/input/focus; Runner controls automatic entry
@@ -816,7 +816,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 ## 2026-10-16: Shield bubble
 
 - Request: plan and implement a collectible bubble surviving one cactus or bird collision; research webgame best practices and use Git.
-- Baseline 7530590, clean working tree; branch feat/shield-bubble. Saved source under output/shield/baseline.html. Plan, research and player contract: SHIELD.md.
+- Baseline b3e1b67, clean working tree; branch feat/shield-bubble. Saved source under output/shield/baseline.html. Plan, research and player contract: SHIELD.md.
 - Applying develop-web-game skill; retain standalone Canvas architecture, fixed steps, explicit world and independent cosmetic effects.
 - Implemented ShieldBubble with deterministic spawn/cooldown, swept pickup and exact one-obstacle protection. Added Canvas shell/emblem/pop, separate sounds, accessible announcements/help, and shared-world/reset integration. Chili preserves protection on cacti; shield catches birds. Worker cache bumped to v5.
 - First visual inspection: shell remains readable around running/jumping/ducking dino; no added assets. New offline test uses actual obstacle classes. Fixed fixture isolation (unrelated incoming obstacle) and waits for existing asynchronous live-region/resize updates; no corresponding gameplay defects.
@@ -833,7 +833,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 ## 2026-10-17: Rotating attract screen
 
 - User request: rotate highscores, demo gameplay and power-up showcase; keep a prominent Start button visible across all panels, replacing the former Start game and removing the separate Highscores button.
-- Applying develop-web-game. Baseline 3d5aa95 saved under output/attract/baseline.html; branch feat/attract-rotation.
+- Applying develop-web-game. Baseline 23f752a saved under output/attract/baseline.html; branch feat/attract-rotation.
 - Plan: responsive idle-only layout, persistent CTA, manual slide dots and pause, accessible/reduced-motion behavior. Isolated silent demo Game/Renderer with private RNG; existing HighscoreController supplies real scores/local fallback, no demo persistence. Verify rotation/input/pause/reset/data isolation in Chromium/WebKit and phone layouts, rebuild delivery and commit.
 - Implemented AttractScreen: 8-second top-10 preview (five rows per page), 10-second real-physics demo and 9-second power-up showcase. Persistent orange START replaces the former label/button appearance; removed scores-open and adapted score-dialog focus fallbacks. Three dots select directly; Pause freezes rotation/demo. Reduced motion defaults to paused.
 - Demo uses a separate Game/world and seeded random stream, no Runner audio/highscore/stat listeners. Authored opening shows real cactus jumps and bird ducking. Scores reuse HighscoreController, with explicit online/cached/local labels, empty state and bounded refresh; late mode responses cannot overwrite the selected list.
@@ -863,7 +863,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 ## 2026-10-17: Full-width compact landscape attract screen
 
-- Request: use the available window/screen width in landscape and reduce the attract screen's vertical footprint, as gameplay already does. Applying develop-web-game; branch fix/attract-landscape-width, baseline 42ac833 saved under output/attract-wide/baseline.html.
+- Request: use the available window/screen width in landscape and reduce the attract screen's vertical footprint, as gameplay already does. Applying develop-web-game; branch fix/attract-landscape-width, baseline 4d664bd saved under output/attract-wide/baseline.html.
 - Confirmed 1080 px attract cap at 1920/1366 desktop widths and a 680 px stacked menu. Plan: remove cap, use the existing Canvas's undistorted 600:220 landscape aspect, arrange preview/START side by side in all landscape windows, keep small-phone targets and portrait layout. Validate responsive bounds/input in Chromium/WebKit, inspect images, rebuild compact delivery and test physical Android if connected.
 - First CSS change: all landscape uses the horizontal menu with width/height bounded only by available viewport and Canvas proportions. Typography/cards scale with container width. Build 2026-10-17.2, worker cache v7. Validation in progress.
 - Wide/short-window review showed an aspect-ratio width limit would still leave side margins. Final layout uses the full safe width at every landscape ratio, with a maximum 520 px height. The isolated demo and an independent idle backdrop adapt their own world width to the actual Canvas ratio; real gameplay world and physics stay unchanged. This preserves vector proportions instead of stretching the scene. Added full-HD/laptop/short-wide/tablet/wide-phone layouts and assertions for width, height, equal rendering scale and world isolation.
@@ -878,7 +878,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 ## 2026-10-17: Password-protected web highscore moderation
 
-- User approved a separate PHP web console with password login, normal/relaxed lists, individual deletion and confirmed resets, reusing the existing locking/backup logic. Branch feat/web-highscore-admin, baseline c737fe3. No production deployment or real-score operations authorized/needed.
+- User approved a separate PHP web console with password login, normal/relaxed lists, individual deletion and confirmed resets, reusing the existing locking/backup logic. Branch feat/web-highscore-admin, baseline a648207. No production deployment or real-score operations authorized/needed.
 - Plan: disabled without configured password hash, HTTPS required except explicitly enabled loopback PHP CLI preview; strict cookie sessions, idle/absolute expiry, CSRF on every POST, persistent bounded login throttle, server-side confirmations and fresh-list checks for reset. Shared moderation helpers retain CLI behavior. Mobile-friendly UI without external assets/scripts. Test with isolated data/config/session directories and real PHP plus Chromium/WebKit; no live API requests.
 - PHP was absent from PATH. Downloaded portable PHP8.4.26 NTS x64 from official windows.php.net into ignored output/admin-web/php and verified its SHA256 against the official release index. Existing server8765 and the user's open phone game remain running. Shared helper/CLI implementation in progress.
 - Implemented score-console.php (no scripts/external assets), config-gated hashed-password login, HTTPS/loopback guard, strict expiring sessions, persistent login throttling, CSRF, one-use review tokens, reset revision checks, no-store/CSP/frame protections, shared locked backups/mutations and the CLI create-password helper. Added setup/config/deployment guide ADMIN.md and a credential-free example config. No real configuration/data changed.
@@ -929,7 +929,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 ## 2026-10-18: Round-end overlay and automatic attract return (build 2026-10-18.2)
 
-- User requested a brief Game over overlay followed by required highscore name input and an automatic return to attract; remove the old result card, show its Off button beside Help/Settings on attract, test desktop and attached phone, then commit. develop-web-game applied. Previous completed theme-song changes committed separately as a1ab9aa; private/config deletion and untracked password/config/WAV files remain excluded.
+- User requested a brief Game over overlay followed by required highscore name input and an automatic return to attract; remove the old result card, show its Off button beside Help/Settings on attract, test desktop and attached phone, then commit. develop-web-game applied. Previous completed theme-song changes committed separately as 2bdf4f8; private/config deletion and untracked password/config/WAV files remain excluded.
 - Implemented a pointer-transparent overlay throughout the existing 2.6-second death animation, protected against restart/skip input. Removed result/retry markup and obsolete styles/bindings. Game.returnToAttract resets only round state; session clocks/statistics, scores and audio preferences persist. Successful local/online name save and cancel/close return directly to attract; a rejected name stays editable. Off remains in the utility group and is now attract-only; its existing session summary/new-session behavior is retained.
 - Controller tracks asynchronous qualification without DOM access; Runner waits for it after the animation, opens late eligible entry, or returns without entry on failure/nonqualification. Added desktop/physical game-over-flow tests with actual collision, pause during death, no-score return, invalid then saved name, cancel, delayed qualification, accumulated stats and trusted Off/new-session input. Updated lifecycle/release/Android regression harnesses; service-worker cache v12.
 - Initial Chromium/WebKit flow tests pass desktop/portrait/short-landscape, architecture passes Chromium11 and source lifecycle passes7. Inspected overlay, attract utilities, phone-size layouts and installed skill gameplay screenshots. Attached Galaxy A53 is authorized. Physical harness is running against the safe fixture, normal rAF and trusted touch; original fixture storage/rotation are restored. Final release/device validation pending.
@@ -955,7 +955,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 ## 2026-10-18: Screen transitions (build 2026-10-18.4)
 
 - User requested the complete TRANSITIONS.md plan, phases 1–7 in order, on branch feat/screen-transitions with one commit per phase; private/config files and the config-example deletion stay excluded; live highscore API never contacted; game rules and timings unchanged.
-- Phases 1–6 (e3cbf87, e10d91b, ea05e75, 79d4467, 623defd, 5e98279): ScreenTransition (full/basic/fallback View Transition forms, coalescing, owner cleanup, external skips, root-tap safety net), ScreenPresenter, ElementMotion, CSS tokens and reduced-motion rules; T1–T14 via CSS animations, native dialog transitions and View Transitions; saved-row highlight, staggers, hint fades. Canvas HUD fade and menu FLIP omitted (optional).
+- Phases 1–6 (e6399c8, f429510, b07db45, 23123cf, 8c701b3, 3bc5c2c): ScreenTransition (full/basic/fallback View Transition forms, coalescing, owner cleanup, external skips, root-tap safety net), ScreenPresenter, ElementMotion, CSS tokens and reduced-motion rules; T1–T14 via CSS animations, native dialog transitions and View Transitions; saved-row highlight, staggers, hint fades. Canvas HUD fade and menu FLIP omitted (optional).
 - Each phase: the eight existing suites plus tests/screen-transitions.mjs (85 checks) pass in Chromium and WebKit 26.5; attract-screen and game-over-flow also pass with DINO_TRANSITIONS=1. Phase 1 additionally passed without startViewTransition and with real View Transitions at animation none. Existing tests turn transitions off via init script; only two enabled-only transitionDone() waits were added to attract-screen.mjs. No tolerance changes.
 - Findings: WebKit 26.5 lacks `overlay`, so dialogs close at once there (as planned for Firefox); WebKit captures the Help iframe in its snapshot; headless WebKit latency is reference only. Fixed during phase 5: a duplicate `result` view-transition-name when qualification arrived during the T5b exit.
 - Physical Galaxy S10e SM-G970F, Chrome 155.0.8059.81 (after phases 2, 4, 5): game-over-flow --android and android-transitions pass; at most one frame over 33 ms per transition, START latency median difference ≤5 ms and p95 within one frame. Rotation restored (auto1/user0), own tabs/helpers removed, existing 8765 server untouched. Reports under output/transitions/device-phase2/4/5. Galaxy A53 not measured; Firefox manual check still open.
@@ -1028,7 +1028,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 ## 2026-10-18: Stone Jaw boss encounter (in progress)
 
-- User requested a rare rock boss with a jump-through opening. Applied develop-web-game skill; plan/player contract in BOSS.md. Working branch feat/stone-jaw-boss; baseline 66bf423 saved in output/rock-boss/baseline.html.
+- User requested a rare rock boss with a jump-through opening. Applied develop-web-game skill; plan/player contract in BOSS.md. Working branch feat/stone-jaw-boss; baseline c651351 saved in output/rock-boss/baseline.html.
 - Added DOM-free RockBoss scheduler/entity, 36s first eligibility, corridor draining/reservation, 1.8s warning, upper/lower collision bands, speed-scaled thickness, shield shatter and one-shot clearance. Existing pickups move but new spawns wait; Chili must expire before warning and cannot burn stone. No score bonus or gameplay RNG consumption by the boss scheduler.
 - Inline cached vector rock/face/opening, announcement/clearance notices, synthesized bass/success tones, capped debris and reduced-motion support. Help/text-state hooks updated; attract simulations explicitly exclude the boss. BUILD .12/cache v21. Validation and tuning pending.
 
@@ -1118,7 +1118,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 ## 2026-10-21: Arcade typography and feedback
 
-- User requested research-led arcade lettering, sizes, glow and motion, Git cleanup and commits. Applied develop-web-game skill. Committed all existing update-notice work first as e6323bb; clean starting tree. Baseline saved in output/arcade/baseline.html. Research and implementation rationale in ARCADE.md: original 2048/Hextris styles, GDC Juice It or Lose It, web.dev animation performance/reduced motion.
+- User requested research-led arcade lettering, sizes, glow and motion, Git cleanup and commits. Applied develop-web-game skill. Committed all existing update-notice work first as b27d4e7; clean starting tree. Baseline saved in output/arcade/baseline.html. Research and implementation rationale in ARCADE.md: original 2048/Hextris styles, GDC Juice It or Lose It, web.dev animation performance/reduced motion.
 - Build2026-10-21.2/cachev28: larger gold/cream title, navy outline/extrusion/glow, stronger glyph tilt; START label depth/beat and composited sheen with fixed hit target; supporting/night headings; larger current score, one milestone punch instead of blinking, record glow/punch and stronger GAME OVER score. Reuses existing simulation timers, heading motion, pause and reduced-motion listener; no new assets, gameplay or audio changes.
 - New arcade-type suite passes Chromium source and WebKit delivery in desktop/320px portrait/compact landscape: stable hit targets sampled through effects, pause, live reduced motion, dark HUD accent, continuously readable Canvas milestones, settle and accessible score labels. Test fixture now waits for media-change delivery and the manual-frame menu exit before screenshots. Inspected menu/night/gameplay/record/Game-over screenshots and installed skill client state; no new console/page errors.
 - Chromium attract10 layouts, round-end flow3 layouts, lifecycle/offline7 and installed skill client passed. Final Chromium transition86 and source/release64 pixel-identical comparisons passed; WebKit delivery attract10 layouts, lifecycle/offline7 and round-end flow3 layouts passed. Release rebuilt:457006->242053 bytes (47.04% saved), SHA256 fd2ba41cedfc72c8b2b44e9b2d1a2896221b822b31087910ce2f0f48ba8ecb2d. No deployment or physical-device test.
@@ -1167,7 +1167,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 ## 2026-10-21: Keep sun clear of life HUD
 
-- User requested a sun position unobstructed by the life hearts. Applied develop-web-game skill. Clean starting tree at06c881d. Moved sun anchor62 logical pixels left (right inset140 instead of78), preserving its existing height, halo, idle drift and day/night fade. Full idle drift and halo remain left of the hearts/1UP region. Build2026-10-21.7/cachev33; regenerated minified release and size report.
+- User requested a sun position unobstructed by the life hearts. Applied develop-web-game skill. Clean starting tree at4945673. Moved sun anchor62 logical pixels left (right inset140 instead of78), preserving its existing height, halo, idle drift and day/night fade. Full idle drift and halo remain left of the hearts/1UP region. Build2026-10-21.7/cachev33; regenerated minified release and size report.
 - Chromium delivery lives suite passes desktop1280x720, phone portrait320x640 and compact landscape663x234. Inspected all three day/three-life captures: HUD no longer overlaps the sun. Installed skill client passes, gameplay screenshot and render_game_to_text inspected (playing,3 lives, credits98, no errors). Phone layouts are emulated in this iteration; no new physical-device run. Diff check passes; no remaining TODO or deployment.
 
 ## 2026-10-21: Readable dino eye-roll
@@ -1183,7 +1183,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 
 ## 2026-10-21: Safe level bonus and automatic attract loop
 
-- User authorized the researched recommendation: short safe transition, clean obstacle/no-hit rewards, coin flight and rising score/audio. Subsequent steering: phone unlocked; remove attract navigation dots/pause button and let panels loop. Applied develop-web-game skill. Starting tree clean at3817d56. Build2026-10-21.10/cachev36. Full contract: LEVEL-BONUS.md.
+- User authorized the researched recommendation: short safe transition, clean obstacle/no-hit rewards, coin flight and rising score/audio. Subsequent steering: phone unlocked; remove attract navigation dots/pause button and let panels loop. Applied develop-web-game skill. Starting tree clean at64a2db2. Build2026-10-21.10/cachev36. Full contract: LEVEL-BONUS.md.
 - Game owns per-section clean-pass/no-hit counters, immutable snapshots on speed-level crossing, and checkpoints every30 active seconds at top speed. Each whole obstacle group counts once when its full width passes; removed/hit/burnt groups cannot double-pay. Up to10 obstacle points plus5 no-hit points, limited by10% of section distance points and a defensive20 ceiling. Shield/boss contact invalidates no-hit. New bonusScore survives distance-score recomputation; incremental rewards can cross life/record thresholds. Credits unchanged. Training and private attract games excluded.
 - Pending tally drains existing hazards/collectibles/active Chili/boss without erasing them and blocks new spawns. Only grounded/empty-safe world can enter the1.8s tally. Physics, distance/speed and recovery/power-up/boss timers freeze; jump input spends no feather and queues no delayed jump. Up to six bounded coins arrive with corresponding point increments and metallic pings; auto resume. Grin, larger legible two-row gold/navy plaque, cached lettering; Effects off/reduced motion suppress flight/movement without changing rewards. Audio uses existing effects/mute path. Help/text-state updated.
 - Client/PHP10% plausibility constants synchronized; existing local/online records retained and scoring-rule change documented. New PHP boundary test accepts the bound and rejects bound+1 in both modes. PHP8.4.14 runtime downloaded only into ignored output for local lint/tests, no production installation/config/data changes. Syntax and actual validation pass; isolated real-PHP admin/API/security suite passes four layouts.
@@ -1234,7 +1234,7 @@ Original prompt: verschaffe dir einen überblick über das game. verwende die be
 - ADB daemon initially stalled and was restarted; existing S10e8877 preview bridge restored. A53 briefly disconnected mid-repeat; completed earlier full checks retained. Stale cached experimental artifact on test origin8895 correctly failed the hash check; final hybrid uses isolated8897. S10e locked before its final run; user has now unlocked it. Rotation restored by own wrappers; final cleanup/phone/browser outcomes to be recorded below. No deployment requested or performed.
 - Final browser checks complete: Chromium and WebKit architecture12, arcade3, transitions86, lifecycle/offline7 each; Chromium source/release64 pixel-identical and installed final release skill client pass, WebKit final delivery attract12 pass. Final S10e generated-delivery physical touch/offline suite passes (58.4 portrait/58.6 landscape in immediate post-input samples). Final isolated S10e play/night/stressed night in both orientations59.86FPS; all three12s attract samples59.86, zero sampled intervals over20ms. Screenshot inspected. Final A53 measurements await unlocking; earlier final-hybrid full functional suite already passed. No further implementation changes after final hash02314104... .
 - Final A53 measurements (delivery 02314104..., thermal 0, battery ~33°C): landscape attract 59.70/59.86/59.86 FPS (12 s per panel); landscape demo/play/night/busy 59.86/59.87/59.87/59.64, portrait 59.64/59.85/59.86/59.86, p95 16.8 ms, at most 0.37% intervals over 20 ms. No browser errors, rotation restored auto1/user0, screenshot inspected. ADB server restart during reconnection removed the S10e 8877 reverse bridge; it was re-added. Evidence: output/gpu-landscape/a53-final-{play,attract}.
-- Added tests/android-attract-performance.mjs to AGENTS.md (serial/variants, origin 8894, relay 9238, rotation restore). Build .5 committed as 9ad9a2f on master; not deployed, installed TWA not yet tested with .5.
+- Added tests/android-attract-performance.mjs to AGENTS.md (serial/variants, origin 8894, relay 9238, rotation restore). Build .5 committed as 9c18811 on master; not deployed, installed TWA not yet tested with .5.
 
 ## 2026-10-24: Sustained A53 gameplay runner
 

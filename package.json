@@ -2,6 +2,7 @@
   "name": "dino-run-release",
   "version": "1.0.0",
   "private": true,
+  "license": "BSD-3-Clause",
   "description": "Optional release tooling for the standalone Dino Run HTML game",
   "scripts": {
     "start": "node dev-server.js",

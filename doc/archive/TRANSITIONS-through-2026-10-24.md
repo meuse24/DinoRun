@@ -582,8 +582,8 @@ berichten. Screenshots/Videos nach `output/transitions/`.
 
 ### 8.1 Ergebnisse der Umsetzung (2026-10-18)
 
-Commits: `e3cbf87` Fundament, `e10d91b` Kernschleife, `ea05e75` Attract,
-`79d4467` Dialoge, `623defd` View Transitions, `5e98279` Feinschliff, danach
+Commits: `e6399c8` Fundament, `f429510` Kernschleife, `b07db45` Attract,
+`23123cf` Dialoge, `8c701b3` View Transitions, `3bc5c2c` Feinschliff, danach
 die Auslieferung (Build `2026-10-18.4`, Cache `dino-run-v13`).
 
 **Desktop (Playwright, Chromium und WebKit 26.5):** Nach jeder Phase liefen

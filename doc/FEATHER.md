@@ -81,7 +81,7 @@ For established behavior, extract the exact pre-feature HTML from Git and start
 `node dev-server.js` in another terminal:
 
 ```powershell
-node -e "const fs=require('node:fs');fs.mkdirSync('output/feather',{recursive:true});fs.writeFileSync('output/feather/dino.before.html',require('node:child_process').execFileSync('git',['show','10b7c4b:dino.html']));"
+node -e "const fs=require('node:fs');fs.mkdirSync('output/feather',{recursive:true});fs.writeFileSync('output/feather/dino.before.html',require('node:child_process').execFileSync('git',['show','b13c647:dino.html']));"
 $env:DINO_TEST_OUTPUT = "$PWD/output/feather/comparison"
 node tests/render-cache.mjs output/feather/dino.before.html
 ```
@@ -114,8 +114,8 @@ first-difference JSON is written instead of printing the whole simulation trace.
   version across both engines). Caches, particle cap and array reuse passed.
 - Inline JavaScript and changed Node script syntax, shared client/PHP score
   constants, exact Git baseline bytes and `git diff --check` passed.
-- All six implementation/validation steps are complete. Plan commit: `5d59fd0`;
-  feature/help commit: `5455109`; branch: `feature/jump-feather`.
+- All six implementation/validation steps are complete. Plan commit: `e10292d`;
+  feature/help commit: `1578561`; branch: `feature/jump-feather`.
 - Artifacts: `output/feather/{chromium,webkit,contract-chromium,contract-webkit,
   skill-client,comparison}`. No real highscore requests or deployment.
 - Aggregated emulation results: `output/feather/verification.json`.

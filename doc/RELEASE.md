@@ -15,18 +15,18 @@ siehe [VOLUME.md](VOLUME.md). MP3-Dateien liegen direkt neben `dino.html`.
 Bilder und Icons liegen in `assets/images/`.
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
-Nach Commit `e1e9dbb` mit `npm run deploy -- --tls12` veröffentlicht;
+Nach Commit `3b87777` mit `npm run deploy -- --tls12` veröffentlicht;
 alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt. Nur Kennlinie/Grenzen,
 Syntax, Build und diff geprüft; keine Browsersuiten. Visuelle Bewertung durch Nutzer.
 
 Vorher veröffentlicht: Build `2026-10-25.7`, Worker-Cache `dino-run-v69`.
-Nach Commit `060a12a` mit `npm run deploy -- --tls12` veröffentlicht;
+Nach Commit `f799c67` mit `npm run deploy -- --tls12` veröffentlicht;
 alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt. Auf Nutzerwunsch nur
 Kennlinie/Grenzen, Syntax, Build und diff geprüft; keine vollständigen Tests.
 Die visuelle Abstimmung übernimmt der Nutzer.
 
 Vorher veröffentlicht: Build `2026-10-25.6`, Worker-Cache `dino-run-v68`.
-Nach Commit `cbb0e6e` am 2026-10-25 mit `npm run deploy -- --tls12`
+Nach Commit `94bfabd` am 2026-10-25 mit `npm run deploy -- --tls12`
 veröffentlicht; alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt.
 Beide vollständigen Releasegruppen (Chromium/WebKit) bestanden, einschließlich
 je 64 pixelidentischer Source-/Release-Szenen. Live-Hochformatprüfung bestätigt
@@ -38,13 +38,13 @@ und Screenshots daneben. Veröffentlichung per FTPS, keine alten Medien gelösch
 
 Vorher veröffentlicht: Build `2026-10-25.2`, Worker-Cache `dino-run-v64`;
 Korrektur der Flugziele von Bonusmünzen und Beeren im Hochformat.
-Nach Commit `5f58747` am 2026-10-25 mit `npm run deploy -- --tls12`
+Nach Commit `6d25fe3` am 2026-10-25 mit `npm run deploy -- --tls12`
 veröffentlicht; alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt.
 Live-Hochformatprüfung (320x568): Münze und Beere treffen den sichtbaren Score
 bei x256/y144,875; Cache v64 und keine Browserfehler. Nachweis:
 `output/bonus-flight-fix/live-report.json` und `live-portrait.png` daneben.
 
-Vorheriger Release `.1` / Cache v63: am 2026-10-25 nach Commit `a6bbc7d` mit `npm run deploy -- --tls12`
+Vorheriger Release `.1` / Cache v63: am 2026-10-25 nach Commit `8c470b2` mit `npm run deploy -- --tls12`
 veröffentlicht: sieben Medien, Manifest, HTML, zuletzt Worker. Alle zehn Dateien
 über HTTPS per SHA-256 bestätigt. Frischer Chromium-Kontext besteht START,
 Offline-Neuladen sowie gecachte Icons und beide MP3s, ohne Highscore-Schreibzugriff.

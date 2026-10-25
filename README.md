@@ -36,3 +36,13 @@ Die automatischen Browserprüfungen verwenden isolierte Fixtures; siehe
 
 Tests: `npm ci`, einmalig `npx playwright install chromium webkit`, danach
 `npm test`. Weitere Gruppen und Konfiguration: [Tests](doc/TESTING.md).
+
+Live spielen: https://meuse24.info/apps/dino/dino.html
+
+## Lizenz
+
+Eigener Code und eigene Grafiken: [BSD 3-Clause License](LICENSE),
+Copyright (c) 2026 Günther Meusburger. Aus dem Chromium T-Rex Runner übernommene
+Teile stehen weiter unter Chromiums BSD-Lizenz, die eingebetteten Schriften unter
+der SIL Open Font License 1.1. Die beiden Songs sind nicht BSD-lizenziert (alle
+Rechte vorbehalten). Details: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

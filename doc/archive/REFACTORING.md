@@ -49,7 +49,7 @@
 
 ## Status
 
-- Plan recorded before implementation; starting revision: `10f6b21`.
+- Plan recorded before implementation; starting revision: `947de84`.
 - All four implementation steps completed. Build: `2026-10-15.1`.
 - GamePreferences owns saved mode/records and an in-memory fallback when storage
   fails. Game.resetRound shares entity/state resets while preserving the
@@ -72,7 +72,7 @@
   dialogs/help/direct Help links, protected death/restart, records, network
   failure, reduced motion, focus/context recovery, session reset and real rAF
   pause/resume. No uncaught page errors or unexpected file dependencies.
-- All 70 Canvas comparisons against `10f6b21` are pixel-identical: maximum channel
+- All 70 Canvas comparisons against `947de84` are pixel-identical: maximum channel
   difference 0 and changed pixel count 0.
 - All five deterministic simulation/effect traces match the starting version
   over 12,000 frame advances per configuration (60,000 total per version).
