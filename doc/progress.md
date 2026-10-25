@@ -14,8 +14,11 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   1,5 geändert. Halbe Bassstärke ergibt ca. 23 statt 16 % Vergrößerung, Maximum
   unverändert 65 %. Dieselbe Kennlinie für alle vier Logo-Orte; keine neuen
   Timer, Daten oder Audioanalysen.
-- Nur Kennlinien-/Grenzprüfung, Syntax/Build und diff --check vorgesehen;
+- Kennlinien-/Grenzprüfung aller 16 Stufen, Syntax/Build und diff --check bestanden;
   keine Browser-, Gameplay- oder vollständigen Release-Suiten.
+- Als 060a12a committed und mit npm run deploy -- --tls12 veröffentlicht.
+  Alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt; .7 / Cache v69 live.
+  Keine visuelle Abnahme vorweggenommen; diese übernimmt der Nutzer.
 
 ## 2026-10-25: Pulsierende Menülogos (Build .6 / Cache v68)
 
