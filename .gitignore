@@ -11,3 +11,6 @@
 /asset-sources/
 # FTP credentials for scripts/deploy.mjs (see doc/RELEASE.md).
 /ftp.txt
+
+# Private documents (invoices, licence evidence); never commit
+private/

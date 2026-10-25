@@ -38,6 +38,19 @@
   release with `npm run build` (minified release/dino.html). Start with AGENTS.md
   and doc/README.md. Keep it one self-contained file that also plays from file://.
 
+  Music (optional files next to this HTML): both songs were generated with Suno
+  (suno.com, model V6) on the account meuse24 during an active Suno Pro
+  subscription; lyrics by Günther Meusburger. Suno's Terms of Service (revision
+  2026-08-10) assign the Output rights of Pro/Premier songs to the subscriber and
+  allow commercial use of permitted downloads. The MP3 comment tags keep Suno's
+  "made with suno; created=…; id=…" metadata. Details: doc/VOLUME.md.
+  - dino-boom-in-the-dunes.mp3 "TINY ARMS, BIG BASS" (Suno title; the file name and
+    track key boom-in-the-dunes predate the rename and stay stable),
+    id a021fc8a-fb4f-413b-803e-d6e355ced0fc, created 2026-10-18,
+    https://suno.com/s/yH1brWGRlAiRFA1j (tempo ×1.015, mono 64 kbit/s).
+  - dino-jump-jump.mp3 "Dino Jump Jump": id c12ca945-6e26-4edc-a3f6-5bf55a5f68d6,
+    created 2026-10-10, https://suno.com/s/c6JPJJrvJMg0k4sC.
+
   Copyright 2014 The Chromium Authors
   Use of this source code is governed by a BSD-style license that can be
   found in the Chromium source tree's LICENSE file.
@@ -3526,7 +3539,7 @@
             <div class="volume-row music-track-row">
               <label for="music-track">Theme song</label>
               <select id="music-track">
-                <option value="boom-in-the-dunes">Boom in the Dunes</option>
+                <option value="boom-in-the-dunes">TINY ARMS, BIG BASS</option>
                 <option value="dino-jump-jump">Dino Jump Jump</option>
               </select>
             </div>
@@ -4233,8 +4246,22 @@
                         target="_blank"
                         rel="noopener noreferrer"
                         >Chromium T-Rex Runner</a
-                      >. Thanks to OpenAI Codex, Anthropic Claude Code, Suno (songs “Dino Jump
-                      Jump” and “Boom in the Dunes”), Playwright, Prettier, MDN and all testers.
+                      >. Thanks to OpenAI Codex, Anthropic Claude Code, Suno, Playwright, Prettier,
+                      MDN and all testers.
+                    </p>
+                    <p>
+                      Music: “TINY ARMS, BIG BASS” and “Dino Jump Jump”, lyrics by Günther Meusburger,
+                      made with Suno on a Pro plan (<a
+                        href="https://suno.com/s/yH1brWGRlAiRFA1j"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >TINY ARMS, BIG BASS</a
+                      >, <a
+                        href="https://suno.com/s/c6JPJJrvJMg0k4sC"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >Dino Jump Jump</a
+                      >).
                     </p>
                   </section>
                 </div>
@@ -4328,7 +4355,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-25.11';
+        const BUILD = '2026-10-25.12';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,

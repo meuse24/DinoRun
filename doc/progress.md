@@ -7,6 +7,21 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Suno-Herkunft der Songs, Umbenennung (Build .12 / Cache v74)
+
+- Nutzerwunsch: Suno-Nutzung nachvollziehbar dokumentieren. Song-IDs aus der
+  Original-WAV und den Suno-Seiten zugeordnet; beide Songs V6, kein Remix, Text vom
+  Nutzer, beide während Suno Pro erzeugt (Rechnungen privat in `private/`, ignoriert).
+- Suno-Metadaten (beim MP3-Export verloren) mit ID/Datum/Link wieder als Tags in
+  beide MP3s geschrieben, ohne Neukodierung (Audio-Paket-MD5 unverändert).
+- „Boom in the Dunes“ heißt sichtbar wie auf Suno „TINY ARMS, BIG BASS“; Dateiname
+  und Track-Schlüssel bleiben für gespeicherte Auswahl und Caches stabil.
+- Help → About mit Musik-Credit und Links, Dateikopf und VOLUME.md ergänzt.
+- theme-songs, music-logo, menu-overlays, update-notice, volume-controls, npm test
+  und test:release bestanden. Per npm run deploy -- --tls12 veröffentlicht; alle
+  zehn Dateien per HTTPS/SHA-256 bestätigt (HTML 3935e2158b14, Worker 8012ac34b291,
+  MP3s bd74d90641c0 / b77f16f47722).
+
 ## 2026-10-25: Installationshinweis nach der zweiten Runde (Build .11 / Cache v73)
 
 - Nutzerwunsch Punkt 2: kein automatisches Overlay, sondern nicht modale Karte

@@ -78,8 +78,8 @@ Both optional MP3s live directly beside `dino.html`: `dino-boom-in-the-dunes.mp3
 and `dino-jump-jump.mp3`. Keep them beside any copied HTML, including a copied
 release artifact. Hosted deployment uploads them to that same directory.
 
-Settings → **Theme song** switches between **Boom in the Dunes** (the new
-default) and **Dino Jump Jump**. The choice is saved as `dino-music-track`.
+Settings → **Theme song** switches between **TINY ARMS, BIG BASS** (formerly
+“Boom in the Dunes”; the default) and **Dino Jump Jump**. The choice is saved as `dino-music-track`.
 Switching starts the selected song from the beginning and keeps the volume and
 Sound mute state. Invalid/missing preferences use the new song; blocked storage
 still allows switching for the current page. Both songs remain optional for
@@ -90,11 +90,38 @@ or prevent switching to the other song.
 `dino-boom-in-the-dunes.mp3` is converted from the supplied `asset-sources/audio/Theme_song2.wav`
 using the first song's mono, 22,050 Hz, constant 64 kbit/s MP3 settings.
 The WAV is 121.2 seconds; a pitch-preserving 1.5% tempo increase keeps the MP3
-below two minutes (119.420 seconds, 956,179 bytes). The original WAV is untouched.
+below two minutes (119.420 seconds, 956,699 bytes with tags). The original WAV is untouched.
 
 ```powershell
-ffmpeg -hide_banner -nostdin -i asset-sources/audio/Theme_song2.wav -map 0:a:0 -vn -af atempo=1.015 -ac 1 -ar 22050 -c:a libmp3lame -b:a 64k -map_metadata -1 -metadata title="Dino Run - Boom in the Dunes" -metadata artist="m24" dino-boom-in-the-dunes.mp3
+ffmpeg -hide_banner -nostdin -i asset-sources/audio/Theme_song2.wav -map 0:a:0 -vn -af atempo=1.015 -ac 1 -ar 22050 -c:a libmp3lame -b:a 64k -map_metadata -1 -metadata title="Dino Run - TINY ARMS, BIG BASS" -metadata artist="m24" dino-boom-in-the-dunes.mp3
 ```
+
+### Song provenance (Suno)
+
+Both songs were generated with Suno (model V6, account meuse24) while a Suno Pro
+subscription was active: Dino Jump Jump on 2026-10-10 (period 2026-09-15 to
+2026-10-15), TINY ARMS, BIG BASS on 2026-10-18 (period 2026-10-15 to 2026-11-15).
+Neither is a remix or cover. Lyrics are by Günther Meusburger. Suno's Terms of
+Service (revision 2026-08-10) assign Pro/Premier Output rights to the subscriber,
+allow commercial use of permitted downloads, require no attribution and forbid
+removing Suno's metadata. The invoices are kept privately, not in this repository.
+
+| MP3 | Suno title | Song id | Share link |
+| --- | --- | --- | --- |
+| `dino-boom-in-the-dunes.mp3` | TINY ARMS, BIG BASS | `a021fc8a-fb4f-413b-803e-d6e355ced0fc` | https://suno.com/s/yH1brWGRlAiRFA1j |
+| `dino-jump-jump.mp3` | Dino Jump Jump | `c12ca945-6e26-4edc-a3f6-5bf55a5f68d6` | https://suno.com/s/c6JPJJrvJMg0k4sC |
+
+The shared link https://suno.com/s/p6cPRGkhtyhDSsVd is a later cover (remix) of
+TINY ARMS, BIG BASS and is not used. The conversion above dropped Suno's WAV
+comment; it was restored in both MP3s without re-encoding (audio packet MD5
+unchanged), together with title, artist, composer and the share link:
+
+```powershell
+ffmpeg -i in.mp3 -map 0:a -c copy -map_metadata -1 -id3v2_version 3 -metadata title="Dino Run - …" -metadata artist="m24" -metadata composer="Günther Meusburger (lyrics); Suno" -metadata comment="made with suno; created=…; id=…; …" out.mp3
+```
+
+Keep these tags when re-encoding either song. Help → About names the songs,
+the lyricist, Suno and the Pro plan with both links.
 
 Settings has separate **Music volume** and **Effects volume** sliders from
 0 to 100 percent. Changes apply immediately. Native sliders support keyboard
