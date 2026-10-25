@@ -14,6 +14,30 @@
   localStorage high score were added. Logo and guide are embedded in this file.
   No external resource is required at runtime; the two MP3 menu songs are optional.
 
+  Dino Run (m24) additions: arcade start menu with rotating preview and demo,
+  virtual coins, three lives and level bonuses, power-ups (chili turbo, jump
+  feather, shield bubble, glow berry), the Stone Jaw rock boss and training,
+  local and online highscores (highscores.php), menu songs with a music-reactive
+  M24 logo, Settings/Help/goodbye dialogs, keyboard/touch/gamepad input, screen
+  transitions, fullscreen, PWA installation and consented offline updates.
+
+  File layout (top to bottom):
+  - <head> script: tab icons and PWA install button, instructions and nudge.
+  - Styles: #arcade-fonts (embedded fonts), the main page/game styles,
+    #heading-motion-styles, #menu-shell-styles and #arcade-styles (the last three
+    are also copied into the Help iframe), then the phone-landscape gameplay layout.
+  - <main id="page">: #stage with the canvas #game, HUD, start menu #round-panel
+    and touch controls.
+  - Dialogs and notices: update notice, Settings, highscores, goodbye, install
+    nudge/help, Help (iframe built from <template id="info-document">).
+  - Main script: all game code; its opening comment maps the components and the
+    invariants the tests rely on. A last script registers the service worker.
+
+  Working on it: edit this readable file; there is no build step for play.
+  Preview with `node dev-server.js`, test with `npm test` / `npm run test:features`,
+  release with `npm run build` (minified release/dino.html). Start with AGENTS.md
+  and doc/README.md. Keep it one self-contained file that also plays from file://.
+
   Copyright 2014 The Chromium Authors
   Use of this source code is governed by a BSD-style license that can be
   found in the Chromium source tree's LICENSE file.

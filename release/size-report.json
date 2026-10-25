@@ -2,10 +2,10 @@
   "build": "2026-10-25.11",
   "source": {
     "file": "dino.html",
-    "bytes": 622306,
-    "sha256": "fcab70c875ecc58be033b9576b5ff9f4e51fca452a1b04df2dc9540597c56622",
-    "gzipBytes": 162443,
-    "brotliBytes": 138414
+    "bytes": 623862,
+    "sha256": "874e10cc5fff8f0db75b755b32f7c2411644e4dbe638b407bf063d9608f21a0f",
+    "gzipBytes": 163450,
+    "brotliBytes": 138948
   },
   "release": {
     "file": "release/dino.html",
@@ -24,17 +24,17 @@
   "stages": [
     {
       "tool": "Terser",
-      "bytes": 400508
+      "bytes": 402064
     },
     {
       "tool": "CSSO",
-      "bytes": 356671
+      "bytes": 358227
     },
     {
       "tool": "HTMLMinifier-Terser",
       "bytes": 348366
     }
   ],
-  "savedBytes": 273940,
-  "savedPercent": 44.02
+  "savedBytes": 275496,
+  "savedPercent": 44.16
 }
