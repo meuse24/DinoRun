@@ -15,6 +15,8 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
   Erwartete Obergrenze in der vorhandenen Logo-Suite auf 1,8 aktualisiert.
 - Weiterhin auf Nutzerwunsch keine Browsersuiten oder vollständiges Testregime;
   nur Kennlinie/Grenzen, Syntax, Build und diff. Visuelle Bewertung durch Nutzer.
+- Kurzprüfungen bestanden; als e1e9dbb committed und per FTPS/TLS1.2 veröffentlicht.
+  Alle zehn Dateien per HTTPS/SHA-256 bestätigt; Build .8 / Cache v70 live.
 
 ## 2026-10-25: Empfindlicherer Logo-Puls (Build .7 / Cache v69)
 
