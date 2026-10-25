@@ -1,7 +1,7 @@
 # Dokumentation
 
 Stand der Bereinigung: 2026-10-25; abgeglichen mit lokalem Build
-`2026-10-25.9` und Worker-Cache `dino-run-v71`.
+`2026-10-25.10` und Worker-Cache `dino-run-v72`.
 Der Index beschreibt Repository-Code, Skripte und Verweise. Datierte Browser-
 und Geräteergebnisse stehen im Arbeitsprotokoll; sie bestätigen keinen aktuell
 abgefragten Produktionsstand.

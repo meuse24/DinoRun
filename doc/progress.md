@@ -7,6 +7,19 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Schallwellen-Ringe am M24-Logo (Build .10 / Cache v72)
+
+- Nutzerwunsch: Logo-Puls um Schallwellen erweitern. Ringe in Logo-Silhouette nur
+  auf Bass-Onsets (Anstieg ≥4, Pegel ≥9, ≥200 ms Abstand), Stärke steuert Größe,
+  Deckkraft und Dauer, stärkste Schläge orange; 3 SVG-Ringe je Logo, WAAPI.
+- music-logo erweitert (Ringzahl 21/31 in 30 s, Seek, grobe Frames, Pool, Abbruch
+  bei jedem Stopp); Chromium und WebKit, attract-screen, heading-motion,
+  arcade-type, npm test und test:release bestanden.
+- Samsung RF8MB125SXA, Chrome 155, Release mit echter Musik: 59,7 fps, p95
+  16,8 ms, kein Frame >33 ms, 10 Ringe in ~12 s. Während Panel-Übergängen wird
+  ein Ring kurz vom Übergang überdeckt. Per npm run deploy -- --tls12 veröffentlicht;
+  HTTPS/SHA-256 bestätigt (HTML ffa88e768e32, Worker b7596ee55f21).
+
 ## 2026-10-25: Exit-Button im Goodbye-Dialog (Build .9 / Cache v71)
 
 - Nutzerwunsch: sauberer Exit aus Spiel/PWA. Goodbye zeigt Exit game neben New

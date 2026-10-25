@@ -89,10 +89,29 @@ try {
       audio.currentTime = 0; pulse.sync();
       audio.currentTime = peakTime; pulse.sync();
       check(pulse.scale === peak, 'seeking returns to the same song phase');
-      ranges.push({ track, min, max, peakTime });
+      // Sound-wave rings: one per bass onset, about one per beat; seeks never emit.
+      const emit = pulse.ring, hits = [];
+      pulse.ring = strength => { hits.push(strength); emit.call(pulse, strength); };
+      audio.currentTime = 0; pulse.sync();
+      for (let i = 1; i < 900; i++) { audio.currentTime = i / 30; pulse.sync(); }
+      const rings = hits.length;
+      check(rings >= 15 && rings <= 50, `${track}: ${rings} rings in 30 s follow the beat`);
+      check(hits.every(strength => strength >= 0.6 && strength <= 1), 'ring strength is bounded');
+      audio.currentTime = 0; pulse.sync(); audio.currentTime = peakTime; pulse.sync();
+      check(hits.length === rings, 'seeks and loops only resynchronize');
+      // Coarse frames (up to 8 samples apart) still find each beat once.
+      hits.length = 0; audio.currentTime = 0; pulse.sync();
+      for (let i = 4; i < 900; i += 4) { audio.currentTime = i / 30; pulse.sync(); }
+      check(Math.abs(hits.length - rings) <= 2, 'frame rate does not change the ring count');
+      pulse.ring = emit;
+      const pool = pulse.logo.musicRings;
+      check(pool.length === 3 && pulse.logo.querySelectorAll('.music-ring').length === 3, 'three pooled rings');
+      ranges.push({ track, min, max, peakTime, rings });
     }
     const assertStops = (change, restore, name) => {
+      pulse.ring(1);
       change(); pulse.sync(); check(!pulse.active && !pulse.logo.style.transform, name);
+      check(pulse.logo.musicRings.every(ring => ring.getAnimations().length === 0), name + ' cancels rings');
       restore(); pulse.sync(); check(pulse.active, name + ' recovers');
     };
     assertStops(() => audio.paused = true, () => audio.paused = false, 'paused');
@@ -122,11 +141,23 @@ try {
   });
   results.push(...checks);
   // Freeze each layout at the strongest actual song sample, after CSS interpolation.
+  // Two rings frozen mid-flight make the waves visible in screenshots.
+  const freezeRings = () => page.evaluate(() => {
+    const pulse = window.__dinoRunner.musicLogoPulse;
+    pulse.ring(0.7); pulse.ring(1);
+    pulse.logo.musicRings.forEach((ring, i) => {
+      const animation = ring.animation;
+      if (!animation) return;
+      animation.pause();
+      animation.currentTime = animation.effect.getTiming().duration * (i === pulse.logo.musicRingNext ? 0 : 0.18 + 0.3 * i);
+    });
+  });
   const peak = async () => {
     await page.evaluate(time => {
       const r = window.__dinoRunner;
       r.music.audio.currentTime = time; r.resize(); r.draw(1);
     }, checks.find(item => item.track === 'dino-jump-jump').peakTime);
+    await freezeRings();
     await page.waitForTimeout(90);
     const logo = await page.locator('#round-panel .brand-logo').boundingBox();
     const title = await page.locator('.title-word').first().boundingBox();
@@ -163,6 +194,7 @@ try {
         r.music.wanted = true; r.musicLogoPulse.waiting = false;
         r.music.audio.paused = false; r.musicLogoPulse.sync();
       });
+      await freezeRings();
       await page.waitForTimeout(90);
       const selector = view === 'help' ? '#help-dialog' : view === 'settings' ? '#settings' : '#scores';
       const scope = view === 'help' ? page.frameLocator('#info-view') : page.locator(selector);

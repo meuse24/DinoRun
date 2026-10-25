@@ -11,6 +11,16 @@ The existing floating animation yields while the music pulse is active. The
 logo grows away from the title, keeping its right edge, layout size and accessible
 name fixed.
 
+Build `2026-10-25.10` adds sound-wave rings. A bass onset (envelope rise of at
+least 4 of 15 levels to level 9 or more, at most one per 200 ms) emits a ring in
+the logo's own rounded silhouette. Both songs yield about one ring per beat
+(21 and 31 in their first 30 s). Stronger hits grow further (1.5–2.4×), start more
+opaque and last longer (520–880 ms); the strongest use M24 orange. Three pooled SVG
+rings per logo copy animate only transform and opacity via the Web Animations API,
+inside the SVG so they follow its pulse. Seeks/loops resynchronize without
+emitting; frame steps up to 8 samples still find each onset once. Every stop
+condition of the pulse also cancels the rings.
+
 Build `2026-10-25.6` also places a decorative M24 logo beside the Settings,
 Highscores / New highscore and Help titles (including Help's iframe). Only the
 foreground heading pulses; covered logos reset. Header logos reserve room for
