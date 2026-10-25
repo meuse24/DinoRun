@@ -6,13 +6,14 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal und veröffentlicht: Build `2026-10-25.7`, Worker-Cache `dino-run-v69`.
-Der neue Build reagiert mit dem Logo empfindlicher auf schwächere Bassimpulse,
-weiterhin mit bis zu 65 % Vergrößerung im Startmenü und neben Settings, Help und Highscores;
+Lokal: Build `2026-10-25.8`, Worker-Cache `dino-run-v70` (noch nicht veröffentlicht).
+Der neue Build testet 30 % Logo-Vergrößerung bei halber Bassstärke und maximal
+80 % im Startmenü und neben Settings, Help und Highscores;
 siehe [VOLUME.md](VOLUME.md). MP3-Dateien liegen direkt neben `dino.html`.
 Bilder und Icons liegen in `assets/images/`.
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
+Vorher veröffentlicht: Build `2026-10-25.7`, Worker-Cache `dino-run-v69`.
 Nach Commit `060a12a` mit `npm run deploy -- --tls12` veröffentlicht;
 alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt. Auf Nutzerwunsch nur
 Kennlinie/Grenzen, Syntax, Build und diff geprüft; keine vollständigen Tests.

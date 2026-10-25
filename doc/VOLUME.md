@@ -3,11 +3,10 @@
 ## Music-reactive M24 logo
 
 The visible attract-menu M24 logo pulses with each song's bass attacks.
-Build `2026-10-25.5` increases the peak expansion from 18% to 65% (2.7 times
-the resting area). Build `2026-10-25.7` makes softer bass more responsive by using
-an exponent of 1.5 instead of 2: half-strength bass now expands the logo by about
-23% instead of 16%, while the peak remains 65%. A fast attack and short release
-give it more punch.
+Build `2026-10-25.8` tests a stronger response: half-strength bass expands the
+logo by 30%, and peak bass by 80% (3.24 times the resting area). The curve blends
+linear and squared bass strength equally, multiplied by 0.8. It replaces .7's
+23% / 65% response. A fast attack and short release give it more punch.
 The existing floating animation yields while the music pulse is active. The
 logo grows away from the title, keeping its right edge, layout size and accessible
 name fixed.
@@ -15,7 +14,7 @@ name fixed.
 Build `2026-10-25.6` also places a decorative M24 logo beside the Settings,
 Highscores / New highscore and Help titles (including Help's iframe). Only the
 foreground heading pulses; covered logos reset. Header logos reserve room for
-the full 65% pulse so title text and Back remain clear. Decorative copies have
+the full 80% pulse so title text and Back remain clear. Decorative copies have
 no duplicate title IDs and do not change the headings' accessible names.
 
 For these two fixed tracks, `scripts/bake-logo-pulse.mjs` analyzes the shipped

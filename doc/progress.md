@@ -7,6 +7,15 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Logo-Puls testweise 30 / 80 Prozent (Build .8 / Cache v70)
+
+- Nutzerwunsch testweise 30 % bei halber Bassstärke und 80 % am Maximum.
+  Kennlinie 0,8 × Stärke × (0,5 + 0,5 × Stärke), ohne neue Daten/Timer/DSP.
+  Header reservieren nun 23 statt 18 px für den stärkeren Ausschlag.
+  Erwartete Obergrenze in der vorhandenen Logo-Suite auf 1,8 aktualisiert.
+- Weiterhin auf Nutzerwunsch keine Browsersuiten oder vollständiges Testregime;
+  nur Kennlinie/Grenzen, Syntax, Build und diff. Visuelle Bewertung durch Nutzer.
+
 ## 2026-10-25: Empfindlicherer Logo-Puls (Build .7 / Cache v69)
 
 - Nutzerwunsch: etwas empfindlicher, ohne vollständiges Testregime; visuelle

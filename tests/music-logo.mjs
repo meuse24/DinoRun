@@ -83,7 +83,7 @@ try {
         min = Math.min(min, pulse.scale);
         if (pulse.scale > max) { max = pulse.scale; peakTime = audio.currentTime; }
       }
-      check(min >= 1 && max === 1.65 && max - min >= 0.6, 'strong, bounded bass peaks');
+      check(min >= 1 && max === 1.8 && max - min >= 0.6, 'strong, bounded bass peaks');
       audio.currentTime = peakTime; pulse.sync();
       const peak = pulse.scale;
       audio.currentTime = 0; pulse.sync();
@@ -183,7 +183,7 @@ try {
       });
       assert(state.paused && state.active && state.frozen && !state.menuScaled);
       assert.equal(state.owner, view === 'entry' ? 'scores' : view);
-      assert.equal(state.scale, 1.65);
+      assert.equal(state.scale, 1.8);
       results.push({ view, width, height, ...state });
       await page.screenshot({ path: path.join(output, `${view}-${width}x${height}.png`) });
       if (view === 'help') await page.frameLocator('#info-view').locator('[data-help-back]').first().click();

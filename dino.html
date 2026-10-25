@@ -2165,7 +2165,7 @@
       :root.motion #stage.idle #round-panel .brand-float.music-pulsing { animation: none; }
       .menu-title.music-branded-title { display: flex; align-items: center; gap: 8px; }
       .music-branded-title > .heading-ink { min-width: 0; }
-      .music-heading-logo { display: inline-block; flex: none; padding-left: 18px; line-height: 0; }
+      .music-heading-logo { display: inline-block; flex: none; padding-left: 23px; line-height: 0; }
       .music-heading-logo .brand-logo { width: 28px; height: 14px; }
       @keyframes motion-heading-hop {
         0% { transform: translateY(7px) scale(0.96, 1.04); }
@@ -4079,7 +4079,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-25.7';
+        const BUILD = '2026-10-25.8';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4830,9 +4830,9 @@
               this.wrapper.classList.add('music-pulsing');
             }
             this.schedule();
-            // Respond sooner to softer bass; keep the same maximum punch (2.7x area).
+            // Half-strength bass expands by 30%; the strongest hits expand by 80%.
             const strength = parseInt(sample, 16) / 15;
-            const scale = Math.round((1 + strength ** 1.5 * 0.65) * 1000) / 1000;
+            const scale = Math.round((1 + strength * (0.5 + 0.5 * strength) * 0.8) * 1000) / 1000;
             if (scale === this.scale) return;
             this.scale = scale;
             this.logo.style.transform = `scale(${scale})`;
