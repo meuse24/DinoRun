@@ -4234,11 +4234,42 @@
       (() => {
         'use strict';
 
-        // Embedded components (one classic script; no imports or build step):
-        // Configuration/utilities -> preferences -> fullscreen/audio/diagnostics
-        // -> simulation/entities -> renderer -> input/session UI -> highscores
-        // -> BrowserLifecycle/GamePage -> Runner -> bootstrap/test hooks.
-        // Player contracts and validation per feature: doc/README.md (one file each).
+        // Dino Run: one self-contained, offline-capable Canvas 2D game adapted from Chromium's
+        // T-Rex Runner. This classic script has no imports or build step; the release build
+        // only minifies it (scripts/build-release.mjs). It must keep working from file://
+        // without sibling files: manifest, icons, MP3s and the service worker are optional.
+        //
+        // Components, in file order:
+        //   Configuration   FPS/STEP, world size, CONFIG, lives, score/level rules and BUILD.
+        //   Preferences     best-effort localStorage wrapper; privacy modes may block storage.
+        //   Platform shell  LandscapeFullscreen, MenuMusic + MusicLogoPulse, ArcadeCredits,
+        //                   GameSound (Web Audio) and opt-in TestReport diagnostics.
+        //   Simulation      Trex, Obstacle, Horizon, ChiliTurbo, JumpFeather, ShieldBubble,
+        //                   GlowBerry, RockBoss and Game: rules and events only.
+        //   Renderer        reads Game state every frame and owns cosmetic Effects.
+        //   Input and UI    InputController, SessionStats/SessionView, HeadingMotion,
+        //                   ElementMotion, ScreenTransition/ScreenPresenter, BonusFlightView,
+        //                   FpsDisplay, EffectsSetting and GamepadController.
+        //   Highscores      HighscoreStore/Api/Controller without DOM, plus HighscoreView.
+        //   Page shell      BrowserLifecycle (pause/input policy), AttractScreen (start menu
+        //                   and demo), GameUpdates (worker updates), GamePage (dialogs, Help).
+        //   Runner          coordinator: lifecycle, input commands, event effects, rAF loop.
+        //   Bootstrap       creates the Runner, exposes test hooks and binds GamePage.
+        //
+        // Invariants the tests rely on:
+        // - Game advances in fixed STEP (1000/60 ms) steps, at most MAX_STEPS per frame; the
+        //   Renderer interpolates between them. Simulation never touches DOM, canvas or audio.
+        // - Gameplay randomness is one seeded RandomSource consumed in a fixed order. Cosmetic
+        //   and optional parts (poses, effects, berry, boss timing, attract demo) use their own.
+        // - Game.world owns the logical width; change it only through Game.resize(width).
+        // - Runner decides when dialogs open; controllers own state and views only render.
+        //
+        // Test hooks: window.__dinoTest set before load (manualFrames, random, now, credits,
+        // highscoreApiUrl, transitions, installNudge, ...), window.__dinoRunner/__dinoGame,
+        // render_game_to_text() and, with manualFrames, advanceTime(ms).
+        // Shipping: bump BUILD together with the worker's CACHE_NAME (doc/UPDATES.md).
+        // Per-feature player contracts and validation: doc/README.md (one file each);
+        // structure and simulation order: doc/ARCHITECTURE.md.
 
         // Configuration and shared utilities.
         const formatText = (text, values) =>
