@@ -7,6 +7,16 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Empfindlicherer Logo-Puls (Build .7 / Cache v69)
+
+- Nutzerwunsch: etwas empfindlicher, ohne vollständiges Testregime; visuelle
+  Abstimmung prüft der Nutzer selbst. Kennlinie von Bassstärke hoch 2 auf hoch
+  1,5 geändert. Halbe Bassstärke ergibt ca. 23 statt 16 % Vergrößerung, Maximum
+  unverändert 65 %. Dieselbe Kennlinie für alle vier Logo-Orte; keine neuen
+  Timer, Daten oder Audioanalysen.
+- Nur Kennlinien-/Grenzprüfung, Syntax/Build und diff --check vorgesehen;
+  keine Browser-, Gameplay- oder vollständigen Release-Suiten.
+
 ## 2026-10-25: Pulsierende Menülogos (Build .6 / Cache v68)
 
 - Während Commit/Deploy zusätzlich gewünscht: Logo neben Help, Settings und

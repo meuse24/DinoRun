@@ -4079,7 +4079,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-25.6';
+        const BUILD = '2026-10-25.7';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -4830,9 +4830,9 @@
               this.wrapper.classList.add('music-pulsing');
             }
             this.schedule();
-            // Keep quiet passages restrained; bass peaks hit much harder (2.7x area).
+            // Respond sooner to softer bass; keep the same maximum punch (2.7x area).
             const strength = parseInt(sample, 16) / 15;
-            const scale = Math.round((1 + strength * strength * 0.65) * 1000) / 1000;
+            const scale = Math.round((1 + strength ** 1.5 * 0.65) * 1000) / 1000;
             if (scale === this.scale) return;
             this.scale = scale;
             this.logo.style.transform = `scale(${scale})`;

@@ -6,13 +6,14 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal und veröffentlicht: Build `2026-10-25.6`, Worker-Cache `dino-run-v68`.
-Der neue Build zeigt das basssynchrone M24-Logo auch neben Settings, Help und
-Highscores, weiterhin mit bis zu 65 % Vergrößerung;
+Lokal: Build `2026-10-25.7`, Worker-Cache `dino-run-v69` (noch nicht veröffentlicht).
+Der neue Build reagiert mit dem Logo empfindlicher auf schwächere Bassimpulse,
+weiterhin mit bis zu 65 % Vergrößerung im Startmenü und neben Settings, Help und Highscores;
 siehe [VOLUME.md](VOLUME.md). MP3-Dateien liegen direkt neben `dino.html`.
 Bilder und Icons liegen in `assets/images/`.
 Der aktuelle Bericht ist für Größen und Hashes maßgeblich.
 
+Zuletzt veröffentlicht: Build `2026-10-25.6`, Worker-Cache `dino-run-v68`.
 Nach Commit `cbb0e6e` am 2026-10-25 mit `npm run deploy -- --tls12`
 veröffentlicht; alle zehn statischen Dateien per HTTPS/SHA-256 bestätigt.
 Beide vollständigen Releasegruppen (Chromium/WebKit) bestanden, einschließlich

@@ -4,8 +4,10 @@
 
 The visible attract-menu M24 logo pulses with each song's bass attacks.
 Build `2026-10-25.5` increases the peak expansion from 18% to 65% (2.7 times
-the resting area). A squared response emphasizes strong bass hits while keeping
-quiet passages restrained. A fast attack and short release give it more punch.
+the resting area). Build `2026-10-25.7` makes softer bass more responsive by using
+an exponent of 1.5 instead of 2: half-strength bass now expands the logo by about
+23% instead of 16%, while the peak remains 65%. A fast attack and short release
+give it more punch.
 The existing floating animation yields while the music pulse is active. The
 logo grows away from the title, keeping its right edge, layout size and accessible
 name fixed.
