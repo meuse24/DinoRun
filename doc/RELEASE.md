@@ -6,7 +6,7 @@ Das Spiel selbst benötigt keinen Build-Schritt.
 
 ## Stand und Versionsführung
 
-Lokal und veröffentlicht: Build `2026-10-25.12`, Worker-Cache `dino-run-v74` mit Exit-Button
+Lokal und veröffentlicht: Build `2026-10-25.13`, Worker-Cache `dino-run-v75` mit Exit-Button
 ([EXIT.md](EXIT.md)), Schallwellen-Ringen am Logo ([VOLUME.md](VOLUME.md)) und
 Installationshinweis ([INSTALL.md](INSTALL.md)); Songs mit Suno-Herkunft ([VOLUME.md](VOLUME.md)).
 Der neue Build testet 30 % Logo-Vergrößerung bei halber Bassstärke und maximal

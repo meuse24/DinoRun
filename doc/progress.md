@@ -18,7 +18,9 @@ Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 - Lizenz: LICENSE (BSD 3-Clause, Günther Meusburger) und THIRD-PARTY-NOTICES.md
   (Chromium-BSD-Text, OFL 1.1 der Schriften, Songs alle Rechte vorbehalten);
   package.json/lock, README, Dateikopf und Help → About ergänzt.
-- menu-overlays, update-notice, npm test und test:release bestanden.
+- menu-overlays, update-notice, npm test und test:release bestanden. Gepusht;
+  GitHub erkennt BSD-3-Clause. Per npm run deploy -- --tls12 veröffentlicht;
+  HTTPS/SHA-256 bestätigt (HTML f01194b9e90d, Worker 3c6a797bbafe).
 
 ## 2026-10-25: Suno-Herkunft der Songs, Umbenennung (Build .12 / Cache v74)
 
