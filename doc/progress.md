@@ -7,6 +7,18 @@ Das vollständige bisherige Protokoll liegt im
 Hier bleiben der letzte Implementierungsstand und neue Arbeiten sichtbar.
 Datierte Ergebnisse beziehen sich auf den jeweils genannten Build.
 
+## 2026-10-25: Exit-Button im Goodbye-Dialog (Build .9 / Cache v71)
+
+- Nutzerwunsch: sauberer Exit aus Spiel/PWA. Goodbye zeigt Exit game neben New
+  session; `window.close()` ohne Rückfrage, sonst plattformspezifischer Hinweis.
+- Recherche: Chromium `DOMWindow::Close` erlaubt nur skriptgeöffnete Fenster oder
+  History-Länge 1; deshalb Help im App-Modus ohne History-Eintrag, mit
+  CloseWatcher im Help-iframe (Android leitet Zurück an den fokussierten Frame).
+- Neue Suite exit-game (7 Checks) in test:features. Details und Gerätenachweis
+  (TWA, echte Zurück-Taste, echter Exit-Touch) in [EXIT.md](EXIT.md).
+- Per npm run deploy -- --tls12 veröffentlicht; alle zehn Dateien per HTTPS/SHA-256
+  bestätigt (HTML d3cda86dc8d0, Worker 1f54b6d062ad). Noch nicht committed.
+
 ## 2026-10-25: Logo-Puls testweise 30 / 80 Prozent (Build .8 / Cache v70)
 
 - Nutzerwunsch testweise 30 % bei halber Bassstärke und 80 % am Maximum.

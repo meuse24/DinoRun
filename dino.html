@@ -802,7 +802,11 @@
         font-weight: bold;
         cursor: pointer;
       }
-      #goodbye #new-session {
+      #goodbye .bye-actions {
+        display: grid;
+        gap: 8px;
+      }
+      #goodbye .bye-actions button {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -813,7 +817,17 @@
         font: 800 16px/1.1 system-ui, sans-serif;
         touch-action: manipulation;
       }
-      #new-session svg {
+      /* Secondary: New session stays the default action, Exit ends the app. */
+      #goodbye #exit-game {
+        background: transparent;
+        color: var(--fg);
+        box-shadow: inset 0 0 0 2px currentColor;
+      }
+      #exit-hint {
+        margin: 10px 0 0;
+        font: 700 14px/1.35 system-ui, sans-serif;
+      }
+      .bye-actions svg {
         width: 22px;
         height: 22px;
         fill: none;
@@ -831,6 +845,9 @@
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 6px;
           margin: 10px 0;
+        }
+        #goodbye .bye-actions {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
       }
 
@@ -3440,10 +3457,17 @@
     <dialog id="goodbye" aria-labelledby="bye-title">
       <h2 id="bye-title"><span class="heading-ink"><span class="heading-breath">Bye-bye, Dino! 👋</span></span></h2>
       <dl id="session-stats"></dl>
-      <button id="new-session" type="button">
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM9 21v-7h6v7" /></svg>
-        <span>New session</span>
-      </button>
+      <div class="bye-actions">
+        <button id="new-session" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM9 21v-7h6v7" /></svg>
+          <span>New session</span>
+        </button>
+        <button id="exit-game" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3v8M6.6 6.6a8 8 0 1 0 10.8 0" /></svg>
+          <span>Exit game</span>
+        </button>
+      </div>
+      <p id="exit-hint" role="status" hidden></p>
     </dialog>
     <dialog id="install-help" aria-labelledby="install-title">
       <h2 id="install-title"><span class="heading-ink"><span class="heading-breath">Install Dino Run</span></span></h2>
@@ -4079,7 +4103,7 @@
         const SCORE_BONUS_RATE = 0.1;
         const LEVEL_BONUS = Object.freeze({ duration: 1800, max: 20, obstacles: 10, clean: 5, checkpointMs: 30000 });
         // Identifies the exact file in test reports; update it with every shared build.
-        const BUILD = '2026-10-25.8';
+        const BUILD = '2026-10-25.9';
         const ROCK_BOSS = Object.freeze({
           firstSpawnMs: 36000,
           respawnMs: 44000,
@@ -9966,6 +9990,7 @@
           constructor() {
             this.dialog = document.getElementById('goodbye');
             this.list = document.getElementById('session-stats');
+            this.exitHint = document.getElementById('exit-hint');
             this.panel = document.getElementById('round-panel');
             this.stage = document.getElementById('stage');
             this.startView = document.getElementById('start-view');
@@ -10212,10 +10237,30 @@
               item.append(term, description);
               this.list.append(item);
             }
+            this.exitHint.hidden = true;
             this.dialog.showModal();
           }
           closeGoodbye() {
             this.dialog.close();
+          }
+          // Shown only when the browser refused window.close(): name the platform's own way out.
+          showExitHint(app) {
+            const agent = navigator.userAgent;
+            const apple =
+              /iPhone|iPad|iPod/.test(agent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const way = apple
+              ? app
+                ? 'Swipe up from the bottom edge to leave Dino Run.'
+                : 'Close this tab in the Safari tab overview.'
+              : /Android/.test(agent)
+                ? app
+                  ? 'Swipe Dino Run away in your recent apps.'
+                  : 'Close this tab in the browser tab overview.'
+                : `Press ${/Mac/.test(navigator.platform) ? '⌘W' : 'Ctrl+W'} to close this ${app ? 'window' : 'tab'}.`;
+            this.text(this.exitHint, 'Your browser keeps this page open. ' + way);
+            this.exitHint.hidden = false;
+            // Short landscape dialogs scroll; keep the answer to the tap in view.
+            this.exitHint.scrollIntoView({ block: 'nearest' });
           }
         }
 
@@ -11841,6 +11886,7 @@
             document.getElementById('training-exit').addEventListener('click', () => runner.endRockTraining());
             document.getElementById('quit-game').addEventListener('click', () => runner.quit());
             document.getElementById('new-session').addEventListener('click', () => runner.newSession());
+            document.getElementById('exit-game').addEventListener('click', () => runner.exitGame());
           }
           bindGuide() {
             const runner = this.runner;
@@ -11860,16 +11906,30 @@
               '</html>';
             const infoView = (this.infoView = document.getElementById('info-view'));
             this.helpDialog = document.getElementById('help-dialog');
+            // Installed apps have no browser Back button. There Help adds no history entry,
+            // so Exit can still close the app window: system Back reaches the guide through
+            // close watchers instead (verified on Android Chrome; see doc/EXIT.md).
+            this.historyless = landscapeFullscreen.launchedAsApp && 'CloseWatcher' in window;
+            this.guideWatcher = null;
             this.helpDialog.addEventListener('cancel', (event) => {
+              // Repeated Back gestures without user activation close the dialog regardless;
+              // its close event below then restores the view exactly once.
+              if (!event.cancelable) return;
               event.preventDefault();
               this.closeGuide();
+            });
+            // applyView() hides the guide before its own close(); that queued event may even
+            // arrive after a direct link reopened Help. Only a browser close leaves it shown.
+            this.helpDialog.addEventListener('close', () => {
+              if (!this.helpDialog.open && !this.infoView.hidden) this.closeGuide();
             });
             infoView.title = 'Help';
             // Keep the calling URL in browser history; the paused game keeps its exact state.
             document.getElementById('info-link').addEventListener('click', (e) => {
               if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
               e.preventDefault();
-              history.pushState({ dinoHelp: true }, '', '#info');
+              if (this.historyless) history.replaceState(null, '', '#info');
+              else history.pushState({ dinoHelp: true }, '', '#info');
               this.showView();
               landscapeFullscreen.sync();
             });
@@ -11962,7 +12022,21 @@
               // snapshot animation finishes so the normal blur handler cannot skip it.
               if (transition) transition.finished.then(focusGuide, focusGuide);
               else focusGuide();
+              // Back is routed to the focused frame: the modal dialog's own watcher never
+              // sees it while the guide document has focus.
+              const Watcher = this.historyless && this.infoView.contentWindow?.CloseWatcher;
+              if (Watcher && !this.guideWatcher) {
+                this.guideWatcher = new Watcher();
+                this.guideWatcher.onclose = () => {
+                  this.guideWatcher = null;
+                  this.closeGuide();
+                };
+              }
             } else if (!showingInfo && this.helpDialog.open) this.helpDialog.close();
+            if (!showingInfo && this.guideWatcher) {
+              this.guideWatcher.destroy();
+              this.guideWatcher = null;
+            }
             document.title = showingInfo ? 'Help · m24 Dino Run' : 'Dino Run';
             if (!showingInfo) {
               // Fullscreen can end while the guide hides the game. Measure after unhiding.
@@ -12434,6 +12508,15 @@
             this.saveHighScore();
             landscapeFullscreen.stop();
             this.sessionView.showGoodbye(this.stats);
+          }
+          // Browsers let a page close itself only while its tab holds one history entry
+          // or was opened by script; a fresh tab or installed app (also TWA) qualifies.
+          // There is no beforeunload handler, so nothing asks before closing.
+          exitGame() {
+            if (!this.ended) return;
+            window.close();
+            // Chromium, Firefox and WebKit report an accepted close at once; refusal is silent.
+            if (!window.closed) this.sessionView.showExitHint(landscapeFullscreen.launchedAsApp);
           }
           newSession() {
             this.music.reset();

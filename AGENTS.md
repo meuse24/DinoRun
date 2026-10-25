@@ -169,6 +169,9 @@ Node.js supporting `fetch` and `import.meta.dirname`; the backend requires PHP 7
   dialog and View Transition paths), input during transitions, focus, close
   paths, reduced motion and latency; accepts `DINO_BROWSER=webkit`. Other
   suites turn transitions off unless `DINO_TRANSITIONS=1`. See `doc/TRANSITIONS.md`.
+- `node tests/exit-game.mjs [game.html]`: goodbye Exit closes fresh tabs/app windows
+  via a directly launched Chromium, refusal hint, history-free Help in app mode and
+  three layouts. Chromium only; see `doc/EXIT.md`.
 - `node tests/menu-overlays.mjs [game.html]`: Settings/Help modal sizing,
   paused visible gameplay, scrolling/settings controls, focus isolation, Escape,
   browser Back and direct Help links in desktop/touch layouts. Accepts `DINO_BROWSER`.

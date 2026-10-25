@@ -1,7 +1,7 @@
 # Dokumentation
 
 Stand der Bereinigung: 2026-10-25; abgeglichen mit lokalem Build
-`2026-10-25.8` und Worker-Cache `dino-run-v70`.
+`2026-10-25.9` und Worker-Cache `dino-run-v71`.
 Der Index beschreibt Repository-Code, Skripte und Verweise. Datierte Browser-
 und Geräteergebnisse stehen im Arbeitsprotokoll; sie bestätigen keinen aktuell
 abgefragten Produktionsstand.
@@ -31,6 +31,7 @@ abgefragten Produktionsstand.
 | Stone Jaw und Training | [BOSS.md](BOSS.md) |
 | Glühbeere | [GLOW-BERRY.md](GLOW-BERRY.md) |
 | Rundenende und Namenseingabe | [GAMEOVER.md](GAMEOVER.md) |
+| Exit aus dem Goodbye-Dialog | [EXIT.md](EXIT.md) |
 | Arcade-Darstellung und Effekte | [ARCADE.md](ARCADE.md) |
 | Überschriften | [HEADING-MOTION.md](HEADING-MOTION.md) |
 | Screen-Übergänge und Menü-Overlays | [TRANSITIONS.md](TRANSITIONS.md) |

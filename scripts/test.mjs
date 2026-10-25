@@ -6,7 +6,7 @@ const features = [
   'jump-feather', 'shield-bubble', 'glow-berry', 'lives', 'level-bonus',
   'rock-boss', 'rock-training', 'attract-screen', 'coins', 'effects-setting',
   'arcade-type', 'heading-motion', 'game-over-flow', 'screen-transitions',
-  'menu-overlays', 'volume-controls', 'theme-songs', 'music-logo', 'update-notice',
+  'menu-overlays', 'exit-game', 'volume-controls', 'theme-songs', 'music-logo', 'update-notice',
 ];
 const groups = {
   core: ['assets', 'architecture', 'game-contract'],
