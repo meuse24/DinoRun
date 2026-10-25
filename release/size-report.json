@@ -2,10 +2,10 @@
   "build": "2026-10-25.11",
   "source": {
     "file": "dino.html",
-    "bytes": 617961,
-    "sha256": "cdf7a0a3e391e10e7e0b803bd2ed96488c6288964c9aff3d883e02f8fa497ca3",
-    "gzipBytes": 160737,
-    "brotliBytes": 137041
+    "bytes": 619802,
+    "sha256": "fcc6ce7fea9469c9c02c6871187ef48c30d61f7035eefb785b669bbf91cf8996",
+    "gzipBytes": 161463,
+    "brotliBytes": 137730
   },
   "release": {
     "file": "release/dino.html",
@@ -35,6 +35,6 @@
       "bytes": 348366
     }
   ],
-  "savedBytes": 269595,
-  "savedPercent": 43.63
+  "savedBytes": 271436,
+  "savedPercent": 43.79
 }

@@ -4238,6 +4238,7 @@
         // Configuration/utilities -> preferences -> fullscreen/audio/diagnostics
         // -> simulation/entities -> renderer -> input/session UI -> highscores
         // -> BrowserLifecycle/GamePage -> Runner -> bootstrap/test hooks.
+        // Player contracts and validation per feature: doc/README.md (one file each).
 
         // Configuration and shared utilities.
         const formatText = (text, values) =>
@@ -5113,6 +5114,9 @@
           }
         }
 
+        // Sound effects synthesized with Web Audio oscillators (no sample files). The
+        // context starts on the first user gesture and is replaced if the browser closes
+        // it. Music is separate (MenuMusic); see doc/VOLUME.md.
         class GameSound {
           constructor() {
             this.context = null;
@@ -6018,6 +6022,7 @@
           ctx.imageSmoothingEnabled = true;
         }
 
+        // Axis-aligned hit box in sprite pixels, offset by the owner's position.
         class CollisionBox {
           constructor(x, y, w, h) {
             this.x = x;
@@ -6092,6 +6097,8 @@
 
         // Simulation entities and cosmetic effects. Browser I/O stays in the shell.
         const JUMP_POSES = ['arms', 'grin', 'wave', 'tongue', 'fire', 'eyeroll', 'legs'];
+        // The player dinosaur: jump/duck physics, pose and animation timers. Gameplay
+        // randomness comes from the shared RNG; cosmetic poses use a separate source.
         class Trex {
           constructor(rng = new RandomSource(), reducedMotion = false, poseRandom = Math.random) {
             this.rng = rng;
@@ -6304,6 +6311,8 @@
           },
         };
 
+        // One cactus group or flying dino. Size, height and the gap to the next obstacle
+        // are drawn from the gameplay RNG when it spawns, scaled by the current speed.
         class Obstacle {
           constructor(type, speed, duplicate, rng = new RandomSource(), world = { width: BASE_W }) {
             this.rng = rng;
@@ -6339,6 +6348,8 @@
           }
         }
 
+        // Scrolling world: obstacles, clouds, stars and ground. Spawns obstacles in RNG
+        // order, so its call sequence is part of the deterministic simulation.
         class Horizon {
           constructor(rng = new RandomSource(), world = { width: BASE_W }) {
             this.rng = rng;
@@ -6441,6 +6452,7 @@
           }
         }
 
+        // Flash timer for every 100-point milestone of the score display.
         class DistanceMeter {
           constructor() {
             this.flash = 0;
@@ -6459,6 +6471,8 @@
           }
         }
 
+        // Cosmetic effects owned by the Renderer: particles, callouts, banner and shake.
+        // Uses its own RandomSource, so effects never change gameplay; see doc/ARCADE.md.
         class Effects {
           constructor(rng = new RandomSource(), reducedMotion = false, world = { width: BASE_W }) {
             this.rng = rng;
@@ -6611,6 +6625,8 @@
           }
         }
 
+        // Chili pickup spawning and its timed speed boost (CHILI_MULTIPLIER). Game
+        // applies the effects: cacti burn while it is active, birds still hurt.
         class ChiliTurbo {
           constructor(rng = new RandomSource(), world = { width: BASE_W }) {
             this.rng = rng;
@@ -9730,6 +9746,7 @@
           }
         }
 
+        // Counts for the goodbye screen, fed by game events; reset by New session.
         class SessionStats {
           constructor() {
             this.reset();
@@ -10205,6 +10222,8 @@
           }
         }
 
+        // DOM for the round HUD, coach hints, quit/training buttons and the goodbye
+        // dialog. Renders what Runner decides; owns no game rules.
         class SessionView {
           constructor() {
             this.dialog = document.getElementById('goodbye');
@@ -10483,6 +10502,7 @@
           }
         }
 
+        // Optional frame-rate readout (Settings switch), sampled every 500 ms.
         class FpsDisplay {
           constructor() {
             this.button = document.getElementById('fps-toggle');
@@ -10612,6 +10632,8 @@
           restart: 9,
         });
 
+        // Polls the Gamepad API each frame: A jumps, B ducks, Start restarts. After a
+        // pause or disconnect, held buttons must be released before input resumes.
         class GamepadController {
           constructor(runner, getGamepads = () => navigator.getGamepads?.() || EMPTY_GAMEPADS) {
             this.runner = runner;
